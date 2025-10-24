@@ -1,65 +1,117 @@
-import Image from "next/image";
+import Image from "next/image"
+import Link from "next/link"
+
+import { Button } from "@/components/ui/button"
+
+const heroHighlights = [
+  "Free worldwide shipping on orders over $250",
+  "Hand-embroidered artisan designs sourced ethically",
+  "Ships in 24 hours from our Khyber atelier",
+]
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="bg-gradient-to-b from-background via-background to-secondary/10">
+      <header className="sticky top-0 z-10 border-b bg-background/70 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Link href="/" className="text-lg font-semibold tracking-tight">
+            Khyber Shawls
+          </Link>
+          <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
+            <Link href="/collections/new-arrivals">New Arrivals</Link>
+            <Link href="/collections/pashmina">Pashmina</Link>
+            <Link href="/about">Our Story</Link>
+            <Link href="/journal">Journal</Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/account">Sign in</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/cart">View Cart</Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+      </header>
+
+      <main className="mx-auto flex max-w-6xl flex-col gap-20 px-6 pb-24 pt-16">
+        <section className="grid items-center gap-16 md:grid-cols-[1.2fr,1fr]">
+          <div className="space-y-8">
+            <p className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Winter 2025 collection
+            </p>
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              Heirloom Kashmiri shawls crafted to stand the test of time.
+            </h1>
+            <p className="text-lg text-muted-foreground sm:text-xl">
+              Experience the warmth and elegance of authentic Pashmina sourced
+              directly from master artisans in the valleys of Khyber. Each
+              weave tells a story of tradition, patience, and artistry.
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button size="lg" asChild>
+                <Link href="/collections/signature">Shop signature shawls</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/appointments">Book a styling consultation</Link>
+              </Button>
+            </div>
+            <ul className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+              {heroHighlights.map((highlight) => (
+                <li key={highlight} className="flex items-center gap-2">
+                  <span className="size-1.5 rounded-full bg-primary" />
+                  <span>{highlight}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-primary/40 blur-3xl" />
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/hero-shawl.svg"
+              alt="Model wearing a handcrafted Khyber shawl"
+              width={1200}
+              height={630}
+              priority
+              className="relative z-10 w-full rounded-3xl object-cover shadow-2xl"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Threads dyed with natural pigments by artisans in the Khyber
+              region.
+            </p>
+          </div>
+        </section>
+
+        <section className="grid gap-10 lg:grid-cols-3">
+          {[
+            {
+              title: "Sustainable sourcing",
+              description:
+                "We collaborate with co-ops that ensure fair pay and safe working conditions for every artisan involved.",
+            },
+            {
+              title: "Lifetime care",
+              description:
+                "Complimentary care plan with every purchase, including seasonal cleaning and repairs handled by experts.",
+            },
+            {
+              title: "Express delivery",
+              description:
+                "Global express shipping with carbon offsets and custom packaging designed to protect delicate fibers.",
+            },
+          ].map((feature) => (
+            <article
+              key={feature.title}
+              className="space-y-3 rounded-2xl border bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+            >
+              <h2 className="text-xl font-semibold">{feature.title}</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {feature.description}
+              </p>
+            </article>
+          ))}
+        </section>
       </main>
     </div>
-  );
+  )
 }
