@@ -6,6 +6,7 @@ import { CartProvider } from "@/components/providers/cart-provider"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 import { getCurrentUser } from "@/lib/auth"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
