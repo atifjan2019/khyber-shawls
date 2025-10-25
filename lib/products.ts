@@ -20,6 +20,10 @@ export type SerializedProduct = {
   categoryName?: string | null
 }
 
+export type SerializedProductDetail = SerializedProduct & {
+  inventory: number
+}
+
 export type SerializedCategory = {
   id: string
   name: string
@@ -159,4 +163,28 @@ export async function fetchProductSummariesByIds(ids: string[]) {
   })
 
   return products.map(serializeProduct)
+}
+
+export async function fetchProductBySlug(slug: string): Promise<SerializedProductDetail | null> {
+  if (!prisma) {
+    return null
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { slug },
+    include: {
+      category: true,
+      featuredImage: true,
+      gallery: { include: { media: true }, orderBy: { position: "asc" } },
+    },
+  })
+
+  if (!product || !product.published) {
+    return null
+  }
+
+  return {
+    ...serializeProduct(product),
+    inventory: product.inventory,
+  }
 }

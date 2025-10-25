@@ -3,9 +3,13 @@
 import { useTransition } from "react"
 
 import { logoutAction } from "@/app/(auth)/actions"
-import { Button } from "@/components/ui/button"
+import { Button, type ButtonProps } from "@/components/ui/button"
 
-export function LogoutButton() {
+type LogoutButtonProps = ButtonProps & {
+  children?: React.ReactNode
+}
+
+export function LogoutButton({ children, ...props }: LogoutButtonProps) {
   const [isPending, startTransition] = useTransition()
 
   return (
@@ -18,8 +22,9 @@ export function LogoutButton() {
         })
       }}
       disabled={isPending}
+      {...props}
     >
-      {isPending ? "Signing out…" : "Sign out"}
+      {children ?? (isPending ? "Signing out…" : "Sign out")}
     </Button>
   )
 }

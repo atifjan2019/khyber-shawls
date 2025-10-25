@@ -9,9 +9,11 @@ import {
   MessageCircle,
   Package,
   Image as ImageIcon,
+  LogOut,
 } from "lucide-react"
 
 import { requireUser } from "@/lib/auth"
+import { LogoutButton } from "@/components/logout-button"
 
 const navItems = [
   { href: "/admin/overview", label: "Overview", icon: LayoutDashboard },
@@ -35,54 +37,52 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl space-y-12">
+    <div className="relative mx-auto w-full max-w-6xl space-y-10">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute left-20 top-0 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-24 top-24 h-72 w-72 rounded-full bg-secondary/30 blur-3xl" />
         <div className="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[280px,1fr]">
-        <aside className="relative space-y-8 rounded-3xl border border-white/10 bg-gradient-to-b from-background/80 via-background to-background/90 p-8 shadow-xl backdrop-blur">
-          <div className="space-y-3">
+      <header className="flex flex-col gap-6 rounded-3xl border border-white/10 bg-gradient-to-r from-background/85 via-background to-background/90 p-6 shadow-xl backdrop-blur">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.25em] text-primary">Control Centre</p>
-            <div>
-              <p className="text-lg font-semibold text-foreground">
-                {user.name ?? user.email}
-              </p>
-              <p className="text-xs text-muted-foreground">Signed in as {user.role}</p>
+            <p className="text-lg font-semibold text-foreground">{user.name ?? user.email}</p>
+            <p className="text-xs text-muted-foreground">Signed in as {user.role}</p>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="rounded-full bg-primary/10 px-3 py-1 font-medium text-primary">
+              Drafts auto-save • Publish when ready
             </div>
-            <p className="text-sm text-muted-foreground">
-              Manage collections, journal stories, and bespoke orders from a single flow.
-            </p>
+            <LogoutButton>
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary hover:text-primary-foreground">
+                <LogOut className="size-3" /> Sign out
+              </span>
+            </LogoutButton>
           </div>
-          <nav className="space-y-2 text-sm">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="group flex items-center gap-3 rounded-2xl px-4 py-3 font-medium text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
-                >
-                  <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Icon className="size-4" aria-hidden="true" />
-                  </span>
-                  {item.label}
-                </Link>
-              )
-            })}
-          </nav>
-          <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4 text-xs text-muted-foreground">
-            <p className="font-medium text-primary">Quick tip</p>
-            <p className="mt-2">
-              Draft content saves automatically. Publish when you are ready—no extra approval flows.
-            </p>
-          </div>
-        </aside>
+        </div>
 
-        <main className="space-y-12">{children}</main>
-      </div>
+        <nav className="flex flex-wrap items-center gap-3 text-sm font-medium">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-background/80 px-4 py-2 text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+              >
+                <span className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Icon className="size-3.5" aria-hidden="true" />
+                </span>
+                {item.label}
+              </Link>
+            )
+          })}
+        </nav>
+      </header>
+
+      <main className="space-y-12">{children}</main>
     </div>
   )
 }

@@ -24,7 +24,7 @@ const HERO_DEFAULTS: Record<string, HeroContent> = {
     description:
       "Every thread is woven by master artisans in Khyber, preserving centuries-old traditions for the modern wardrobe.",
     ctaLabel: "Explore Collections",
-    ctaHref: "/category/signature",
+    ctaHref: "/collections",
     backgroundImageUrl: null,
     backgroundImageAlt: null,
     backgroundImageId: null,

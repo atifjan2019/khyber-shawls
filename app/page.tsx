@@ -14,7 +14,7 @@ export default async function HomePage() {
   ])
 
   return (
-    <div className="bg-gradient-to-b from-white via-[#faf7f2] to-[#f4ede3]">
+    <div className="bg-white">
       {/* ======================= HERO ======================= */}
       <section className="relative left-1/2 right-1/2 w-screen -translate-x-1/2 isolate overflow-hidden pt-0">
         <div className="absolute inset-0 -z-10">
@@ -90,76 +90,120 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= CATEGORIES ======================= */}
-      <section id="categories" className="max-w-7xl mx-auto px-6 py-16">
-        <h2 className="text-2xl font-semibold mb-10 text-gray-900 text-center">Shop by Category</h2>
+      <section id="categories" className="mx-auto max-w-6xl px-6 py-16">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Curated edits</p>
+            <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
+              Shop by mood and moment
+            </h2>
+          </div>
+          <Link
+            href="/collections"
+            className="rounded-full border border-amber-200 px-4 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-600 hover:text-white"
+          >
+            View all collections
+          </Link>
+        </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {categories.map((category: SerializedCategory) => (
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
+          {categories.slice(0, 3).map((category: SerializedCategory, index) => (
             <Link
               href={`/category/${category.slug}`}
               key={category.id}
-              className="group rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all"
+              className="group relative overflow-hidden rounded-3xl border border-white/20 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl"
             >
-              <div className="relative w-full aspect-square">
+              <div className="absolute inset-0">
                 <Image
                   src={category.featuredImageUrl ?? "/placeholder.svg"}
                   alt={category.featuredImageAlt ?? `${category.name} category`}
                   fill
-                  sizes="(max-width:768px) 50vw, (max-width:1024px) 25vw, 20vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="object-cover transition duration-500 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
               </div>
-              <div className="p-4 text-center">
-                <h3 className="text-gray-900 font-medium group-hover:text-amber-700">
-                  {category.name}
-                </h3>
+              <div className="relative flex h-72 flex-col justify-end space-y-3 p-6 text-white">
+                <span className="inline-flex size-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs font-semibold uppercase tracking-[0.3em]">
+                  {index + 1}
+                </span>
+                <h3 className="text-2xl font-semibold">{category.name}</h3>
+                {category.summary && (
+                  <p className="text-sm text-white/80 line-clamp-3">{category.summary}</p>
+                )}
+                <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-medium text-gray-900 transition group-hover:bg-white">
+                  Explore collection →{" "}
+                  <span className="text-[10px] uppercase tracking-[0.4em]">
+                    {category.productCount} styles
+                  </span>
+                </span>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* ======================= FEATURED PRODUCTS ======================= */}
-      <section className="max-w-7xl mx-auto px-6 pb-20">
-        <h2 className="text-2xl font-semibold mb-10 text-gray-900 text-center">Featured Shawls</h2>
+      <section className="mx-auto max-w-6xl px-6 pb-20">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">
+              Atelier picks
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
+              Featured shawls for this season
+            </h2>
+          </div>
+          <Link
+            href="/collections"
+            className="text-sm font-medium text-amber-700 hover:text-amber-800"
+          >
+            Browse the full atelier →
+          </Link>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {products.slice(0, 8).map((product: SerializedProduct) => (
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {products.slice(0, 6).map((product: SerializedProduct, index) => (
             <Link
               key={product.id}
               href={`/product/${product.slug}`}
-              className="group rounded-xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-all"
+              className="group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white via-white/90 to-white/70 p-6 shadow transition hover:-translate-y-1 hover:shadow-xl"
             >
-              <div className="relative w-full aspect-square overflow-hidden rounded-t-xl">
-                <Image
-                  src={
-                    product.featuredImageUrl ??
-                    product.gallery?.[0]?.url ??
-                    "/placeholder.svg"
-                  }
-                  alt={
-                    product.featuredImageAlt ??
-                    product.gallery?.[0]?.alt ??
-                    `${product.title ?? "Khyber Shawls product"} image`
-                  }
-                  fill
-                  sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 25vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-
-              <div className="p-4">
-                <h3 className="font-semibold text-gray-900 group-hover:text-amber-700">
-                  {product.title}
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {product.categoryName ?? "Uncategorised"}
-                </p>
-                <p className="mt-2 text-lg font-medium text-gray-800">
-                  {typeof product.price === "number"
-                    ? `$${product.price.toFixed(2)}`
-                    : product.price}
-                </p>
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-amber-200/10 via-transparent to-amber-300/30 opacity-0 transition group-hover:opacity-100" />
+              <div className="relative flex flex-col gap-4">
+                <div className="relative h-64 overflow-hidden rounded-2xl border border-white/40 bg-white shadow-inner">
+                  <Image
+                    src={
+                      product.featuredImageUrl ??
+                      product.gallery?.[0]?.url ??
+                      "/placeholder.svg"
+                    }
+                    alt={
+                      product.featuredImageAlt ??
+                      product.gallery?.[0]?.alt ??
+                      `${product.title ?? "Khyber Shawls product"} image`
+                    }
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-900">
+                    {index + 1 < 10 ? `0${index + 1}` : index + 1}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                    {product.categoryName ?? "Signature"}
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-gray-900 group-hover:text-amber-700">
+                    {product.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    ${typeof product.price === "number"
+                      ? product.price.toFixed(2)
+                      : product.price}
+                  </p>
+                </div>
+                <span className="inline-flex w-fit items-center gap-2 rounded-full bg-amber-600 px-4 py-2 text-xs font-medium text-white transition group-hover:bg-amber-700">
+                  View details →
+                </span>
               </div>
             </Link>
           ))}
