@@ -1,30 +1,20 @@
-'use client'
+"use client"
 
 import * as React from "react"
-
 import { logoutAction } from "@/app/(auth)/actions"
 import { Button } from "@/components/ui/button"
 
+// Infer props from your actual Button component
 type LogoutButtonProps = React.ComponentProps<typeof Button> & {
   children?: React.ReactNode
 }
 
 export function LogoutButton({ children, ...props }: LogoutButtonProps) {
-  const [isPending, startTransition] = React.useTransition()
-
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => {
-        startTransition(async () => {
-          await logoutAction()
-        })
-      }}
-      disabled={isPending}
-      {...props}
-    >
-      {children ?? (isPending ? "Signing out…" : "Sign out")}
-    </Button>
+    <form action={logoutAction}>
+      <Button type="submit" {...props}>
+        {children ?? "Log out"}
+      </Button>
+    </form>
   )
 }
