@@ -5,13 +5,13 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push"
   },
-  "dependencies": {
+  "dependencies": { 
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.18.0",
     "@radix-ui/react-slot": "^1.2.3",
@@ -31,7 +31,6 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/jsonwebtoken": "^9.0.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
