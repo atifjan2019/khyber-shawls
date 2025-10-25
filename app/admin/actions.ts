@@ -335,7 +335,7 @@ export async function createProductAction(
   revalidatePath("/admin/products")
   revalidatePath("/admin/overview")
   revalidatePath("/")
-  revalidatePath(`/product/${uniqueSlug}`)
+  revalidatePath(`/products/${uniqueSlug}`)
 
   return { success: "Product created" }
 }
@@ -540,7 +540,7 @@ export async function updateProductAction(
   revalidatePath("/admin/products")
   revalidatePath("/admin/overview")
   revalidatePath("/")
-  revalidatePath(`/product/${uniqueSlug}`)
+  revalidatePath(`/products/${uniqueSlug}`)
 
   return { success: "Product updated" }
 }

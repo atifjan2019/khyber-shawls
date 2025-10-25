@@ -71,7 +71,7 @@ export default async function CollectionsPage() {
           {spotlight.map((product) => (
             <Link
               key={product.id}
-              href={`/product/${product.slug}`}
+              href={`/products/${product.slug}`}
               className="group overflow-hidden rounded-3xl border border-white/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="relative h-60 w-full overflow-hidden">
