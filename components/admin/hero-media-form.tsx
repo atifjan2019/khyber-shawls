@@ -18,6 +18,7 @@ export type HeroMediaFormProps = {
     ctaHref: string
     backgroundImageUrl: string | null
     backgroundImageAlt: string | null
+    backgroundImageId?: string | null
   }
 }
 
