@@ -4,6 +4,8 @@ import { z } from "zod"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const runtime = "nodejs"
+
 const orderSchema = z.object({
   customerName: z.string().min(1),
   customerEmail: z.string().email(),

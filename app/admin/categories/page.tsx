@@ -3,6 +3,8 @@ import Image from "next/image"
 import { CategoryForm } from "@/components/admin/category-form"
 import { prisma } from "@/lib/prisma"
 
+export const runtime = "nodejs"
+
 export default async function AdminCategoriesPage() {
   if (!prisma) {
     return (

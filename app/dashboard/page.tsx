@@ -6,6 +6,8 @@ import { requireUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/currency"
 
+export const runtime = "nodejs"
+
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",

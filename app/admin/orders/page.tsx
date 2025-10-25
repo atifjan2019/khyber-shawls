@@ -2,6 +2,8 @@ import { OrderStatusForm } from "@/components/admin/order-status-form"
 import { formatCurrency } from "@/lib/currency"
 import { prisma } from "@/lib/prisma"
 
+export const runtime = "nodejs"
+
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",

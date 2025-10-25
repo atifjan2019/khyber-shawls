@@ -4,6 +4,8 @@ import { fetchMediaLibrary } from "@/lib/media"
 import { formatCurrency } from "@/lib/currency"
 import { prisma } from "@/lib/prisma"
 
+export const runtime = "nodejs"
+
 export default async function AdminProductsPage() {
   if (!prisma) {
     return (

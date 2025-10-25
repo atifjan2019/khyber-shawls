@@ -5,6 +5,8 @@ import { z } from "zod"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const runtime = "nodejs"
+
 const contactSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
