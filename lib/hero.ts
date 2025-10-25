@@ -13,7 +13,9 @@ export type HeroContent = {
 }
 
 export const HERO_CONFIGS: Array<{ key: string; label: string }> = [
-  { key: "home-hero", label: "Home Page Hero" },
+  { key: "home-hero", label: "Home Page Hero 1" },
+  { key: "home-hero-alt-1", label: "Home Page Hero 2" },
+  { key: "home-hero-alt-2", label: "Home Page Hero 3" },
 ]
 
 const HERO_DEFAULTS: Record<string, HeroContent> = {
@@ -25,6 +27,28 @@ const HERO_DEFAULTS: Record<string, HeroContent> = {
       "Every thread is woven by master artisans in Khyber, preserving centuries-old traditions for the modern wardrobe.",
     ctaLabel: "Explore Collections",
     ctaHref: "/collections",
+    backgroundImageUrl: null,
+    backgroundImageAlt: null,
+    backgroundImageId: null,
+  },
+  "home-hero-alt-1": {
+    key: "home-hero-alt-1",
+    title: "",
+    subtitle: "",
+    description: "",
+    ctaLabel: "",
+    ctaHref: "",
+    backgroundImageUrl: null,
+    backgroundImageAlt: null,
+    backgroundImageId: null,
+  },
+  "home-hero-alt-2": {
+    key: "home-hero-alt-2",
+    title: "",
+    subtitle: "",
+    description: "",
+    ctaLabel: "",
+    ctaHref: "",
     backgroundImageUrl: null,
     backgroundImageAlt: null,
     backgroundImageId: null,
@@ -61,6 +85,7 @@ export async function fetchHeroContent(key: string): Promise<HeroContent> {
       ctaHref: "",
       backgroundImageUrl: null,
       backgroundImageAlt: null,
+      backgroundImageId: null,
     }
   }
 

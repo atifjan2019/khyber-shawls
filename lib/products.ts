@@ -18,6 +18,7 @@ export type SerializedProduct = {
     position: number
   }>
   categoryName?: string | null
+  categorySlug?: string | null
 }
 
 export type SerializedProductDetail = SerializedProduct & {
@@ -45,6 +46,115 @@ type CategoryWithRelations = Category & {
   featuredImage?: Media | null
 }
 
+type SampleProduct = SerializedProduct & {
+  categorySlug: string
+  inventory: number
+}
+
+const SAMPLE_PRODUCTS: SampleProduct[] = [
+  {
+    id: "sample-men-royal-indigo",
+    title: "Royal Indigo Pashmina",
+    description: "Handwoven in the Khyber valley using naturally dyed fibres.",
+    price: 289,
+    slug: "royal-indigo-pashmina",
+    published: true,
+    featuredImageUrl: "/hero-shawl.svg",
+    featuredImageAlt: "Royal indigo pashmina illustration",
+    gallery: [
+      {
+        id: "sample-men-royal-indigo-main",
+        url: "/hero-shawl.svg",
+        alt: "Royal indigo pashmina illustration",
+        position: 0,
+      },
+    ],
+    categoryName: "Men Shawls",
+    categorySlug: "men-shawls",
+    inventory: 5,
+  },
+  {
+    id: "sample-women-morning-blush",
+    title: "Morning Blush Pashmina",
+    description: "Featherlight weave finished with hand-embroidered borders.",
+    price: 325,
+    slug: "morning-blush-pashmina",
+    published: true,
+    featuredImageUrl: "/hero-shawl.svg",
+    featuredImageAlt: "Morning blush pashmina illustration",
+    gallery: [
+      {
+        id: "sample-women-morning-blush-main",
+        url: "/hero-shawl.svg",
+        alt: "Morning blush pashmina illustration",
+        position: 0,
+      },
+    ],
+    categoryName: "Women Shawls",
+    categorySlug: "women-shawls",
+    inventory: 7,
+  },
+  {
+    id: "sample-kids-winter-star",
+    title: "Winter Star Wrap",
+    description: "A cosy heirloom shawl sized for celebrations with the little ones.",
+    price: 180,
+    slug: "winter-star-wrap",
+    published: true,
+    featuredImageUrl: "/hero-shawl.svg",
+    featuredImageAlt: "Winter star wrap illustration",
+    gallery: [
+      {
+        id: "sample-kids-winter-star-main",
+        url: "/hero-shawl.svg",
+        alt: "Winter star wrap illustration",
+        position: 0,
+      },
+    ],
+    categoryName: "Kids Shawls",
+    categorySlug: "kids-shawls",
+    inventory: 9,
+  },
+]
+
+const SAMPLE_CATEGORY_BASE: Array<Omit<SerializedCategory, "productCount">> = [
+  {
+    id: "sample-category-men",
+    name: "Men Shawls",
+    slug: "men-shawls",
+    summary: "Structured drapes tailored for the modern collector.",
+    featuredImageUrl: "/hero-shawl.svg",
+    featuredImageAlt: "Men's shawl illustration",
+  },
+  {
+    id: "sample-category-women",
+    name: "Women Shawls",
+    slug: "women-shawls",
+    summary: "Intricate paisleys and soft hues for elevated evenings.",
+    featuredImageUrl: "/hero-shawl.svg",
+    featuredImageAlt: "Women's shawl illustration",
+  },
+  {
+    id: "sample-category-kids",
+    name: "Kids Shawls",
+    slug: "kids-shawls",
+    summary: "Lightweight keepsakes spun for family milestones.",
+    featuredImageUrl: "/hero-shawl.svg",
+    featuredImageAlt: "Kids shawl illustration",
+  },
+]
+
+const SAMPLE_CATEGORIES: SerializedCategory[] = SAMPLE_CATEGORY_BASE.map((category) => ({
+  ...category,
+  productCount: SAMPLE_PRODUCTS.filter((product) => product.categorySlug === category.slug).length,
+}))
+
+function stripSampleProduct(sample: SampleProduct): SerializedProduct {
+  const { inventory: _inventory, ...rest } = sample
+  void _inventory
+  return rest
+}
+
 function serializeProduct(product: ProductWithRelations): SerializedProduct {
   return {
     id: product.id,
@@ -63,6 +173,7 @@ function serializeProduct(product: ProductWithRelations): SerializedProduct {
         position: item.position,
       })) ?? [],
     categoryName: product.category?.name ?? null,
+    categorySlug: product.category?.slug ?? null,
   }
 }
 
@@ -81,9 +192,9 @@ function serializeCategory(category: CategoryWithRelations): SerializedCategory 
 export async function fetchPublishedProducts() {
   if (!prisma) {
     console.warn(
-      "[database] DATABASE_URL is not configured. Returning empty product list."
+      "[database] DATABASE_URL is not configured. Returning sample product list."
     )
-    return []
+    return SAMPLE_PRODUCTS.filter((product) => product.published).map(stripSampleProduct)
   }
 
   const products = await prisma.product.findMany({
@@ -100,11 +211,31 @@ export async function fetchPublishedProducts() {
 }
 
 export async function fetchProductsByCategorySlug(slug: string) {
+  if (!slug) {
+    console.warn("[products] fetchProductsByCategorySlug called without a slug. Returning null.")
+    return null
+  }
+
   if (!prisma) {
     console.warn(
-      "[database] DATABASE_URL is not configured. Cannot load category data."
+      "[database] DATABASE_URL is not configured. Serving sample category data."
     )
-    return null
+    const category = SAMPLE_CATEGORIES.find((item) => item.slug === slug)
+    if (!category) {
+      return null
+    }
+
+    const products = SAMPLE_PRODUCTS.filter(
+      (product) => product.categorySlug === slug
+    ).map(stripSampleProduct)
+
+    return {
+      category: {
+        ...category,
+        productCount: products.length,
+      },
+      products,
+    }
   }
 
   const category = await prisma.category.findUnique({
@@ -123,20 +254,60 @@ export async function fetchProductsByCategorySlug(slug: string) {
     },
   })
 
-  if (!category) return null
+  if (!category) {
+    console.warn(
+      `[database] Category with slug "${slug}" not found. Falling back to sample data.`
+    )
+    const fallbackCategory = SAMPLE_CATEGORIES.find((item) => item.slug === slug)
+    if (!fallbackCategory) {
+      return null
+    }
+
+    const fallbackProducts = SAMPLE_PRODUCTS.filter(
+      (product) => product.categorySlug === slug
+    ).map(stripSampleProduct)
+
+    return {
+      category: {
+        ...fallbackCategory,
+        productCount: fallbackProducts.length,
+      },
+      products: fallbackProducts,
+    }
+  }
+
+  const serializedCategory = serializeCategory(category)
+  const serializedProducts = category.products.map(serializeProduct)
+
+  if (serializedProducts.length === 0) {
+    console.warn(
+      `[database] Category "${slug}" has no published products. Providing sample products instead.`
+    )
+    const fallbackProducts = SAMPLE_PRODUCTS.filter(
+      (product) => product.categorySlug === slug
+    ).map(stripSampleProduct)
+
+    return {
+      category: {
+        ...serializedCategory,
+        productCount: fallbackProducts.length,
+      },
+      products: fallbackProducts,
+    }
+  }
 
   return {
-    category: serializeCategory(category),
-    products: category.products.map(serializeProduct),
+    category: serializedCategory,
+    products: serializedProducts,
   }
 }
 
 export async function fetchCategoriesWithProducts() {
   if (!prisma) {
     console.warn(
-      "[database] DATABASE_URL is not configured. Returning empty category list."
+      "[database] DATABASE_URL is not configured. Returning sample category list."
     )
-    return []
+    return SAMPLE_CATEGORIES.map((category) => ({ ...category }))
   }
 
   const categories = await prisma.category.findMany({
@@ -144,13 +315,43 @@ export async function fetchCategoriesWithProducts() {
     orderBy: { name: "asc" },
   })
 
-  return categories.map(serializeCategory)
+  if (categories.length === 0) {
+    console.warn(
+      "[database] No categories found in database. Falling back to sample categories."
+    )
+    return SAMPLE_CATEGORIES.map((category) => ({ ...category }))
+  }
+
+  const serialized = categories.map(serializeCategory)
+
+  if (serialized.every((category) => category.productCount === 0)) {
+    console.warn(
+      "[database] Categories exist but contain no products. Augmenting counts with sample data."
+    )
+    return serialized.map((category) => {
+      const fallbackProducts = SAMPLE_PRODUCTS.filter(
+        (product) => product.categorySlug === category.slug
+      )
+      if (fallbackProducts.length === 0) {
+        return category
+      }
+
+      return {
+        ...category,
+        productCount: fallbackProducts.length,
+      }
+    })
+  }
+
+  return serialized
 }
 
 export async function fetchProductSummariesByIds(ids: string[]) {
   if (ids.length === 0) return []
   if (!prisma) {
-    return []
+    return SAMPLE_PRODUCTS.filter((product) => ids.includes(product.id)).map(
+      stripSampleProduct
+    )
   }
 
   const products = await prisma.product.findMany({
@@ -166,8 +367,26 @@ export async function fetchProductSummariesByIds(ids: string[]) {
 }
 
 export async function fetchProductBySlug(slug: string): Promise<SerializedProductDetail | null> {
-  if (!prisma) {
+  if (!slug) {
+    console.warn("[products] fetchProductBySlug called without a slug. Returning null.")
     return null
+  }
+
+  if (!prisma) {
+    console.warn(
+      "[database] DATABASE_URL is not configured. Serving sample product detail."
+    )
+    const sample = SAMPLE_PRODUCTS.find((product) => product.slug === slug)
+    if (!sample) {
+      return null
+    }
+
+    const baseProduct = stripSampleProduct(sample)
+
+    return {
+      ...baseProduct,
+      inventory: sample.inventory,
+    }
   }
 
   const product = await prisma.product.findUnique({
@@ -180,7 +399,20 @@ export async function fetchProductBySlug(slug: string): Promise<SerializedProduc
   })
 
   if (!product || !product.published) {
-    return null
+    console.warn(
+      `[database] Product with slug "${slug}" is unavailable. Falling back to sample detail.`
+    )
+    const sample = SAMPLE_PRODUCTS.find((item) => item.slug === slug)
+    if (!sample) {
+      return null
+    }
+
+    const baseProduct = stripSampleProduct(sample)
+
+    return {
+      ...baseProduct,
+      inventory: sample.inventory,
+    }
   }
 
   return {

@@ -1,0 +1,27 @@
+<svg width="400" height="120" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shawl" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5b361b"/>
+      <stop offset="100%" stop-color="#a3662c"/>
+    </linearGradient>
+    <style>
+      .text-primary { fill: #a3662c; font-family: 'Playfair Display', serif; }
+      .text-secondary { fill: #0f0f0f; font-family: 'Playfair Display', serif; }
+    </style>
+  </defs>
+  <rect width="400" height="120" fill="white" opacity="0"/>
+  <g transform="translate(10 10)">
+    <path d="M10 90 L30 0 L140 0 L120 90 Z" fill="#a3662c"/>
+    <rect x="38" y="24" width="94" height="18" fill="#7a4821"/>
+    <rect x="54" y="48" width="62" height="12" fill="#5b361b"/>
+    <path d="M28 8 L72 18 L58 88 L12 78 Z" fill="url(#shawl)"/>
+    <path d="M126 8 L82 18 L96 88 L142 78 Z" fill="url(#shawl)"/>
+    <path d="M30 78 Q72 96 114 78" stroke="#211208" stroke-width="6" fill="none"/>
+    <path d="M40 18 Q52 38 40 58" stroke="#211208" stroke-width="6" fill="none"/>
+    <path d="M116 18 Q104 38 116 58" stroke="#211208" stroke-width="6" fill="none"/>
+    <g transform="translate(160 15)">
+      <text class="text-primary" font-size="48" y="42">Khyber</text>
+      <text class="text-secondary" font-size="48" y="90">Shawls</text>
+    </g>
+  </g>
+</svg>

@@ -8,6 +8,7 @@ const ALLOWED_HOSTNAMES = [
   "images.khybershawls.com",
   "uncomfortable-dress.info",
   "khybershawls.store",
+  "pure-e-mail.com",
 ]
 
 const nextConfig: NextConfig = {
