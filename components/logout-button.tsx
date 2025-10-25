@@ -1,14 +1,16 @@
 'use client'
 
-import { useTransition } from "react"
+import * as React from "react"
 
 import { logoutAction } from "@/app/(auth)/actions"
 import { Button } from "@/components/ui/button"
 
-type LogoutButtonProps = React.ComponentProps<typeof Button>
+type LogoutButtonProps = React.ComponentProps<typeof Button> & {
+  children?: React.ReactNode
+}
 
 export function LogoutButton({ children, ...props }: LogoutButtonProps) {
-  const [isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = React.useTransition()
 
   return (
     <Button
