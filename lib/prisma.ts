@@ -1,34 +1,21 @@
-import { PrismaClient } from "@prisma/client"
+// lib/prisma.ts
+import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient | null
-}
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-function createPrismaClient() {
-  return new PrismaClient({
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
-  })
-}
+export const prisma: PrismaClient =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+  });
 
-const hasDatabaseUrl = Boolean(process.env.DATABASE_URL)
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-export const prisma: PrismaClient | null = hasDatabaseUrl
-  ? globalForPrisma.prisma ?? createPrismaClient()
-  : null
-
-if (hasDatabaseUrl && process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma
-}
-
+/**
+ * Back-compat shim so old imports keep working:
+ *   import { ensurePrismaClient } from "@/lib/prisma"
+ * Now just returns the singleton `prisma`.
+ */
 export function ensurePrismaClient(): PrismaClient {
-  if (!prisma) {
-    throw new Error(
-      "DATABASE_URL is not configured. Add it to your environment (e.g. .env.local) to enable database features."
-    )
-  }
-
-  return prisma
+  return prisma;
 }

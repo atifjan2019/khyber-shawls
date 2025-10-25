@@ -44,19 +44,29 @@ export function CategoryForm() {
         />
       </div>
       <div className="grid gap-3">
-        <label className="text-sm font-medium" htmlFor="category-featured-image">
-          Featured image URL
+        <label className="text-sm font-medium" htmlFor="category-featured-image-file">
+          Upload featured image
         </label>
         <input
-          id="category-featured-image"
-          name="featuredImageUrl"
-          type="url"
-          placeholder="https://res.cloudinary.com/..."
-          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+          id="category-featured-image-file"
+          name="featuredImageFile"
+          type="file"
+          accept="image/*"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
         />
         <p className="text-xs text-muted-foreground">
-          Optional hero image for the collection. Saved instantly—no approval workflow.
+          Optional hero image for the collection. Uploading creates a new media entry automatically.
         </p>
+        <label className="text-sm font-medium" htmlFor="category-featured-alt">
+          Featured image alt text
+        </label>
+        <input
+          id="category-featured-alt"
+          name="featuredImageAlt"
+          type="text"
+          placeholder="Describe the collection imagery"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+        />
       </div>
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
       {state.success && <p className="text-sm text-primary">{state.success}</p>}

@@ -1,6 +1,6 @@
-import Image from "next/image"
-
 import { ProductForm } from "@/components/admin/product-form"
+import { ProductListItem } from "@/components/admin/product-list-item"
+import { fetchMediaLibrary } from "@/lib/media"
 import { prisma } from "@/lib/prisma"
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -23,16 +23,40 @@ export default async function AdminProductsPage() {
     )
   }
 
-  const [categories, products] = await Promise.all([
+  const [categories, products, mediaLibrary] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({
       include: {
         category: true,
         featuredImage: true,
+        gallery: {
+          include: { media: true },
+          orderBy: { position: "asc" },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
+    fetchMediaLibrary(100),
   ])
+
+  const categoryOptions = categories.map((category) => ({ id: category.id, name: category.name }))
+  const mediaOptions = mediaLibrary.map((item) => ({ id: item.id, url: item.url, alt: item.alt }))
+
+  const productsForDisplay = products.map((product) => ({
+    id: product.id,
+    title: product.title,
+    description: product.description,
+    price: Number(product.price),
+    priceLabel: currencyFormatter.format(Number(product.price)),
+    inventory: product.inventory,
+    categoryId: product.categoryId,
+    categoryName: product.category?.name ?? null,
+    published: product.published,
+    featuredImageId: product.featuredImageId ?? null,
+    featuredImageUrl: product.featuredImage?.url ?? null,
+    featuredImageAlt: product.featuredImage?.alt ?? null,
+    galleryMediaIds: product.gallery?.map((item) => item.mediaId) ?? [],
+  }))
 
   return (
     <div className="space-y-10 pb-16">
@@ -46,62 +70,28 @@ export default async function AdminProductsPage() {
           </div>
         </div>
         <div className="mt-8">
-          <ProductForm
-            categories={categories.map((category) => ({ id: category.id, name: category.name }))}
-          />
+          <ProductForm categories={categoryOptions} />
         </div>
       </section>
 
       <section className="rounded-4xl border border-white/10 bg-background/90 p-8 shadow-lg backdrop-blur">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground">Collection spotlight</h2>
-          <span className="text-xs text-muted-foreground">{products.length} total styles</span>
+          <span className="text-xs text-muted-foreground">{productsForDisplay.length} total styles</span>
         </div>
         <div className="mt-6 space-y-4">
-          {products.length === 0 ? (
+          {productsForDisplay.length === 0 ? (
             <p className="rounded-3xl border border-dashed border-muted-foreground/30 p-6 text-sm text-muted-foreground">
               No products yet—publish your first handcrafted shawl to showcase it here.
             </p>
           ) : (
-            products.map((product) => (
-              <div
+            productsForDisplay.map((product) => (
+              <ProductListItem
                 key={product.id}
-                className="grid gap-6 rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5 md:grid-cols-[160px,1fr]"
-              >
-                <div className="relative hidden overflow-hidden rounded-2xl bg-muted md:block">
-                  {product.featuredImage?.url ? (
-                    <Image
-                      src={product.featuredImage.url}
-                      alt={product.featuredImage.alt ?? product.title}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                      No media
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-foreground">{product.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {product.category?.name ?? "Uncategorised"}
-                      </p>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p>{currencyFormatter.format(Number(product.price))}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {product.published ? "Published" : "Draft"}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {product.description}
-                  </p>
-                </div>
-              </div>
+                product={product}
+                categories={categoryOptions}
+                mediaLibrary={mediaOptions}
+              />
             ))
           )}
         </div>

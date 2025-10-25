@@ -72,41 +72,46 @@ export function ProductForm({ categories }: ProductFormProps) {
           />
         </label>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="text-sm font-medium" htmlFor="product-featured-image">
-          Featured image URL
-          <input
-            id="product-featured-image"
-            name="featuredImageUrl"
-            type="url"
-            placeholder="https://res.cloudinary.com/..."
-            className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
-          />
-        </label>
-        <label className="text-sm font-medium" htmlFor="product-featured-alt">
-          Featured image alt text
-          <input
-            id="product-featured-alt"
-            name="featuredImageAlt"
-            type="text"
-            placeholder="e.g. Hand-embroidered Pashmina shawl"
-            className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
-          />
-        </label>
-      </div>
       <div className="grid gap-3">
-        <label className="text-sm font-medium" htmlFor="product-gallery">
-          Gallery media URLs
+        <label className="text-sm font-medium" htmlFor="product-featured-image">
+          Featured image
         </label>
-        <textarea
-          id="product-gallery"
-          name="galleryUrls"
-          rows={3}
-          placeholder="Paste one image URL per line to build the gallery"
-          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+ 
+        <input
+          id="product-featured-image-file"
+          name="featuredImageFile"
+          type="file"
+          accept="image/*"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
         />
         <p className="text-xs text-muted-foreground">
-          Optional. Each URL will be saved automatically—no approval step required.
+          Or upload directly from your computer. A new library entry is created automatically.
+        </p>
+        {/* <label className="text-sm font-medium" htmlFor="product-featured-alt">
+          Featured image alt text
+        </label>
+        <input
+          id="product-featured-alt"
+          name="featuredImageAlt"
+          type="text"
+          placeholder="Describe the product image for accessibility"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+        /> */}
+      </div>
+      <div className="grid gap-3">
+        <label className="text-sm font-medium" htmlFor="product-gallery-files">
+          Upload gallery images
+        </label>
+        <input
+          id="product-gallery-files"
+          name="galleryFiles"
+          type="file"
+          multiple
+          accept="image/*"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
+        />
+        <p className="text-xs text-muted-foreground">
+          Add additional gallery shots by uploading files directly (hold Shift to select multiple).
         </p>
       </div>
       <div className="grid gap-3">

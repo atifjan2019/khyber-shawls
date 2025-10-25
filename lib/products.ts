@@ -255,49 +255,17 @@ export async function fetchProductsByCategorySlug(slug: string) {
   })
 
   if (!category) {
-    console.warn(
-      `[database] Category with slug "${slug}" not found. Falling back to sample data.`
-    )
-    const fallbackCategory = SAMPLE_CATEGORIES.find((item) => item.slug === slug)
-    if (!fallbackCategory) {
-      return null
-    }
-
-    const fallbackProducts = SAMPLE_PRODUCTS.filter(
-      (product) => product.categorySlug === slug
-    ).map(stripSampleProduct)
-
-    return {
-      category: {
-        ...fallbackCategory,
-        productCount: fallbackProducts.length,
-      },
-      products: fallbackProducts,
-    }
+    return null
   }
 
   const serializedCategory = serializeCategory(category)
   const serializedProducts = category.products.map(serializeProduct)
 
-  if (serializedProducts.length === 0) {
-    console.warn(
-      `[database] Category "${slug}" has no published products. Providing sample products instead.`
-    )
-    const fallbackProducts = SAMPLE_PRODUCTS.filter(
-      (product) => product.categorySlug === slug
-    ).map(stripSampleProduct)
-
-    return {
-      category: {
-        ...serializedCategory,
-        productCount: fallbackProducts.length,
-      },
-      products: fallbackProducts,
-    }
-  }
-
   return {
-    category: serializedCategory,
+    category: {
+      ...serializedCategory,
+      productCount: serializedProducts.length,
+    },
     products: serializedProducts,
   }
 }
@@ -399,20 +367,7 @@ export async function fetchProductBySlug(slug: string): Promise<SerializedProduc
   })
 
   if (!product || !product.published) {
-    console.warn(
-      `[database] Product with slug "${slug}" is unavailable. Falling back to sample detail.`
-    )
-    const sample = SAMPLE_PRODUCTS.find((item) => item.slug === slug)
-    if (!sample) {
-      return null
-    }
-
-    const baseProduct = stripSampleProduct(sample)
-
-    return {
-      ...baseProduct,
-      inventory: sample.inventory,
-    }
+    return null
   }
 
   return {
