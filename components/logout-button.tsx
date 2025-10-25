@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { logoutAction } from "@/app/(auth)/actions"
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { logoutAction } from "@/app/(auth)/actions";
+import { Button } from "@/components/ui/button";
 
-// Infer props from your actual Button component
+// Infer props from the Button component automatically
 type LogoutButtonProps = React.ComponentProps<typeof Button> & {
-  children?: React.ReactNode
-}
+  children?: React.ReactNode;
+};
 
 export function LogoutButton({ children, ...props }: LogoutButtonProps) {
   return (
@@ -16,5 +16,5 @@ export function LogoutButton({ children, ...props }: LogoutButtonProps) {
         {children ?? "Log out"}
       </Button>
     </form>
-  )
+  );
 }
