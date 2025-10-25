@@ -184,7 +184,7 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-medium" htmlFor={`${product.id}-price`}>
-                Price (USD)
+                Price (PKR)
                 <input
                   id={`${product.id}-price`}
                   name="price"

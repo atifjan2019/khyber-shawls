@@ -1,10 +1,6 @@
 import { OrderStatusForm } from "@/components/admin/order-status-form"
+import { formatCurrency } from "@/lib/currency"
 import { prisma } from "@/lib/prisma"
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-})
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -68,7 +64,7 @@ export default async function AdminOrdersPage() {
                     <p className="text-xs text-muted-foreground">{order.customerEmail}</p>
                   </div>
                   <div className="text-right text-sm">
-                    <p>{currencyFormatter.format(Number(order.total))}</p>
+                    <p>{formatCurrency(order.total)}</p>
                     <p className="text-xs text-muted-foreground">
                       {dateFormatter.format(order.createdAt)}
                     </p>

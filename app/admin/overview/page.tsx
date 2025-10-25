@@ -8,11 +8,7 @@ import {
 } from "lucide-react"
 
 import { prisma } from "@/lib/prisma"
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-})
+import { formatCurrency } from "@/lib/currency"
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -171,7 +167,7 @@ export default async function AdminOverviewPage() {
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-foreground">
-                    {currencyFormatter.format(Number(order.total))}
+                    {formatCurrency(order.total)}
                   </p>
                 </div>
               </div>

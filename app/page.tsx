@@ -5,6 +5,7 @@ import Link from "next/link"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { fetchAllHeroContent } from "@/lib/hero"
 import { fetchCategoriesWithProducts, fetchPublishedProducts } from "@/lib/products"
+import { formatCurrency } from "@/lib/currency"
 
 export default async function HomePage() {
   const [heroSlides, products, categories] = await Promise.all([
@@ -48,8 +49,8 @@ export default async function HomePage() {
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <span className="absolute bottom-3 right-3 rounded-full bg-amber-700/95 text-white px-3 py-1 text-xs">
-                  £{p.price}
+                <span className="absolute bottom-3 right-3 rounded-full bg-amber-700/95 px-3 py-1 text-xs text-white">
+                  {formatCurrency(p.price)}
                 </span>
               </div>
               <div className="p-4">
@@ -132,7 +133,7 @@ export default async function HomePage() {
                   <h3 className="mt-1 text-base font-semibold text-gray-900 group-hover:text-amber-700">
                     {p.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">£{p.price}</p>
+                  <p className="mt-1 text-sm text-gray-600">{formatCurrency(p.price)}</p>
                 </div>
               </Link>
             ))}
@@ -243,7 +244,7 @@ export default async function HomePage() {
                   <h3 className="mt-1 text-base font-semibold text-gray-900 group-hover:text-amber-700">
                     {p.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">£{p.price}</p>
+                  <p className="mt-1 text-sm text-gray-600">{formatCurrency(p.price)}</p>
                 </div>
               </Link>
             ))}
@@ -299,7 +300,7 @@ export default async function HomePage() {
                 <h3 className="mt-1 text-base font-semibold text-gray-900 group-hover:text-amber-700">
                   {p.title}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">£{p.price}</p>
+                <p className="mt-1 text-sm text-gray-600">{formatCurrency(p.price)}</p>
               </div>
             </Link>
           ))}

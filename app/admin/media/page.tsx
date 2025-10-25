@@ -95,7 +95,6 @@ export default async function AdminMediaPage() {
               ctaHref: heroMap.get(config.key)?.ctaHref ?? "",
               backgroundImageUrl: heroMap.get(config.key)?.backgroundImageUrl ?? null,
               backgroundImageAlt: heroMap.get(config.key)?.backgroundImageAlt ?? null,
-              backgroundImageId: heroMap.get(config.key)?.backgroundImageId ?? null,
             }}
           />
         ))}

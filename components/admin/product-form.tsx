@@ -50,7 +50,7 @@ export function ProductForm({ categories }: ProductFormProps) {
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm font-medium" htmlFor="product-price">
-          Price (USD)
+          Price (PKR)
           <input
             id="product-price"
             name="price"

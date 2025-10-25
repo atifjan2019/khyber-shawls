@@ -1,12 +1,8 @@
 import { ProductForm } from "@/components/admin/product-form"
 import { ProductListItem } from "@/components/admin/product-list-item"
 import { fetchMediaLibrary } from "@/lib/media"
+import { formatCurrency } from "@/lib/currency"
 import { prisma } from "@/lib/prisma"
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-})
 
 export default async function AdminProductsPage() {
   if (!prisma) {
@@ -47,7 +43,7 @@ export default async function AdminProductsPage() {
     title: product.title,
     description: product.description,
     price: Number(product.price),
-    priceLabel: currencyFormatter.format(Number(product.price)),
+    priceLabel: formatCurrency(product.price),
     inventory: product.inventory,
     categoryId: product.categoryId,
     categoryName: product.category?.name ?? null,
