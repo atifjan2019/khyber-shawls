@@ -2,6 +2,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { fetchPublishedProducts } from "@/lib/products";
+import { formatCurrency } from "@/lib/currency";
+import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 
 export const revalidate = 900;
 
@@ -21,7 +23,7 @@ export default async function ProductsIndex() {
         <p>No products found.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((p) => (
+          {products.map((p: { id: Key | null | undefined; slug: any; featuredImageUrl: any; featuredImageAlt: any; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; price: unknown; }) => (
             <Link key={p.id} href={`/products/${p.slug}`} className="group">
               <div className="relative aspect-square w-full overflow-hidden rounded-lg">
                 <Image
@@ -33,7 +35,7 @@ export default async function ProductsIndex() {
               </div>
               <div className="mt-3">
                 <p className="text-sm font-medium">{p.title}</p>
-                <p className="text-sm text-muted-foreground">${p.price}</p>
+                <p className="text-sm text-muted-foreground">{formatCurrency(p.price)}</p>
               </div>
             </Link>
           ))}

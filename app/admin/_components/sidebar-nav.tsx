@@ -22,11 +22,9 @@ type Item = {
 };
 
 const NAV_ITEMS: Item[] = [
-  { href: '/admin/overview', label: 'Overview', Icon: LayoutDashboard },
   { href: '/admin/products', label: 'Products', Icon: Package },
   { href: '/admin/categories', label: 'Categories', Icon: Tags },
   { href: '/admin/media', label: 'Media', Icon: Images },
-  { href: '/admin/home-media', label: 'Home Page Media', Icon: Home },
   { href: '/admin/journal', label: 'Blogs', Icon: FileText },
   { href: '/admin/orders', label: 'Orders', Icon: ShoppingCart },
   { href: '/admin/messages', label: 'Messages', Icon: MessageSquare },

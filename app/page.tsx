@@ -8,14 +8,15 @@ import { fetchCategoriesWithProducts, fetchPublishedProducts } from "@/lib/produ
 import { formatCurrency } from "@/lib/currency"
 
 export default async function HomePage() {
-  const [heroSlides, products, categories] = await Promise.all([
+
+  const [heroSlides, products, categories]: [any[], import("@/lib/products").SerializedProduct[], import("@/lib/products").SerializedCategory[]] = await Promise.all([
     fetchAllHeroContent(),
     fetchPublishedProducts(),
     fetchCategoriesWithProducts(),
   ])
 
   const homeHeroSlides = heroSlides.filter((slide) =>
-    slide.key.startsWith("home-hero")
+    slide.key === "home"
   )
 
   return (
@@ -36,7 +37,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {products.slice(0, 8).map((p) => (
+          {products.slice(0, 8).map((p: import("@/lib/products").SerializedProduct) => (
             <Link
               key={p.id}
               href={`/products/${p.slug}`}
@@ -110,9 +111,9 @@ export default async function HomePage() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {products
             .slice(0, 12)
-            .sort((a, b) => (a.id < b.id ? 1 : -1)) // simple pseudo "new" order
+            .sort((a: import("@/lib/products").SerializedProduct, b: import("@/lib/products").SerializedProduct) => (a.id < b.id ? 1 : -1)) // simple pseudo "new" order
             .slice(0, 8)
-            .map((p) => (
+            .map((p: import("@/lib/products").SerializedProduct) => (
               <Link
                 key={p.id}
                 href={`/products/${p.slug}`}
@@ -218,12 +219,12 @@ export default async function HomePage() {
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {categories
-            .filter((c) => c.slug.includes("women"))
+            .filter((c: import("@/lib/products").SerializedCategory) => c.slug.includes("women"))
             .slice(0, 1)
-            .flatMap((c) =>
-              products.filter((p) => p.categoryName === c.name).slice(0, 8)
+            .flatMap((c: import("@/lib/products").SerializedCategory) =>
+              products.filter((p: import("@/lib/products").SerializedProduct) => p.categoryName === c.name).slice(0, 8)
             )
-            .map((p) => (
+            .map((p: import("@/lib/products").SerializedProduct) => (
               <Link
                 key={p.id}
                 href={`/products/${p.slug}`}
@@ -279,7 +280,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {products.slice(0, 12).map((p) => (
+          {products.slice(0, 12).map((p: import("@/lib/products").SerializedProduct) => (
             <Link
               key={p.id}
               href={`/products/${p.slug}`}

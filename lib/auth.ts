@@ -40,7 +40,7 @@ export async function requireUser(): Promise<AuthUser> {
 
 export async function requireAdmin(): Promise<AuthUser> {
   const user = await getCurrentUser();
-  if (!user) redirect('/login?callbackUrl=/admin/overview');
+  if (!user) redirect('/login?callbackUrl=/admin/products');
   if (user.role !== 'ADMIN') redirect('/dashboard');
   return user;
 }

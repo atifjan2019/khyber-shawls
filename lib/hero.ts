@@ -31,6 +31,7 @@ export async function fetchAllHeroContent(): Promise<HeroRecord[]> {
       key: r.key as HeroKey,
       title: r.title ?? null,
       subtitle: r.subtitle ?? null,
+      // not in schema yet → null
       description: (r as any).description ?? null,
       ctaLabel: (r as any).ctaLabel ?? null,
       ctaHref: (r as any).ctaHref ?? null,
@@ -39,7 +40,6 @@ export async function fetchAllHeroContent(): Promise<HeroRecord[]> {
     })
   }
 
-  // Ensure all configs return something
   return HERO_CONFIGS.map((c) =>
     map.get(c.key) ?? {
       key: c.key,

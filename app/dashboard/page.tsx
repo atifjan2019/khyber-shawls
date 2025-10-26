@@ -28,9 +28,9 @@ export default async function DashboardPage() {
 
   const user = await requireUser();
 
-  // 🔁 Your admin home is /admin/overview (not /admin)
+  // Admin users go to products page
   if (user.role === "ADMIN") {
-    redirect("/admin/overview");
+    redirect("/admin/products");
   }
 
   const [orders, contactEntries] = await Promise.all([
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     }) as unknown as Promise<OrderRow[]>,
     (async () => {
       try {
-        return (await prisma.contactEntry.findMany({
+        return (await prisma.contact_entry.findMany({
           where: { userId: user.id },
           orderBy: { createdAt: "desc" },
           take: 6,

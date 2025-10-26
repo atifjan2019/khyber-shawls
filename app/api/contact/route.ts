@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
   const user = await getCurrentUser()
 
-  await prisma.contactEntry.create({
+    await prisma.contact_entry.create({
     data: {
       name: parsed.data.name,
       email: parsed.data.email,
@@ -40,7 +40,6 @@ export async function POST(request: Request) {
   })
 
   revalidatePath("/admin/messages")
-  revalidatePath("/admin/overview")
 
   return NextResponse.json({ ok: true })
 }

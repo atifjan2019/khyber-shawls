@@ -1,415 +1,440 @@
 "use server";
 
-import { z } from "zod";
-import path from "path";
-import { mkdir, writeFile, unlink } from "fs/promises";
+import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/auth";
-import { slugify } from "@/lib/slugify";
-import { ensurePrismaClient } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 
-/* ───────────────────────────────────────────────
-   Shared helpers & types
-   ─────────────────────────────────────────────── */
-
-export type MediaActionState = { error?: string; success?: string };
-export type CategoryActionState =
-  | { ok: true; message: string }
-  | { ok: false; message: string; issues?: string[] };
-
-const asNumberIfPossible = (v: string) => (/^\d+$/.test(v) ? Number(v) : v);
-
-/* ───────────────────────────────────────────────
-   CATEGORY: create
-   ─────────────────────────────────────────────── */
-
-const CategoryInput = z.object({
-  name: z.string().min(1),
-  summary: z.string().optional().nullable(),
-  featuredImageUrl: z.string().url().optional().nullable(),
-});
-
-export async function createCategoryAction(
-  _prev: CategoryActionState | null,
-  formData: FormData
-): Promise<CategoryActionState> {
-  const user = await requireUser();
-  if (!user) return { ok: false, message: "Unauthorized" };
-
-  const parsed = CategoryInput.safeParse({
-    name: formData.get("name"),
-    summary: formData.get("summary"),
-    featuredImageUrl: formData.get("featuredImageUrl"),
-  });
-  if (!parsed.success) {
-    return {
-      ok: false,
-      message: "Invalid input",
-      issues: parsed.error.issues.map((i) => i.message),
-    };
-  }
-
-  const db = ensurePrismaClient();
-  const data: Record<string, any> = {
-    name: parsed.data.name,
-    slug: slugify(parsed.data.name),
-  };
-  if (parsed.data.summary) data.summary = parsed.data.summary;
-  if (parsed.data.featuredImageUrl)
-    data.featuredImageUrl = parsed.data.featuredImageUrl;
-
+// Product Actions
+export async function getProducts() {
   try {
-    await db.category.create({ data });
-    return { ok: true, message: "Category created" };
-  } catch (err: any) {
-    return { ok: false, message: "Failed to create category", issues: [String(err?.message ?? err)] };
-  }
-}
-
-/* ───────────────────────────────────────────────
-   PRODUCT: create / update / delete
-   ─────────────────────────────────────────────── */
-
-const CreateProductInput = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  price: z.coerce.number().positive(),
-  inventory: z.coerce.number().int().min(0).optional().default(0),
-  categoryId: z.string().min(1),
-  published: z.union([z.literal("on"), z.string()]).optional().nullable(),
-});
-
-export async function createProductAction(
-  _prev: MediaActionState | null,
-  formData: FormData
-): Promise<MediaActionState> {
-  const user = await requireUser();
-  if (!user) return { error: "Unauthorized" };
-
-  const parsed = CreateProductInput.safeParse({
-    title: formData.get("title"),
-    description: formData.get("description"),
-    price: formData.get("price"),
-    inventory: formData.get("inventory"),
-    categoryId: formData.get("categoryId"),
-    published: formData.get("published"),
-  });
-  if (!parsed.success) return { error: "Please check the form fields and try again." };
-
-  const db = ensurePrismaClient();
-  const data: Record<string, any> = {
-    title: parsed.data.title,
-    description: parsed.data.description,
-    price: parsed.data.price,
-    inventory: parsed.data.inventory ?? 0,
-    slug: slugify(parsed.data.title),
-    categoryId: parsed.data.categoryId,
-    published: !!parsed.data.published,
-  };
-
-  try {
-    await db.product.create({ data });
-    return { success: "Product saved" };
-  } catch (e: any) {
-    return { error: `Failed to save product: ${String(e?.message ?? e)}` };
-  }
-}
-
-const UpdateProductInput = z.object({
-  id: z.string().min(1),
-  title: z.string().optional(),
-  description: z.string().optional(),
-  price: z.coerce.number().optional(),
-  inventory: z.coerce.number().int().optional(),
-  categoryId: z.string().optional(),
-  published: z.union([z.boolean(), z.string()]).optional(),
-});
-
-export async function updateProductAction(
-  _prev: MediaActionState | null,
-  formData: FormData
-): Promise<MediaActionState> {
-  const user = await requireUser();
-  if (!user) return { error: "Unauthorized" };
-
-  const parsed = UpdateProductInput.safeParse({
-    id: formData.get("id"),
-    title: formData.get("title"),
-    description: formData.get("description"),
-    price: formData.get("price"),
-    inventory: formData.get("inventory"),
-    categoryId: formData.get("categoryId"),
-    published: formData.get("published"),
-  });
-  if (!parsed.success) return { error: "Invalid update data" };
-
-  const db = ensurePrismaClient();
-
-  try {
-    const { id, ...rest } = parsed.data;
-    const data: Record<string, unknown> = {};
-    for (const key of Object.keys(rest) as (keyof typeof rest)[]) {
-      const value = rest[key];
-      if (value !== undefined && value !== "") {
-        data[key] = key === "published" ? value === "true" || value === true : value;
-      }
-    }
-    await db.product.update({ where: { id }, data });
-    return { success: "Product updated" };
-  } catch (e: any) {
-    return { error: `Failed to update: ${String(e.message ?? e)}` };
-  }
-}
-
-const DeleteProductInput = z.object({ id: z.string().min(1) });
-
-export async function deleteProductAction(
-  _prev: MediaActionState | null,
-  formData: FormData
-): Promise<MediaActionState> {
-  const user = await requireUser();
-  if (!user) return { error: "Unauthorized" };
-
-  const parsed = DeleteProductInput.safeParse({ id: formData.get("id") });
-  if (!parsed.success) return { error: "Invalid product id" };
-
-  const db = ensurePrismaClient();
-  try {
-    await db.product.update({
-      where: { id: parsed.data.id },
-      data: { deletedAt: new Date() },
+    const products = await db.product.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
     });
-    return { success: "Product deleted" };
-  } catch (e: any) {
-    return { error: `Failed to delete: ${String(e.message ?? e)}` };
+    return products;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw new Error("Failed to fetch products");
   }
 }
 
-/* ───────────────────────────────────────────────
-   HERO MEDIA: upsert  ✅ PERSIST TO DB
-   ─────────────────────────────────────────────── */
-
-const HeroUpsertInput = z.object({
-  key: z.string().min(1), // e.g. "home"
-  title: z.string().optional().nullable(),
-  subtitle: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
-  ctaLabel: z.string().optional().nullable(),
-  ctaHref: z.string().optional().nullable(),
-  backgroundImageUrl: z.string().url().optional().nullable(),
-  backgroundImageAlt: z.string().optional().nullable(),
-});
-
-export async function upsertHeroMediaAction(
-  _prev: CategoryActionState | null,
-  formData: FormData
-): Promise<CategoryActionState> {
-  const user = await requireUser();
-  if (!user) return { ok: false, message: "Unauthorized" };
-
-  const parsed = HeroUpsertInput.safeParse({
-    key: formData.get("heroKey") ?? formData.get("key"),
-    title: formData.get("title"),
-    subtitle: formData.get("subtitle"),
-    description: formData.get("description"),
-    ctaLabel: formData.get("ctaLabel"),
-    ctaHref: formData.get("ctaHref"),
-    backgroundImageUrl: formData.get("backgroundImageUrl"),
-    backgroundImageAlt: formData.get("backgroundImageAlt"),
-  });
-
-  if (!parsed.success) {
-    return {
-      ok: false,
-      message: "Invalid hero data",
-      issues: parsed.error.issues.map((i) => i.message),
-    };
-  }
-
-  const db = ensurePrismaClient();
-
-  // Link/ensure Media if a backgroundImageUrl was provided
-  let backgroundImageId: string | null = null;
-  if (parsed.data.backgroundImageUrl) {
-    const existing = await db.media.findFirst({
-      where: { url: parsed.data.backgroundImageUrl },
-      select: { id: true },
-    });
-    if (existing) {
-      backgroundImageId = existing.id;
-      // Optionally update alt if supplied
-      if (parsed.data.backgroundImageAlt !== undefined) {
-        await db.media.update({
-          where: { id: existing.id },
-          data: { alt: parsed.data.backgroundImageAlt ?? null },
-        });
-      }
-    } else {
-      const created = await db.media.create({
-        data: {
-          url: parsed.data.backgroundImageUrl,
-          alt: parsed.data.backgroundImageAlt ?? null,
-        },
-        select: { id: true },
-      });
-      backgroundImageId = created.id;
-    }
-  }
-
-  // Upsert hero by key
-  await db.heroMedia.upsert({
-    where: { key: parsed.data.key },
-    update: {
-      title: parsed.data.title ?? null,
-      subtitle: parsed.data.subtitle ?? null,
-      description: parsed.data.description ?? null,
-      ctaLabel: parsed.data.ctaLabel ?? null,
-      ctaHref: parsed.data.ctaHref ?? null,
-      backgroundImageId,
-    },
-    create: {
-      key: parsed.data.key,
-      title: parsed.data.title ?? null,
-      subtitle: parsed.data.subtitle ?? null,
-      description: parsed.data.description ?? null,
-      ctaLabel: parsed.data.ctaLabel ?? null,
-      ctaHref: parsed.data.ctaHref ?? null,
-      backgroundImageId,
-    },
-  });
-
-  // Revalidate the admin page and homepage
-  revalidatePath("/admin/media");
-  revalidatePath("/");
-
-  return { ok: true, message: "Hero banner saved" };
-}
-
-/* ───────────────────────────────────────────────
-   MEDIA: upload / update / delete
-   ─────────────────────────────────────────────── */
-
-const UploadMediaInput = z.object({
-  file: z.instanceof(File),
-  alt: z.string().optional().nullable(),
-});
-
-export async function uploadMediaAction(
-  _prev: MediaActionState | null,
-  formData: FormData
-): Promise<MediaActionState> {
-  const user = await requireUser();
-  if (!user) return { error: "Unauthorized" };
-
-  const parsed = UploadMediaInput.safeParse({
-    file: formData.get("file"),
-    alt: formData.get("alt"),
-  });
-  if (!parsed.success) return { error: "Invalid upload data" };
-
-  const db = ensurePrismaClient();
-
+export async function getProductById(id: string) {
   try {
-    const buffer = Buffer.from(await parsed.data.file.arrayBuffer());
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
+    const product = await db.product.findUnique({
+      where: { id },
+    });
+    return product;
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    throw new Error("Failed to fetch product");
+  }
+}
 
-    const safeName = parsed.data.file.name.replace(/\s+/g, "-");
-    const filename = `${Date.now()}-${safeName}`;
-    const filePathPublic = `/uploads/${filename}`;
-    const filePathFs = path.join(uploadDir, filename);
+export async function createProduct(formData: FormData) {
+  try {
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const price = parseFloat(formData.get("price") as string);
+    const image = formData.get("image") as string;
+    const category = formData.get("category") as string;
+    const inStock = formData.get("inStock") === "true";
 
-    await writeFile(filePathFs, buffer);
-
-    await db.media.create({
+    await db.product.create({
       data: {
-        url: filePathPublic,
-        alt: parsed.data.alt ?? null,
+        name,
+        description,
+        price,
+        image,
+        category,
+        inStock,
       },
     });
 
-    revalidatePath("/admin/media");
-    return { success: "File uploaded successfully" };
-  } catch (e: any) {
-    console.error(e);
-    return { error: "Upload failed. Please try again." };
+    revalidatePath("/admin/products");
+    redirect("/admin/products");
+  } catch (error) {
+    console.error("Error creating product:", error);
+    throw new Error("Failed to create product");
   }
 }
 
-const UpdateMediaInput = z.object({
-  id: z.string().min(1),
-  url: z.string().url().optional().nullable(),
-  alt: z.string().optional().nullable(),
-  width: z.coerce.number().optional().nullable(),
-  height: z.coerce.number().optional().nullable(),
-});
-
-export async function updateMediaAction(
-  _prev: MediaActionState | null,
-  formData: FormData
-): Promise<MediaActionState> {
-  const user = await requireUser();
-  if (!user) return { error: "Unauthorized" };
-
-  const parsed = UpdateMediaInput.safeParse({
-    id: formData.get("id"),
-    url: formData.get("url"),
-    alt: formData.get("alt"),
-    width: formData.get("width"),
-    height: formData.get("height"),
-  });
-  if (!parsed.success) return { error: "Invalid media data" };
-
-  const db = ensurePrismaClient();
-
+export async function updateProduct(id: string, formData: FormData) {
   try {
-    const { id, ...rest } = parsed.data;
-    const data: any = {};
-    if (rest.url !== undefined) data.url = rest.url ?? null;
-    if (rest.alt !== undefined) data.alt = rest.alt ?? null;
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const price = parseFloat(formData.get("price") as string);
+    const image = formData.get("image") as string;
+    const category = formData.get("category") as string;
+    const inStock = formData.get("inStock") === "true";
 
-    await db.media.update({ where: { id }, data });
-    revalidatePath("/admin/media");
-    return { success: "Media updated" };
-  } catch (e: any) {
-    return { error: `Failed to update media: ${String(e?.message ?? e)}` };
+    await db.product.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        price,
+        image,
+        category,
+        inStock,
+      },
+    });
+
+    revalidatePath("/admin/products");
+    revalidatePath(`/admin/products/${id}`);
+    redirect("/admin/products");
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw new Error("Failed to update product");
   }
 }
 
-const DeleteMediaInput = z.object({
-  id: z.string().min(1),
-});
-
-export async function deleteMediaAction(
-  _prev: MediaActionState | null,
-  formData: FormData
-): Promise<MediaActionState> {
-  const user = await requireUser();
-  if (!user) return { error: "Unauthorized" };
-
-  const parsed = DeleteMediaInput.safeParse({ id: formData.get("id") });
-  if (!parsed.success) return { error: "Invalid media id" };
-
-  const db = ensurePrismaClient();
-
+export async function deleteProduct(id: string) {
   try {
-    const media = await db.media.findUnique({ where: { id: parsed.data.id } });
-    if (!media) return { error: "Media not found" };
+    await db.product.delete({
+      where: { id },
+    });
 
-    await db.media.delete({ where: { id: parsed.data.id } });
+    revalidatePath("/admin/products");
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw new Error("Failed to delete product");
+  }
+}
 
-    if (media.url && media.url.startsWith("/uploads/")) {
-      const fsPath = path.join(process.cwd(), "public", media.url);
-      try {
-        await unlink(fsPath);
-      } catch {
-        // ignore
-      }
-    }
+// Order Actions
+export async function getOrders() {
+  try {
+    const orders = await db.order.findMany({
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return orders;
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    throw new Error("Failed to fetch orders");
+  }
+}
 
-    revalidatePath("/admin/media");
-    return { success: "Media deleted" };
-  } catch (e: any) {
-    return { error: `Failed to delete media: ${String(e?.message ?? e)}` };
+export async function getOrderById(id: string) {
+  try {
+    const order = await db.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+    return order;
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    throw new Error("Failed to fetch order");
+  }
+}
+
+export async function updateOrderStatus(id: string, status: string) {
+  try {
+    await db.order.update({
+      where: { id },
+      data: { status },
+    });
+
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${id}`);
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    throw new Error("Failed to update order status");
+  }
+}
+
+export async function deleteOrder(id: string) {
+  try {
+    // Delete order items first
+    await db.orderItem.deleteMany({
+      where: { orderId: id },
+    });
+
+    // Then delete the order
+    await db.order.delete({
+      where: { id },
+    });
+
+    revalidatePath("/admin/orders");
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    throw new Error("Failed to delete order");
+  }
+}
+
+// Customer Actions
+export async function getCustomers() {
+  try {
+    const customers = await db.customer.findMany({
+      include: {
+        orders: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return customers;
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    throw new Error("Failed to fetch customers");
+  }
+}
+
+export async function getCustomerById(id: string) {
+  try {
+    const customer = await db.customer.findUnique({
+      where: { id },
+      include: {
+        orders: {
+          include: {
+            items: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return customer;
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    throw new Error("Failed to fetch customer");
+  }
+}
+
+export async function deleteCustomer(id: string) {
+  try {
+    await db.customer.delete({
+      where: { id },
+    });
+
+    revalidatePath("/admin/customers");
+  } catch (error) {
+    console.error("Error deleting customer:", error);
+    throw new Error("Failed to delete customer");
+  }
+}
+
+// Blog Post Actions
+export async function getBlogPosts() {
+  try {
+    const posts = await db.blogPost.findMany({
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return posts;
+  } catch (error) {
+    console.error("Error fetching blog posts:", error);
+    throw new Error("Failed to fetch blog posts");
+  }
+}
+
+export async function getBlogPostById(id: string) {
+  try {
+    const post = await db.blogPost.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return post;
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    throw new Error("Failed to fetch blog post");
+  }
+}
+
+export async function getBlogPostBySlug(slug: string) {
+  try {
+    const post = await db.blogPost.findUnique({
+      where: { slug },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return post;
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    throw new Error("Failed to fetch blog post");
+  }
+}
+
+export async function createBlogPost(formData: FormData) {
+  try {
+    const title = formData.get("title") as string;
+    const slug = formData.get("slug") as string;
+    const content = formData.get("content") as string;
+    const excerpt = formData.get("excerpt") as string;
+    const image = formData.get("image") as string;
+    const published = formData.get("published") === "true";
+    const authorId = formData.get("authorId") as string | null;
+
+    await db.blogPost.create({
+      data: {
+        title,
+        slug,
+        content,
+        excerpt,
+        image,
+        published,
+        ...(authorId && { authorId }),
+      },
+    });
+
+    revalidatePath("/admin/blog");
+    revalidatePath("/blog");
+    redirect("/admin/blog");
+  } catch (error) {
+    console.error("Error creating blog post:", error);
+    throw new Error("Failed to create blog post");
+  }
+}
+
+export async function updateBlogPost(id: string, formData: FormData) {
+  try {
+    const title = formData.get("title") as string;
+    const slug = formData.get("slug") as string;
+    const content = formData.get("content") as string;
+    const excerpt = formData.get("excerpt") as string;
+    const image = formData.get("image") as string;
+    const published = formData.get("published") === "true";
+    const authorId = formData.get("authorId") as string | null;
+
+    await db.blogPost.update({
+      where: { id },
+      data: {
+        title,
+        slug,
+        content,
+        excerpt,
+        image,
+        published,
+        ...(authorId && { authorId }),
+      },
+    });
+
+    revalidatePath("/admin/blog");
+    revalidatePath(`/admin/blog/${id}`);
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${slug}`);
+    redirect("/admin/blog");
+  } catch (error) {
+    console.error("Error updating blog post:", error);
+    throw new Error("Failed to update blog post");
+  }
+}
+
+export async function deleteBlogPost(id: string) {
+  try {
+    await db.blogPost.delete({
+      where: { id },
+    });
+
+    revalidatePath("/admin/blog");
+    revalidatePath("/blog");
+  } catch (error) {
+    console.error("Error deleting blog post:", error);
+    throw new Error("Failed to delete blog post");
+  }
+}
+
+export async function toggleBlogPostPublished(id: string, published: boolean) {
+  try {
+    await db.blogPost.update({
+      where: { id },
+      data: { published },
+    });
+
+    revalidatePath("/admin/blog");
+    revalidatePath("/blog");
+  } catch (error) {
+    console.error("Error toggling blog post published status:", error);
+    throw new Error("Failed to toggle blog post published status");
+  }
+}
+
+// Analytics/Dashboard Actions
+export async function getDashboardStats() {
+  try {
+    const [totalProducts, totalOrders, totalCustomers, totalRevenue] = await Promise.all([
+      db.product.count(),
+      db.order.count(),
+      db.customer.count(),
+      db.order.aggregate({
+        _sum: {
+          total: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalProducts,
+      totalOrders,
+      totalCustomers,
+      totalRevenue: totalRevenue._sum.total || 0,
+    };
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    throw new Error("Failed to fetch dashboard stats");
+  }
+}
+
+export async function getRecentOrders(limit: number = 5) {
+  try {
+    const orders = await db.order.findMany({
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+    return orders;
+  } catch (error) {
+    console.error("Error fetching recent orders:", error);
+    throw new Error("Failed to fetch recent orders");
   }
 }

@@ -8,6 +8,7 @@ import { ShoppingBag, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/providers/cart-provider"
 import type { AuthUser } from "@/lib/auth"
+import { AdminDropdown } from "@/components/admin/admin-dropdown"
 
 // 👇 import your server action
 import { logout } from "@/app/(auth)/actions"
@@ -27,7 +28,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
   const { itemCount, isHydrated } = useCart()
 
   const accountHref =
-    user ? (user.role === "ADMIN" ? "/admin/overview" : "/dashboard") : "/login"
+    user ? (user.role === "ADMIN" ? "/admin/products" : "/dashboard") : "/login"
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
@@ -88,11 +89,15 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
           {/* Account + Logout */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={accountHref}>
-                {user ? "Account" : "Login"}
-              </Link>
-            </Button>
+            {user?.role === "ADMIN" ? (
+              <AdminDropdown />
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={accountHref}>
+                  {user ? "Account" : "Login"}
+                </Link>
+              </Button>
+            )}
 
             {!user ? (
               <Button size="sm" asChild>

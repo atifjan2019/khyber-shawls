@@ -33,8 +33,10 @@ model User {
   role         Role    @default(USER)
   passwordHash String
 
-  products Product[] @relation("UserProducts")
-  orders   Order[]
+  products       Product[]      @relation("UserProducts")
+  orders         Order[]
+  contactEntries ContactEntry[]
+  blogPosts      BlogPost[]     @relation("UserBlogPosts")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -123,14 +125,27 @@ model ProductMedia {
 
 // ---------------------------------------------
 
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
 model Order {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  total     Decimal  @db.Decimal(10, 2)
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String      @id @default(cuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  shippingAddress String
+  notes           String?     @db.Text
+  total           Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   items OrderItem[]
 
@@ -153,6 +168,23 @@ model OrderItem {
 }
 
 // ---------------------------------------------
+// CONTACT ENTRIES
+// ---------------------------------------------
+model ContactEntry {
+  id        String   @id @default(cuid())
+  email     String
+  name      String
+  message   String   @db.Text
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_entry")
+}
+
+// ---------------------------------------------
 // HERO MEDIA
 // ---------------------------------------------
 model HeroMedia {
@@ -160,10 +192,32 @@ model HeroMedia {
   key               String   @unique
   title             String
   subtitle          String?
+  description       String?  
+  ctaLabel          String?
+  ctaHref           String?
   backgroundImageId String?
   backgroundImage   Media?   @relation("HeroBackgroundImage", fields: [backgroundImageId], references: [id])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@map("hero_media")
+}
+
+// ---------------------------------------------
+// BLOG POST (JOURNAL)
+// ---------------------------------------------
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   @db.Text
+  excerpt     String?
+  image       String?
+  published   Boolean  @default(false)
+  authorId    String?
+  author      User?    @relation("UserBlogPosts", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blog_posts")
 }

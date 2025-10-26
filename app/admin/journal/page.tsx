@@ -2,6 +2,7 @@ import { NotebookPen } from "lucide-react"
 
 import { BlogForm } from "@/components/admin/blog-form"
 import { prisma } from "@/lib/prisma"
+import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react"
 
 export const runtime = "nodejs"
 
@@ -59,7 +60,7 @@ export default async function AdminJournalPage() {
               No journal entries yet—craft your narrative to enrich the brand voice.
             </p>
           ) : (
-            posts.map((post) => (
+            posts.map((post: { id: Key | null | undefined; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; author: { name: any; email: any }; createdAt: number | Date | undefined; published: any; excerpt: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined }) => (
               <div
                 key={post.id}
                 className="rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5"
