@@ -1,6 +1,11 @@
 "use client";
 
 import * as React from "react";
+// Update the import to match the actual export from the actions module
+// For example, if the export is default:
+// import logoutAction from "@/app/(auth)/actions";
+// Or, if the export is named differently, update accordingly:
+// import { correctExportName } from "@/app/(auth)/actions";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 

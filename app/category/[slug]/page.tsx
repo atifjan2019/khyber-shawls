@@ -1,23 +1,18 @@
-import { notFound } from "next/navigation"
+// app/category/[slug]/page.tsx
+import { notFound } from "next/navigation";
+import { fetchProductsByCategorySlug } from "@/lib/products";
+import { CategoryView } from "./view";
 
-import { fetchProductsByCategorySlug } from "@/lib/products"
+export const runtime = "nodejs";
 
-import { CategoryView } from "./view"
-
-type PageProps = {
-  params: { slug: string }
-}
+type PageProps = { params: { slug: string } };
 
 export default async function CategoryPage({ params }: PageProps) {
-  const { slug } = params
-  if (!slug) {
-    notFound()
-  }
+  const { slug } = params;
+  if (!slug) notFound();
 
-  const data = await fetchProductsByCategorySlug(slug)
-  if (!data) {
-    notFound()
-  }
+  const data = await fetchProductsByCategorySlug(slug);
+  if (!data) notFound();
 
   return (
     <CategoryView
@@ -27,5 +22,5 @@ export default async function CategoryPage({ params }: PageProps) {
       featuredImageAlt={data.category.featuredImageAlt}
       products={data.products}
     />
-  )
+  );
 }

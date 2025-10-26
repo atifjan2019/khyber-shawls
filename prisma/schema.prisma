@@ -1,28 +1,79 @@
+// ---------------------------------------------
+// Prisma Schema for KhyberShawls (Next.js + MySQL)
+// ---------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+  // For Vercel, you can enable these:
+  // binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  // engineType    = "binary"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
-  engineType    = "binary"
+// ---------------------------------------------
+// ENUMS
+// ---------------------------------------------
+enum Role {
+  USER
+  ADMIN
 }
 
+// ---------------------------------------------
+// MODELS
+// ---------------------------------------------
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      Role     @default(USER)
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String?
+  role         Role    @default(USER)
+  passwordHash String
+
+  products Product[] @relation("UserProducts")
+  orders   Order[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products      Product[]        @relation("UserProducts")
-  blogPosts     BlogPost[]       @relation("UserBlogPosts")
-  orders        Order[]          @relation("UserOrders")
-  contactEntries ContactEntry[]  @relation("UserContactEntries")
+  @@map("user")
 }
+
+// ---------------------------------------------
+
+model Category {
+  id               String    @id @default(cuid())
+  name             String
+  slug             String    @unique
+  summary          String?
+  featuredImageUrl String?
+  featuredImageAlt String?
+  products         Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("category")
+}
+
+// ---------------------------------------------
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String?
+  createdAt DateTime @default(now())
+
+  // ✅ Reverse relations added to satisfy Prisma
+  featuredInProducts Product[]      @relation("ProductFeaturedImage")
+  productMedia       ProductMedia[]
+  heroBackgrounds    HeroMedia[]    @relation("HeroBackgroundImage")
+}
+
+// ---------------------------------------------
 
 model Product {
   id          String    @id @default(cuid())
@@ -32,130 +83,87 @@ model Product {
   price       Decimal   @db.Decimal(10, 2)
   inventory   Int       @default(0)
   published   Boolean   @default(false)
+  deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  categoryId  String
-  category    Category  @relation(fields: [categoryId], references: [id])
-  authorId    String
-  author      User      @relation("UserProducts", fields: [authorId], references: [id])
-  orderItems  OrderItem[]
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  authorId String
+  author   User   @relation("UserProducts", fields: [authorId], references: [id])
+
+  orderItems OrderItem[]
+
   featuredImageId String?
-  featuredImage   Media?       @relation("ProductFeaturedImage", fields: [featuredImageId], references: [id])
-  gallery         ProductMedia[]
+  featuredImage   Media?  @relation("ProductFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
+
+  gallery ProductMedia[]
+
+  @@map("product")
 }
 
-model Category {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  summary   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  products  Product[]
-  featuredImageId String?
-  featuredImage   Media?    @relation("CategoryFeaturedImage", fields: [featuredImageId], references: [id])
-}
-
-model BlogPost {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  excerpt     String?
-  content     String
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  authorId    String
-  author      User     @relation("UserBlogPosts", fields: [authorId], references: [id])
-}
-
-model Order {
-  id          String      @id @default(cuid())
-  status      OrderStatus @default(PENDING)
-  total       Decimal     @db.Decimal(10, 2)
-  customerId  String?
-  customer    User?       @relation("UserOrders", fields: [customerId], references: [id])
-  customerName String
-  customerEmail String
-  customerPhone String?
-  shippingAddress String
-  notes       String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  items       OrderItem[]
-}
-
-model OrderItem {
-  id        String   @id @default(cuid())
-  quantity  Int
-  price     Decimal  @db.Decimal(10, 2)
-  productId String
-  orderId   String
-
-  product   Product  @relation(fields: [productId], references: [id])
-  order     Order    @relation(fields: [orderId], references: [id])
-}
-
-model ContactEntry {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  message   String
-  userId    String?
-  user      User?    @relation("UserContactEntries", fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-model Media {
-  id        String   @id @default(cuid())
-  url       String
-  alt       String?
-  createdAt DateTime @default(now())
-
-  productsFeatured   Product[]      @relation("ProductFeaturedImage")
-  categoriesFeatured Category[]     @relation("CategoryFeaturedImage")
-  productGallery     ProductMedia[]
-  heroBackgrounds    HeroMedia[]    @relation("HeroBackgroundMedia")
-}
+// ---------------------------------------------
 
 model ProductMedia {
-  id        String   @id @default(cuid())
-  position  Int      @default(0)
+  id String @id @default(cuid())
+
   productId String
-  mediaId   String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  product Product @relation(fields: [productId], references: [id])
-  media   Media   @relation(fields: [mediaId], references: [id])
+  mediaId String
+  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, mediaId])
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("product_media")
 }
 
+// ---------------------------------------------
+
+model Order {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  total     Decimal  @db.Decimal(10, 2)
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items OrderItem[]
+
+  @@map("order")
+}
+
+// ---------------------------------------------
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int     @default(1)
+  price     Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_item")
+}
+
+// ---------------------------------------------
+// HERO MEDIA
+// ---------------------------------------------
 model HeroMedia {
   id                String   @id @default(cuid())
   key               String   @unique
-  title             String?
+  title             String
   subtitle          String?
-  description       String?
-  ctaLabel          String?
-  ctaHref           String?
   backgroundImageId String?
-  backgroundImage   Media?   @relation("HeroBackgroundMedia", fields: [backgroundImageId], references: [id])
+  backgroundImage   Media?   @relation("HeroBackgroundImage", fields: [backgroundImageId], references: [id])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-}
 
-enum Role {
-  USER
-  ADMIN
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  CANCELLED
+  @@map("hero_media")
 }

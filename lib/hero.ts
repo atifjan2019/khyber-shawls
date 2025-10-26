@@ -1,136 +1,55 @@
-import { prisma } from "@/lib/prisma"
+// /lib/hero.ts
+import prisma from "@/lib/prisma"
 
-export type HeroContent = {
-  key: string
-  title: string
-  subtitle: string
-  description: string
-  ctaLabel: string
-  ctaHref: string
+export const HERO_CONFIGS = [
+  { key: "home",      label: "Homepage Hero" },
+  { key: "editorial", label: "Editorial Hero" },
+  { key: "seasonal",  label: "Seasonal Hero" },
+] as const
+
+export type HeroKey = (typeof HERO_CONFIGS)[number]["key"]
+
+export type HeroRecord = {
+  key: HeroKey
+  title: string | null
+  subtitle: string | null
+  description: string | null
+  ctaLabel: string | null
+  ctaHref: string | null
   backgroundImageUrl: string | null
   backgroundImageAlt: string | null
-  backgroundImageId: string | null
 }
 
-export const HERO_CONFIGS: Array<{ key: string; label: string }> = [
-  { key: "home-hero", label: "Home Page Hero 1" },
-  { key: "home-hero-alt-1", label: "Home Page Hero 2" },
-  { key: "home-hero-alt-2", label: "Home Page Hero 3" },
-]
-
-const HERO_DEFAULTS: Record<string, HeroContent> = {
-  "home-hero": {
-    key: "home-hero",
-    title: "Discover the Art of Kashmiri Craftsmanship",
-    subtitle: "Each shawl tells a story",
-    description:
-      "Every thread is woven by master artisans in Khyber, preserving centuries-old traditions for the modern wardrobe.",
-    ctaLabel: "Explore Collections",
-    ctaHref: "/collections",
-    backgroundImageUrl: null,
-    backgroundImageAlt: null,
-    backgroundImageId: null,
-  },
-  "home-hero-alt-1": {
-    key: "home-hero-alt-1",
-    title: "",
-    subtitle: "",
-    description: "",
-    ctaLabel: "",
-    ctaHref: "",
-    backgroundImageUrl: null,
-    backgroundImageAlt: null,
-    backgroundImageId: null,
-  },
-  "home-hero-alt-2": {
-    key: "home-hero-alt-2",
-    title: "",
-    subtitle: "",
-    description: "",
-    ctaLabel: "",
-    ctaHref: "",
-    backgroundImageUrl: null,
-    backgroundImageAlt: null,
-    backgroundImageId: null,
-  },
-}
-
-export async function fetchHeroContent(key: string): Promise<HeroContent> {
-  if (!prisma) {
-    return HERO_DEFAULTS[key] ?? {
-      key,
-      title: "",
-      subtitle: "",
-      description: "",
-      ctaLabel: "",
-      ctaHref: "",
-      backgroundImageUrl: null,
-      backgroundImageAlt: null,
-      backgroundImageId: null,
-    }
-  }
-
-  const hero = await prisma.heroMedia.findUnique({
-    where: { key },
+export async function fetchAllHeroContent(): Promise<HeroRecord[]> {
+  const rows = await prisma.heroMedia.findMany({
     include: { backgroundImage: true },
   })
 
-  if (!hero) {
-    return HERO_DEFAULTS[key] ?? {
-      key,
-      title: "",
-      subtitle: "",
-      description: "",
-      ctaLabel: "",
-      ctaHref: "",
+  const map = new Map<string, HeroRecord>()
+  for (const r of rows) {
+    map.set(r.key, {
+      key: r.key as HeroKey,
+      title: r.title ?? null,
+      subtitle: r.subtitle ?? null,
+      description: (r as any).description ?? null,
+      ctaLabel: (r as any).ctaLabel ?? null,
+      ctaHref: (r as any).ctaHref ?? null,
+      backgroundImageUrl: r.backgroundImage?.url ?? null,
+      backgroundImageAlt: r.backgroundImage?.alt ?? null,
+    })
+  }
+
+  // Ensure all configs return something
+  return HERO_CONFIGS.map((c) =>
+    map.get(c.key) ?? {
+      key: c.key,
+      title: null,
+      subtitle: null,
+      description: null,
+      ctaLabel: null,
+      ctaHref: null,
       backgroundImageUrl: null,
       backgroundImageAlt: null,
-      backgroundImageId: null,
     }
-  }
-
-  return {
-    key: hero.key,
-    title: hero.title ?? HERO_DEFAULTS[key]?.title ?? "",
-    subtitle: hero.subtitle ?? HERO_DEFAULTS[key]?.subtitle ?? "",
-    description: hero.description ?? HERO_DEFAULTS[key]?.description ?? "",
-    ctaLabel: hero.ctaLabel ?? HERO_DEFAULTS[key]?.ctaLabel ?? "",
-    ctaHref: hero.ctaHref ?? HERO_DEFAULTS[key]?.ctaHref ?? "",
-    backgroundImageUrl: hero.backgroundImage?.url ?? HERO_DEFAULTS[key]?.backgroundImageUrl ?? null,
-    backgroundImageAlt: hero.backgroundImage?.alt ?? HERO_DEFAULTS[key]?.backgroundImageAlt ?? null,
-    backgroundImageId: hero.backgroundImageId ?? HERO_DEFAULTS[key]?.backgroundImageId ?? null,
-  }
-}
-
-export async function fetchAllHeroContent() {
-  if (!prisma) {
-    return Object.values(HERO_DEFAULTS)
-  }
-
-  const heroes = await prisma.heroMedia.findMany({
-    include: { backgroundImage: true },
-    orderBy: { key: "asc" },
-  })
-
-  const defaults = Object.values(HERO_DEFAULTS)
-  const mapped = heroes.map<HeroContent>((hero) => ({
-    key: hero.key,
-    title: hero.title ?? "",
-    subtitle: hero.subtitle ?? "",
-    description: hero.description ?? "",
-    ctaLabel: hero.ctaLabel ?? "",
-    ctaHref: hero.ctaHref ?? "",
-    backgroundImageUrl: hero.backgroundImage?.url ?? null,
-    backgroundImageAlt: hero.backgroundImage?.alt ?? null,
-    backgroundImageId: hero.backgroundImageId ?? null,
-  }))
-
-  const keysInDb = new Set(heroes.map((hero) => hero.key))
-  defaults.forEach((defaultHero) => {
-    if (!keysInDb.has(defaultHero.key)) {
-      mapped.push(defaultHero)
-    }
-  })
-
-  return mapped
+  )
 }

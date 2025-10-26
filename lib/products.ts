@@ -1,55 +1,63 @@
-import type { Product, Category, Media, ProductMedia } from "@prisma/client"
-
-import { prisma } from "@/lib/prisma"
+// lib/products.ts
+import { prisma } from "@/lib/prisma";
 
 export type SerializedProduct = {
-  id: string
-  title: string
-  description: string
-  price: number
-  slug: string
-  published: boolean
-  featuredImageUrl: string | null
-  featuredImageAlt: string | null
-  gallery: Array<{
-    id: string
-    url: string
-    alt: string | null
-    position: number
-  }>
-  categoryName?: string | null
-  categorySlug?: string | null
-}
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  slug: string;
+  published: boolean;
+  featuredImageUrl: string | null;
+  featuredImageAlt: string | null;
+  gallery: Array<{ id: string; url: string; alt: string | null; position: number }>;
+  categoryName?: string | null;
+  categorySlug?: string | null;
+};
 
-export type SerializedProductDetail = SerializedProduct & {
-  inventory: number
-}
+export type SerializedProductDetail = SerializedProduct & { inventory: number };
 
 export type SerializedCategory = {
-  id: string
-  name: string
-  slug: string
-  summary: string | null
-  productCount: number
-  featuredImageUrl: string | null
-  featuredImageAlt: string | null
-}
+  id: string;
+  name: string;
+  slug: string;
+  summary: string | null;
+  productCount: number;
+  featuredImageUrl: string | null;
+  featuredImageAlt: string | null;
+};
 
-type ProductWithRelations = Product & {
-  category?: Category | null
-  featuredImage?: Media | null
-  gallery?: Array<ProductMedia & { media: Media }>
-}
+// -------- Minimal local types to avoid stale @prisma/client ----------
+type MediaLite = { url: string | null; alt: string | null } | null;
+type GalleryItemLite = { position: number; media: { id: string; url: string; alt: string | null } };
+type CategoryLite = {
+  id: string;
+  name: string;
+  slug: string;
+  summary: string | null;
+  featuredImageUrl?: string | null;
+  featuredImageAlt?: string | null;
+};
 
-type CategoryWithRelations = Category & {
-  products?: Product[]
-  featuredImage?: Media | null
-}
+type ProductWithRelations = {
+  id: string;
+  title: string;
+  description: string;
+  price: any;
+  slug: string;
+  published: boolean;
+  inventory: number;
+  category?: Pick<CategoryLite, "name" | "slug"> | null;
+  featuredImage?: MediaLite;
+  gallery?: Array<GalleryItemLite>;
+};
 
-type SampleProduct = SerializedProduct & {
-  categorySlug: string
-  inventory: number
-}
+type CategoryWithRelations = CategoryLite & {
+  products?: Array<ProductWithRelations>;
+};
+// -------------------------------------------------------------------
+
+type SampleProduct = SerializedProduct & { categorySlug: string; inventory: number };
 
 const SAMPLE_PRODUCTS: SampleProduct[] = [
   {
@@ -61,14 +69,7 @@ const SAMPLE_PRODUCTS: SampleProduct[] = [
     published: true,
     featuredImageUrl: "/hero-shawl.svg",
     featuredImageAlt: "Royal indigo pashmina illustration",
-    gallery: [
-      {
-        id: "sample-men-royal-indigo-main",
-        url: "/hero-shawl.svg",
-        alt: "Royal indigo pashmina illustration",
-        position: 0,
-      },
-    ],
+    gallery: [{ id: "sample-men-royal-indigo-main", url: "/hero-shawl.svg", alt: "Royal indigo pashmina illustration", position: 0 }],
     categoryName: "Men Shawls",
     categorySlug: "men-shawls",
     inventory: 5,
@@ -82,14 +83,7 @@ const SAMPLE_PRODUCTS: SampleProduct[] = [
     published: true,
     featuredImageUrl: "/hero-shawl.svg",
     featuredImageAlt: "Morning blush pashmina illustration",
-    gallery: [
-      {
-        id: "sample-women-morning-blush-main",
-        url: "/hero-shawl.svg",
-        alt: "Morning blush pashmina illustration",
-        position: 0,
-      },
-    ],
+    gallery: [{ id: "sample-women-morning-blush-main", url: "/hero-shawl.svg", alt: "Morning blush pashmina illustration", position: 0 }],
     categoryName: "Women Shawls",
     categorySlug: "women-shawls",
     inventory: 7,
@@ -103,56 +97,28 @@ const SAMPLE_PRODUCTS: SampleProduct[] = [
     published: true,
     featuredImageUrl: "/hero-shawl.svg",
     featuredImageAlt: "Winter star wrap illustration",
-    gallery: [
-      {
-        id: "sample-kids-winter-star-main",
-        url: "/hero-shawl.svg",
-        alt: "Winter star wrap illustration",
-        position: 0,
-      },
-    ],
+    gallery: [{ id: "sample-kids-winter-star-main", url: "/hero-shawl.svg", alt: "Winter star wrap illustration", position: 0 }],
     categoryName: "Kids Shawls",
     categorySlug: "kids-shawls",
     inventory: 9,
   },
-]
+];
 
 const SAMPLE_CATEGORY_BASE: Array<Omit<SerializedCategory, "productCount">> = [
-  {
-    id: "sample-category-men",
-    name: "Men Shawls",
-    slug: "men-shawls",
-    summary: "Structured drapes tailored for the modern collector.",
-    featuredImageUrl: "/hero-shawl.svg",
-    featuredImageAlt: "Men's shawl illustration",
-  },
-  {
-    id: "sample-category-women",
-    name: "Women Shawls",
-    slug: "women-shawls",
-    summary: "Intricate paisleys and soft hues for elevated evenings.",
-    featuredImageUrl: "/hero-shawl.svg",
-    featuredImageAlt: "Women's shawl illustration",
-  },
-  {
-    id: "sample-category-kids",
-    name: "Kids Shawls",
-    slug: "kids-shawls",
-    summary: "Lightweight keepsakes spun for family milestones.",
-    featuredImageUrl: "/hero-shawl.svg",
-    featuredImageAlt: "Kids shawl illustration",
-  },
-]
+  { id: "sample-category-men", name: "Men Shawls", slug: "men-shawls", summary: "Structured drapes tailored for the modern collector.", featuredImageUrl: "/hero-shawl.svg", featuredImageAlt: "Men's shawl illustration" },
+  { id: "sample-category-women", name: "Women Shawls", slug: "women-shawls", summary: "Intricate paisleys and soft hues for elevated evenings.", featuredImageUrl: "/hero-shawl.svg", featuredImageAlt: "Women's shawl illustration" },
+  { id: "sample-category-kids", name: "Kids Shawls", slug: "kids-shawls", summary: "Lightweight keepsakes spun for family milestones.", featuredImageUrl: "/hero-shawl.svg", featuredImageAlt: "Kids shawl illustration" },
+];
 
 const SAMPLE_CATEGORIES: SerializedCategory[] = SAMPLE_CATEGORY_BASE.map((category) => ({
   ...category,
-  productCount: SAMPLE_PRODUCTS.filter((product) => product.categorySlug === category.slug).length,
-}))
+  productCount: SAMPLE_PRODUCTS.filter((p) => p.categorySlug === category.slug).length,
+}));
 
 function stripSampleProduct(sample: SampleProduct): SerializedProduct {
-  const { inventory: _inventory, ...rest } = sample
-  void _inventory
-  return rest
+  const { inventory: _inventory, ...rest } = sample;
+  void _inventory;
+  return rest;
 }
 
 function serializeProduct(product: ProductWithRelations): SerializedProduct {
@@ -174,7 +140,7 @@ function serializeProduct(product: ProductWithRelations): SerializedProduct {
       })) ?? [],
     categoryName: product.category?.name ?? null,
     categorySlug: product.category?.slug ?? null,
-  }
+  };
 }
 
 function serializeCategory(category: CategoryWithRelations): SerializedCategory {
@@ -184,65 +150,51 @@ function serializeCategory(category: CategoryWithRelations): SerializedCategory 
     slug: category.slug,
     summary: category.summary ?? null,
     productCount: category.products?.length ?? 0,
-    featuredImageUrl: category.featuredImage?.url ?? null,
-    featuredImageAlt: category.featuredImage?.alt ?? null,
-  }
+    featuredImageUrl: (category as any).featuredImageUrl ?? null,
+    featuredImageAlt: (category as any).featuredImageAlt ?? null,
+  };
 }
 
 export async function fetchPublishedProducts() {
   if (!prisma) {
-    console.warn(
-      "[database] DATABASE_URL is not configured. Returning sample product list."
-    )
-    return SAMPLE_PRODUCTS.filter((product) => product.published).map(stripSampleProduct)
+    console.warn("[database] DATABASE_URL is not configured. Returning sample product list.");
+    return SAMPLE_PRODUCTS.filter((p) => p.published).map(stripSampleProduct);
   }
 
   const products = await prisma.product.findMany({
-    where: { published: true },
+    where: { published: true, deletedAt: null },
     include: {
       category: true,
       featuredImage: true,
       gallery: { include: { media: true }, orderBy: { position: "asc" } },
     },
     orderBy: { createdAt: "desc" },
-  })
+  });
 
-  return products.map(serializeProduct)
+  return products.map(serializeProduct);
 }
 
 export async function fetchProductsByCategorySlug(slug: string) {
   if (!slug) {
-    console.warn("[products] fetchProductsByCategorySlug called without a slug. Returning null.")
-    return null
+    console.warn("[products] fetchProductsByCategorySlug called without a slug. Returning null.");
+    return null;
   }
 
   if (!prisma) {
-    console.warn(
-      "[database] DATABASE_URL is not configured. Serving sample category data."
-    )
-    const category = SAMPLE_CATEGORIES.find((item) => item.slug === slug)
-    if (!category) {
-      return null
-    }
+    console.warn("[database] DATABASE_URL is not configured. Serving sample category data.");
+    const category = SAMPLE_CATEGORIES.find((c) => c.slug === slug);
+    if (!category) return null;
 
-    const products = SAMPLE_PRODUCTS.filter(
-      (product) => product.categorySlug === slug
-    ).map(stripSampleProduct)
+    const products = SAMPLE_PRODUCTS.filter((p) => p.categorySlug === slug).map(stripSampleProduct);
 
-    return {
-      category: {
-        ...category,
-        productCount: products.length,
-      },
-      products,
-    }
+    return { category: { ...category, productCount: products.length }, products };
   }
 
   const category = await prisma.category.findUnique({
     where: { slug },
     include: {
       products: {
-        where: { published: true },
+        where: { published: true, deletedAt: null },
         include: {
           category: true,
           featuredImage: true,
@@ -250,128 +202,95 @@ export async function fetchProductsByCategorySlug(slug: string) {
         },
         orderBy: { createdAt: "desc" },
       },
-      featuredImage: true,
+      // NOTE: Category has URL/ALT columns, not a Media relation—do not include featuredImage here
     },
-  })
+  });
 
-  if (!category) {
-    return null
-  }
+  if (!category) return null;
 
-  const serializedCategory = serializeCategory(category)
-  const serializedProducts = category.products.map(serializeProduct)
+  const serializedCategory = serializeCategory(category as unknown as CategoryWithRelations);
+  const serializedProducts = (category.products as unknown as ProductWithRelations[]).map(serializeProduct);
 
   return {
-    category: {
-      ...serializedCategory,
-      productCount: serializedProducts.length,
-    },
+    category: { ...serializedCategory, productCount: serializedProducts.length },
     products: serializedProducts,
-  }
+  };
 }
 
 export async function fetchCategoriesWithProducts() {
   if (!prisma) {
-    console.warn(
-      "[database] DATABASE_URL is not configured. Returning sample category list."
-    )
-    return SAMPLE_CATEGORIES.map((category) => ({ ...category }))
+    console.warn("[database] DATABASE_URL is not configured. Returning sample category list.");
+    return SAMPLE_CATEGORIES.map((c) => ({ ...c }));
   }
 
   const categories = await prisma.category.findMany({
-    include: { products: true, featuredImage: true },
+    include: {
+      products: { where: { published: true, deletedAt: null } },
+    },
     orderBy: { name: "asc" },
-  })
+  });
 
   if (categories.length === 0) {
-    console.warn(
-      "[database] No categories found in database. Falling back to sample categories."
-    )
-    return SAMPLE_CATEGORIES.map((category) => ({ ...category }))
+    console.warn("[database] No categories found in database. Falling back to sample categories.");
+    return SAMPLE_CATEGORIES.map((c) => ({ ...c }));
   }
 
-  const serialized = categories.map(serializeCategory)
+  const serialized = (categories as unknown as CategoryWithRelations[]).map(serializeCategory);
 
-  if (serialized.every((category) => category.productCount === 0)) {
-    console.warn(
-      "[database] Categories exist but contain no products. Augmenting counts with sample data."
-    )
-    return serialized.map((category) => {
-      const fallbackProducts = SAMPLE_PRODUCTS.filter(
-        (product) => product.categorySlug === category.slug
-      )
-      if (fallbackProducts.length === 0) {
-        return category
-      }
-
-      return {
-        ...category,
-        productCount: fallbackProducts.length,
-      }
-    })
+  if (serialized.every((c) => c.productCount === 0)) {
+    console.warn("[database] Categories exist but contain no products. Augmenting counts with sample data.");
+    return serialized.map((c) => {
+      const fallback = SAMPLE_PRODUCTS.filter((p) => p.categorySlug === c.slug);
+      return fallback.length ? { ...c, productCount: fallback.length } : c;
+    });
   }
 
-  return serialized
+  return serialized;
 }
 
 export async function fetchProductSummariesByIds(ids: string[]) {
-  if (ids.length === 0) return []
+  if (ids.length === 0) return [];
   if (!prisma) {
-    return SAMPLE_PRODUCTS.filter((product) => ids.includes(product.id)).map(
-      stripSampleProduct
-    )
+    return SAMPLE_PRODUCTS.filter((p) => ids.includes(p.id)).map(stripSampleProduct);
   }
 
   const products = await prisma.product.findMany({
-    where: { id: { in: ids } },
+    where: { id: { in: ids }, deletedAt: null },
     include: {
       category: true,
       featuredImage: true,
       gallery: { include: { media: true }, orderBy: { position: "asc" } },
     },
-  })
+  });
 
-  return products.map(serializeProduct)
+  return (products as unknown as ProductWithRelations[]).map(serializeProduct);
 }
 
 export async function fetchProductBySlug(slug: string): Promise<SerializedProductDetail | null> {
   if (!slug) {
-    console.warn("[products] fetchProductBySlug called without a slug. Returning null.")
-    return null
+    console.warn("[products] fetchProductBySlug called without a slug. Returning null.");
+    return null;
   }
 
   if (!prisma) {
-    console.warn(
-      "[database] DATABASE_URL is not configured. Serving sample product detail."
-    )
-    const sample = SAMPLE_PRODUCTS.find((product) => product.slug === slug)
-    if (!sample) {
-      return null
-    }
-
-    const baseProduct = stripSampleProduct(sample)
-
-    return {
-      ...baseProduct,
-      inventory: sample.inventory,
-    }
+    console.warn("[database] DATABASE_URL is not configured. Serving sample product detail.");
+    const sample = SAMPLE_PRODUCTS.find((p) => p.slug === slug);
+    if (!sample) return null;
+    const base = stripSampleProduct(sample);
+    return { ...base, inventory: sample.inventory };
   }
 
-  const product = await prisma.product.findUnique({
-    where: { slug },
+  // findFirst so we can ensure deletedAt: null
+  const product = await prisma.product.findFirst({
+    where: { slug, deletedAt: null },
     include: {
       category: true,
       featuredImage: true,
       gallery: { include: { media: true }, orderBy: { position: "asc" } },
     },
-  })
+  });
 
-  if (!product || !product.published) {
-    return null
-  }
+  if (!product || !product.published) return null;
 
-  return {
-    ...serializeProduct(product),
-    inventory: product.inventory,
-  }
+  return { ...(serializeProduct(product as unknown as ProductWithRelations)), inventory: (product as any).inventory };
 }

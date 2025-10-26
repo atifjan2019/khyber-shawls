@@ -1,3 +1,4 @@
+// app/admin/media/page.tsx
 import { HeroMediaForm } from "@/components/admin/hero-media-form"
 import { MediaLibrary } from "@/components/admin/media-library"
 import { MediaUploadForm } from "@/components/admin/media-upload-form"
@@ -6,9 +7,7 @@ import { fetchMediaLibrary } from "@/lib/media"
 
 function createMediaUrlKey(url: string): string {
   const trimmed = url.trim()
-  if (!trimmed) {
-    return ""
-  }
+  if (!trimmed) return ""
 
   if (/^https?:\/\//i.test(trimmed)) {
     try {
@@ -30,30 +29,49 @@ const uploadedAtFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 })
 
+// Safely normalize a possibly string | Date | undefined to Date | undefined
+function toDate(value: string | Date | undefined): Date | undefined {
+  if (!value) return undefined
+  try {
+    const d = value instanceof Date ? value : new Date(value)
+    return isNaN(d.getTime()) ? undefined : d
+  } catch {
+    return undefined
+  }
+}
+
 export default async function AdminMediaPage() {
   const [heroes, mediaLibrary] = await Promise.all([
     fetchAllHeroContent(),
+    // If your fetchMediaLibrary takes a limit, keep this call signature:
     fetchMediaLibrary(24),
   ])
+
   const heroMap = new Map(heroes.map((hero) => [hero.key, hero]))
+
+  // Deduplicate by URL (path)
   const uniqueMedia = [] as typeof mediaLibrary
   const seenUrls = new Set<string>()
   for (const item of mediaLibrary) {
     const urlKey = createMediaUrlKey(item.url)
-    if (seenUrls.has(urlKey)) {
-      continue
-    }
+    if (seenUrls.has(urlKey)) continue
     seenUrls.add(urlKey)
     uniqueMedia.push(item)
   }
 
-  const mediaLibraryItems = uniqueMedia.map((item) => ({
-    id: item.id,
-    url: item.url,
-    alt: item.alt,
-    uploadedAtLabel: uploadedAtFormatter.format(item.createdAt),
-    createdAtISO: item.createdAt.toISOString(),
-  }))
+  // Build items exactly to what <MediaLibrary items={...} /> expects:
+  // - alt must be string | null (never undefined)
+  // - createdAt can be string | Date | undefined → normalize to Date, then to strings
+  const mediaLibraryItems = uniqueMedia.map((item) => {
+    const createdAt = toDate(item.createdAt as any)
+    return {
+      id: String(item.id),                                  // ensure string
+      url: item.url,
+      alt: item.alt ?? null,                                // never undefined
+      uploadedAtLabel: createdAt ? uploadedAtFormatter.format(createdAt) : "—",
+      createdAtISO: createdAt ? createdAt.toISOString() : "", // ensure string
+    }
+  })
 
   return (
     <div className="space-y-10 pb-16">
@@ -82,22 +100,33 @@ export default async function AdminMediaPage() {
       </section>
 
       <div className="grid gap-8">
-        {HERO_CONFIGS.map((config) => (
-          <HeroMediaForm
-            key={config.key}
-            heading={config.label}
-            heroKey={config.key}
-            initial={{
-              title: heroMap.get(config.key)?.title ?? "",
-              subtitle: heroMap.get(config.key)?.subtitle ?? "",
-              description: heroMap.get(config.key)?.description ?? "",
-              ctaLabel: heroMap.get(config.key)?.ctaLabel ?? "",
-              ctaHref: heroMap.get(config.key)?.ctaHref ?? "",
-              backgroundImageUrl: heroMap.get(config.key)?.backgroundImageUrl ?? null,
-              backgroundImageAlt: heroMap.get(config.key)?.backgroundImageAlt ?? null,
-            }}
-          />
-        ))}
+        {HERO_CONFIGS.map((config) => {
+          // `HeroRecord` (from /lib/hero) only has: key, url, alt, width, height
+          // Your form expects more fields; read them if present, otherwise
+          // fall back to url/alt or empty values. Cast to any for TS compatibility.
+          const heroAny = heroMap.get(config.key) as any
+          const backgroundImageUrl =
+            heroAny?.backgroundImageUrl ?? heroAny?.url ?? null
+          const backgroundImageAlt =
+            heroAny?.backgroundImageAlt ?? heroAny?.alt ?? null
+
+          return (
+            <HeroMediaForm
+              key={config.key}
+              heading={config.label}
+              heroKey={config.key}
+              initial={{
+                title: heroAny?.title ?? "",
+                subtitle: heroAny?.subtitle ?? "",
+                description: heroAny?.description ?? "",
+                ctaLabel: heroAny?.ctaLabel ?? "",
+                ctaHref: heroAny?.ctaHref ?? "",
+                backgroundImageUrl,
+                backgroundImageAlt,
+              }}
+            />
+          )
+        })}
       </div>
     </div>
   )

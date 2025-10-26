@@ -1,58 +1,58 @@
-import Link from "next/link"
-import { redirect } from "next/navigation"
-import { MessageCircle, Package2, Sparkles } from "lucide-react"
+// app/dashboard/page.tsx
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { MessageCircle, Package2, Sparkles } from "lucide-react";
+import { requireUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { formatCurrency } from "@/lib/currency";
 
-import { requireUser } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { formatCurrency } from "@/lib/currency"
+export const runtime = "nodejs";
 
-export const runtime = "nodejs"
+type OrderItemRow = { id: string; quantity: number; product: { title: string | null } | null };
+type OrderRow = { id: string; createdAt: Date; status: string; total: any; items: OrderItemRow[] };
+type ContactEntryRow = { id: string; createdAt: Date; message: string };
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-})
+const dateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 export default async function DashboardPage() {
   if (!prisma) {
     return (
       <div className="overflow-hidden rounded-4xl border border-primary/20 bg-gradient-to-br from-background via-background/90 to-primary/10 p-12 shadow-xl">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-          Database not configured
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Database not configured</h1>
         <p className="mt-4 max-w-xl text-sm text-muted-foreground">
-          Add a valid <code>DATABASE_URL</code> in <code>.env.local</code> and restart the
-          server to view your personal order history and conversations.
+          Add a valid <code>DATABASE_URL</code> in <code>.env.local</code> and restart the server.
         </p>
       </div>
-    )
+    );
   }
 
-  const user = await requireUser()
+  const user = await requireUser();
 
-  if (!user) {
-    redirect("/login?callbackUrl=/dashboard")
-  }
-
+  // 🔁 Your admin home is /admin/overview (not /admin)
   if (user.role === "ADMIN") {
-    redirect("/admin")
+    redirect("/admin/overview");
   }
 
   const [orders, contactEntries] = await Promise.all([
     prisma.order.findMany({
-      where: { customerId: user.id },
+      where: { userId: user.id },
       include: { items: { include: { product: true } } },
       orderBy: { createdAt: "desc" },
-    }),
-    prisma.contactEntry.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-  ])
+    }) as unknown as Promise<OrderRow[]>,
+    (async () => {
+      try {
+        return (await prisma.contactEntry.findMany({
+          where: { userId: user.id },
+          orderBy: { createdAt: "desc" },
+          take: 6,
+        })) as ContactEntryRow[];
+      } catch {
+        return [] as ContactEntryRow[];
+      }
+    })(),
+  ]);
 
-  const fulfilledOrders = orders.filter((order) => order.status === "COMPLETED").length
+  const fulfilledOrders = orders.filter((o: OrderRow) => o.status === "COMPLETED").length;
 
   return (
     <div className="space-y-12 pb-16">
@@ -66,28 +66,19 @@ export default async function DashboardPage() {
               Welcome back, {user.name ?? user.email}
             </h1>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Track the journey of your bespoke shawls, follow up on styling messages, and
-              preview what’s shipping next—all without extra approvals.
+              Track orders, follow up on messages, and preview what’s shipping next.
             </p>
           </div>
           <div className="rounded-3xl border border-primary/20 bg-background/70 p-6 text-sm text-muted-foreground shadow-lg backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-              Snapshot
-            </p>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Snapshot</p>
             <div className="mt-4 grid gap-4 text-sm text-foreground sm:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-background/80 p-4 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                  Total orders
-                </p>
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Total orders</p>
                 <p className="mt-3 text-2xl font-semibold text-primary">{orders.length}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-background/80 p-4 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                  Delivered treasures
-                </p>
-                <p className="mt-3 text-2xl font-semibold text-primary">
-                  {fulfilledOrders}
-                </p>
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Delivered treasures</p>
+                <p className="mt-3 text-2xl font-semibold text-primary">{fulfilledOrders}</p>
               </div>
             </div>
           </div>
@@ -101,14 +92,9 @@ export default async function DashboardPage() {
               <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
                 <Package2 className="size-5 text-primary" /> Order history
               </h2>
-              <p className="text-sm text-muted-foreground">
-                Every order is approved automatically—no extra steps from you.
-              </p>
+              <p className="text-sm text-muted-foreground">Every order is auto-approved.</p>
             </div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-4 py-2 text-sm font-medium text-primary transition hover:bg-primary hover:text-primary-foreground"
-            >
+            <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-4 py-2 text-sm font-medium text-primary transition hover:bg-primary hover:text-primary-foreground">
               Explore new arrivals
             </Link>
           </div>
@@ -116,30 +102,22 @@ export default async function DashboardPage() {
           <div className="mt-8 space-y-4">
             {orders.length === 0 ? (
               <p className="rounded-3xl border border-dashed border-muted-foreground/30 p-6 text-sm text-muted-foreground">
-                You haven’t placed an order yet. Discover handcrafted shawls in the shop—once
-                you check out, your order timeline will appear here instantly.
+                No orders yet. Shop the collection—your timeline will appear here.
               </p>
             ) : (
-              orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5"
-                >
+              orders.map((order: OrderRow) => (
+                <div key={order.id} className="rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-medium text-foreground">
-                        Order #{order.id.slice(0, 8)}
-                      </p>
+                      <p className="font-medium text-foreground">Order #{order.id.slice(0, 8)}</p>
                       <p className="text-xs text-muted-foreground">
                         {dateFormatter.format(order.createdAt)} · {order.status}
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {formatCurrency(order.total)}
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">{formatCurrency(order.total)}</p>
                   </div>
                   <div className="mt-4 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
-                    {order.items.map((item) => (
+                    {order.items.map((item: OrderItemRow) => (
                       <p key={item.id}>
                         {item.quantity} × {item.product?.title ?? "Classic shawl"}
                       </p>
@@ -156,40 +134,16 @@ export default async function DashboardPage() {
             <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
               <MessageCircle className="size-5 text-primary" /> Atelier conversations
             </h2>
-            <span className="text-xs text-muted-foreground">
-              {contactEntries.length} latest messages
-            </span>
+            <span className="text-xs text-muted-foreground">0 latest messages</span>
           </div>
 
           <div className="mt-6 space-y-4">
-            {contactEntries.length === 0 ? (
-              <p className="rounded-3xl border border-dashed border-muted-foreground/30 p-6 text-sm text-muted-foreground">
-                Reach out through the contact form for styling guidance or bespoke requests—
-                your messages will live here for easy follow-up.
-              </p>
-            ) : (
-              contactEntries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-foreground">You wrote</p>
-                      <p className="text-xs text-muted-foreground">
-                        {dateFormatter.format(entry.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-sm text-muted-foreground whitespace-pre-line">
-                    {entry.message}
-                  </p>
-                </div>
-              ))
-            )}
+            <p className="rounded-3xl border border-dashed border-muted-foreground/30 p-6 text-sm text-muted-foreground">
+              Reach out via the contact form—your messages will show here for easy follow-up.
+            </p>
           </div>
         </div>
       </section>
     </div>
-  )
+  );
 }

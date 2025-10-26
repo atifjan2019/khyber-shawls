@@ -1,124 +1,109 @@
-"use server";
+// app/(auth)/actions.ts
+'use server';
 
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import { verifyPassword, hashPassword } from '@/lib/passwords';
 
-import {
-  clearSessionCookie,
-  hashPassword,
-  setSessionCookie,
-  verifyPassword,
-} from "@/lib/auth";
-import { prisma } from "@/lib/prisma"; // ← use prisma directly
+export type LoginState = { error?: string };
 
-type AuthActionState = {
-  error?: string;
-};
+const SESSION_COOKIE = 'session';
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Please provide your full name"),
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  redirectTo: z.string().optional(),
-});
-
-export async function registerAction(
-  _prevState: AuthActionState,
-  formData: FormData
-): Promise<AuthActionState> {
-  const parsed = registerSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    redirectTo: formData.get("redirectTo") ?? undefined,
-  });
-
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid form submission" };
-  }
-
-  try {
-    const existing = await prisma.user.findUnique({
-      where: { email: parsed.data.email },
-    });
-    if (existing) {
-      return { error: "An account already exists for this email." };
-    }
-
-    const hashedPassword = await hashPassword(parsed.data.password);
-    const hasAdmin = await prisma.user.count({ where: { role: "ADMIN" } });
-
-    const user = await prisma.user.create({
-      data: {
-        name: parsed.data.name,
-        email: parsed.data.email,
-        password: hashedPassword,
-        role: hasAdmin === 0 ? "ADMIN" : "USER",
-      },
-    });
-
-    await setSessionCookie({ userId: user.id, role: user.role });
-    revalidatePath("/");
-
-    redirect(parsed.data.redirectTo || "/dashboard");
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unexpected error while registering.";
-    return { error: message };
-  }
+function hashToId(email: string) {
+  return Buffer.from(email).toString('base64url').slice(0, 16);
 }
-
-const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  redirectTo: z.string().optional(),
-});
 
 export async function loginAction(
-  _prevState: AuthActionState,
+  _prev: LoginState,
   formData: FormData
-): Promise<AuthActionState> {
-  const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-    redirectTo: formData.get("redirectTo") ?? undefined,
+): Promise<LoginState> {
+  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const password = String(formData.get('password') ?? '');
+  const callbackUrl = String(formData.get('callbackUrl') ?? '') || '/dashboard';
+
+  if (!email || !password) {
+    return { error: 'Email and password are required.' };
+  }
+
+  // 1) Find user
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // 2) If no user, allow first-time admin bootstrap using env (optional)
+  if (!user) {
+    const envAdminEmail = (process.env.ADMIN_EMAIL || '').toLowerCase();
+    const envAdminPassword = process.env.ADMIN_PASSWORD || '';
+
+    if (envAdminEmail && envAdminPassword && email === envAdminEmail) {
+      // auto-provision the admin user on first login using env password
+      const passwordHash = await hashPassword(envAdminPassword);
+      const created = await prisma.user.create({
+        data: {
+          email,
+          name: process.env.ADMIN_NAME || 'Khyber Admin',
+          role: 'ADMIN',
+          passwordHash,
+        },
+      });
+
+      // verify given password
+      const ok = password === envAdminPassword;
+      if (!ok) return { error: 'Invalid email or password.' };
+
+      const jar = await cookies();
+      jar.set(SESSION_COOKIE, JSON.stringify({
+        id: created.id,
+        email: created.email,
+        name: created.name,
+        role: created.role,
+      }), {
+        httpOnly: true,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7,
+      });
+
+      // admins go to admin overview by default
+      redirect('/admin/overview');
+      return {};
+    }
+
+    // Otherwise, no account
+    return { error: 'No account found for this email.' };
+  }
+
+  // 3) Verify password
+  const ok = await verifyPassword(password, user.passwordHash);
+  if (!ok) {
+    return { error: 'Invalid email or password.' };
+  }
+
+  // 4) Create session cookie with user info
+  const jar = await cookies();
+  jar.set(SESSION_COOKIE, JSON.stringify({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  }), {
+    httpOnly: true,
+    path: '/',
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7,
   });
 
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid credentials" };
+  // 5) Redirect by role
+  if (user.role === 'ADMIN' && (callbackUrl === '/' || callbackUrl === '/dashboard')) {
+    redirect('/admin/overview');
   }
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email: parsed.data.email },
-    });
-
-    if (!user) {
-      return { error: "No account found for this email." };
-    }
-
-    const passwordValid = await verifyPassword(parsed.data.password, user.password);
-    if (!passwordValid) {
-      return { error: "Invalid email or password." };
-    }
-
-    await setSessionCookie({ userId: user.id, role: user.role });
-    revalidatePath("/");
-
-    if (parsed.data.redirectTo) redirect(parsed.data.redirectTo);
-    if (user.role === "ADMIN") redirect("/admin");
-
-    redirect("/dashboard");
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unexpected error while logging in.";
-    return { error: message };
-  }
+  redirect(callbackUrl);
 }
 
-export async function logoutAction() {
-  await clearSessionCookie();
-  revalidatePath("/");
-  redirect("/");
+export async function logout(): Promise<void> {
+  const jar = await cookies();
+  jar.delete(SESSION_COOKIE);
+  redirect('/login');
 }
