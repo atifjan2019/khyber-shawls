@@ -28,8 +28,6 @@ export type SerializedCategory = {
 };
 
 // -------- Minimal local types to avoid stale @prisma/client ----------
-type MediaLite = { url: string | null; alt: string | null } | null;
-type GalleryItemLite = { position: number; media: { id: string; url: string; alt: string | null } };
 type CategoryLite = {
   id: string;
   name: string;
@@ -41,15 +39,13 @@ type CategoryLite = {
 
 type ProductWithRelations = {
   id: string;
-  title: string;
+  name: string;
   description: string;
   price: any;
-  slug: string;
-  published: boolean;
-  inventory: number;
+  image: string;
+  inStock: boolean;
   category?: Pick<CategoryLite, "name" | "slug"> | null;
-  featuredImage?: MediaLite;
-  gallery?: Array<GalleryItemLite>;
+  categoryId: string;
 };
 
 type CategoryWithRelations = CategoryLite & {
@@ -122,22 +118,19 @@ function stripSampleProduct(sample: SampleProduct): SerializedProduct {
 }
 
 function serializeProduct(product: ProductWithRelations): SerializedProduct {
+  // Generate a slug from the name if needed (since schema doesn't have slug)
+  const slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  
   return {
     id: product.id,
-    title: product.title,
+    title: product.name,
     description: product.description,
     price: Number(product.price),
-    slug: product.slug,
-    published: product.published,
-    featuredImageUrl: product.featuredImage?.url ?? null,
-    featuredImageAlt: product.featuredImage?.alt ?? null,
-    gallery:
-      product.gallery?.map((item) => ({
-        id: item.media.id,
-        url: item.media.url,
-        alt: item.media.alt ?? null,
-        position: item.position,
-      })) ?? [],
+    slug: slug,
+    published: product.inStock,
+    featuredImageUrl: product.image || null,
+    featuredImageAlt: product.name || null,
+    gallery: [],
     categoryName: product.category?.name ?? null,
     categorySlug: product.category?.slug ?? null,
   };
@@ -165,8 +158,6 @@ export async function fetchPublishedProducts() {
     where: { inStock: true },
     include: {
       category: true,
-      featuredImage: true,
-      gallery: { include: { media: true }, orderBy: { position: "asc" } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -197,8 +188,6 @@ export async function fetchProductsByCategorySlug(slug: string) {
         where: { inStock: true },
         include: {
           category: true,
-          featuredImage: true,
-          gallery: { include: { media: true }, orderBy: { position: "asc" } },
         },
         orderBy: { createdAt: "desc" },
       },
@@ -258,8 +247,6 @@ export async function fetchProductSummariesByIds(ids: string[]) {
     where: { id: { in: ids } },
     include: {
       category: true,
-      featuredImage: true,
-      gallery: { include: { media: true }, orderBy: { position: "asc" } },
     },
   });
 
@@ -280,17 +267,23 @@ export async function fetchProductBySlug(slug: string): Promise<SerializedProduc
     return { ...base, inventory: sample.inventory };
   }
 
-  // findFirst so we can ensure deletedAt: null
-  const product = await prisma.product.findFirst({
-    where: { slug },
+  // Since we don't have a slug field, we need to find all products and filter by slug
+  // This is not ideal but necessary given the schema constraints
+  const products = await prisma.product.findMany({
+    where: { inStock: true },
     include: {
       category: true,
-      featuredImage: true,
-      gallery: { include: { media: true }, orderBy: { position: "asc" } },
     },
   });
 
-  if (!product || !product.inStock) return null;
+  // Find the product that matches the slug (slug is generated from name)
+  const product = products.find(p => {
+    const productSlug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return productSlug === slug;
+  });
 
-  return { ...(serializeProduct(product as unknown as ProductWithRelations)), inventory: (product as any).inventory };
+  if (!product) return null;
+
+  // Return with inventory set to 0 since the schema doesn't have this field
+  return { ...(serializeProduct(product as unknown as ProductWithRelations)), inventory: 0 };
 }

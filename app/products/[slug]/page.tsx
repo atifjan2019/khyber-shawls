@@ -7,22 +7,12 @@ import { CheckCircle2, ShieldCheck, Truck } from "lucide-react"
 
 import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/currency"
+import { fetchProductBySlug } from "@/lib/products"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://khybershawls.com"
-
-async function loadProduct(slug: string) {
-  return prisma.product.findUnique({
-    where: { slug },
-    include: {
-      category: true,
-      featuredImage: true,
-      gallery: { include: { media: true }, orderBy: { position: "asc" } },
-    },
-  })
-}
 
 type PageProps = { params: { slug?: string } | Promise<{ slug?: string }> }
 
@@ -35,15 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const slug = resolvedParams?.slug ?? ""
   if (!slug) return {}
 
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    select: {
-      title: true,
-      description: true,
-      published: true,
-      featuredImage: { select: { url: true } },
-    },
-  })
+  const product = await fetchProductBySlug(slug)
 
   if (!product || !product.published) {
     return {}
@@ -54,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     product.description?.slice(0, 155) ??
     "Discover handcrafted Kashmiri shawls curated by Khyber Shawls."
   const canonical = `${SITE_URL}/products/${slug}`
-  const ogImages = product.featuredImage?.url ? [{ url: product.featuredImage.url }] : undefined
+  const ogImages = product.featuredImageUrl ? [{ url: product.featuredImageUrl }] : undefined
 
   return {
     title,
@@ -86,7 +68,7 @@ export default async function ProductPage({ params }: PageProps) {
     notFound()
   }
 
-  const product = await loadProduct(slug)
+  const product = await fetchProductBySlug(slug)
 
   if (!product) {
     return (
@@ -134,27 +116,35 @@ export default async function ProductPage({ params }: PageProps) {
     )
   }
 
-  const galleryItems = product.gallery?.length ? product.gallery : []
-  const mainImageUrl =
-    product.featuredImage?.url ?? galleryItems?.[0]?.media.url ?? "/placeholder.svg"
-  const mainImageAlt =
-    product.featuredImage?.alt ?? galleryItems?.[0]?.media.alt ?? product.title
+  // Gallery is empty since schema doesn't support it - just use featured image
+  const galleryItems = product.gallery || []
+  const mainImageUrl = product.featuredImageUrl ?? "/placeholder.svg"
+  const mainImageAlt = product.featuredImageAlt ?? product.title
 
-  const related = await prisma.product.findMany({
-    where: {
-      published: true,
-      categoryId: product.categoryId ?? undefined,
-      id: { not: product.id },
-    },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      price: true,
-      featuredImage: { select: { url: true, alt: true } },
-    },
-    take: 4,
-  })
+  // Fetch related products - find by category slug
+  const related: any[] = []
+  if (product.categorySlug) {
+    const category = await prisma.category.findUnique({
+      where: { slug: product.categorySlug },
+      include: {
+        products: {
+          where: {
+            inStock: true,
+            id: { not: product.id },
+          },
+          take: 4,
+        },
+      },
+    })
+    
+    related.push(...(category?.products || []).map(p => ({
+      id: p.id,
+      title: p.name,
+      slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      price: p.price,
+      featuredImage: { url: p.image, alt: p.name },
+    })))
+  }
 
   const productLD = {
     "@context": "https://schema.org",
@@ -168,7 +158,7 @@ export default async function ProductPage({ params }: PageProps) {
       priceCurrency: "PKR",
       price: Number(product.price ?? 0),
       availability: "https://schema.org/InStock",
-      url: `${SITE_URL}/products/${product.slug}`,
+      url: `${SITE_URL}/products/${slug}`,
     },
   }
 
@@ -205,30 +195,13 @@ export default async function ProductPage({ params }: PageProps) {
             />
           </div>
 
-          {galleryItems.length > 1 && (
-            <div className="flex flex-wrap gap-3">
-              {galleryItems.slice(1, 6).map((item) => (
-                <div
-                  key={item.id}
-                  className="relative h-20 w-20 overflow-hidden rounded-xl border border-white/10"
-                >
-                  <Image
-                    src={item.media.url}
-                    alt={item.media.alt ?? product.title}
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Gallery not supported in current schema */}
         </section>
 
         <aside className="w-full rounded-3xl border border-white/10 bg-background/70 p-6 shadow-xl backdrop-blur lg:max-w-sm">
           <header className="space-y-2">
             <p className="text-xs uppercase tracking-[0.25em] text-amber-700">
-              {product.category?.name ?? "Signature Collection"}
+              {product.categoryName ?? "Signature Collection"}
             </p>
             <h1 className="text-3xl font-semibold text-foreground lg:text-[2.2rem]">
               {product.title}
@@ -268,11 +241,11 @@ export default async function ProductPage({ params }: PageProps) {
               <Link href="/" className="hover:text-foreground">Home</Link>
               <span>/</span>
               <Link href="/products" className="hover:text-foreground">Products</Link>
-              {product.category && (
+              {product.categorySlug && product.categoryName && (
                 <>
                   <span>/</span>
-                  <Link href={`/category/${product.category.slug}`} className="hover:text-foreground">
-                    {product.category.name}
+                  <Link href={`/category/${product.categorySlug}`} className="hover:text-foreground">
+                    {product.categoryName}
                   </Link>
                 </>
               )}

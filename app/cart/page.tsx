@@ -53,10 +53,15 @@ export default function CartPage() {
         })
         setProductMap(nextMap)
       } catch (error) {
-        if (!active) return
+        // Ignore AbortError - it's expected when component unmounts or dependencies change
         if (error instanceof DOMException && error.name === "AbortError") {
           return
         }
+        if (error instanceof Error && error.name === "AbortError") {
+          return
+        }
+        if (!active) return
+        
         console.error("Unable to fetch cart products", error)
         setProductMap({})
       } finally {

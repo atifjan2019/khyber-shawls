@@ -68,8 +68,7 @@ export async function createProductAction(
       featuredImageId = media.id;
     }
 
-    // Handle gallery files
-    let galleryMediaIds: string[] = [];
+    // Handle gallery files - schema doesn't support gallery, just create media
     const galleryFiles = formData.getAll("galleryFiles") as File[];
     for (const file of galleryFiles) {
       if (file.size === 0) continue;
@@ -84,31 +83,27 @@ export async function createProductAction(
 
       await writeFile(path.join(uploadDir, filename), buffer);
 
-      const media = await prisma.media.create({
+      await prisma.media.create({
         data: { url: publicUrl, alt: "" },
       });
-      galleryMediaIds.push(media.id);
+      // Note: Gallery is not supported in current schema
+    }
+
+    // Get image URL if featuredImageId exists
+    let imageUrl = "";
+    if (featuredImageId) {
+      const media = await prisma.media.findUnique({ where: { id: featuredImageId } });
+      imageUrl = media?.url || "";
     }
 
     await prisma.product.create({
       data: {
-        title: parsed.data.title,
-        slug: slugify(parsed.data.title),
+        name: parsed.data.title,
         description: parsed.data.description,
         price: parsed.data.price,
-        inventory: parsed.data.inventory,
-        published: !!parsed.data.published,
+        image: imageUrl,
         categoryId: parsed.data.categoryId,
-        authorId: user.id,
-        ...(featuredImageId && { featuredImageId }),
-        ...(galleryMediaIds.length > 0 && {
-          gallery: {
-            create: galleryMediaIds.map((mediaId, index) => ({
-              mediaId,
-              position: index,
-            })),
-          },
-        }),
+        inStock: !!parsed.data.published,
       },
     });
 
@@ -171,7 +166,7 @@ export async function updateProductAction(
       featuredImageId = media.id;
     }
 
-    // Handle gallery files
+    // Handle gallery files - schema doesn't support gallery, so we just create media
     const galleryFiles = formData.getAll("galleryFiles") as File[];
     for (const file of galleryFiles) {
       if (file.size === 0) continue;
@@ -186,30 +181,28 @@ export async function updateProductAction(
 
       await writeFile(path.join(uploadDir, filename), buffer);
 
-      const media = await prisma.media.create({
+      await prisma.media.create({
         data: { url: publicUrl, alt: "" },
       });
+      // Note: Gallery is not supported in current schema
+    }
 
-      // Add to gallery
-      await prisma.productMedia.create({
-        data: {
-          productId: parsed.data.productId,
-          mediaId: media.id,
-          position: 0,
-        },
-      });
+    // Get image URL if featuredImageId exists
+    let imageUrl = undefined;
+    if (featuredImageId) {
+      const media = await prisma.media.findUnique({ where: { id: featuredImageId } });
+      imageUrl = media?.url || "";
     }
 
     await prisma.product.update({
       where: { id: parsed.data.productId },
       data: {
-        title: parsed.data.title,
+        name: parsed.data.title,
         description: parsed.data.description,
         price: parsed.data.price,
-        inventory: parsed.data.inventory,
         categoryId: parsed.data.categoryId,
-        published: parsed.data.published === "true" || parsed.data.published === true,
-        ...(featuredImageId && { featuredImageId }),
+        inStock: parsed.data.published === "true" || parsed.data.published === true,
+        ...(imageUrl !== undefined && { image: imageUrl }),
       },
     });
 
@@ -238,9 +231,9 @@ export async function deleteProductAction(
       return { error: "Invalid product ID" };
     }
 
-    await prisma.product.update({
+    // Product model doesn't have deletedAt field, so we use delete instead
+    await prisma.product.delete({
       where: { id: parsed.data.productId },
-      data: { deletedAt: new Date() },
     });
 
     revalidatePath("/admin/products");
@@ -357,7 +350,7 @@ export async function createBlogPostAction(
       return { error: "Please fill in all required fields" };
     }
 
-    await prisma.BlogPost.create({
+    await prisma.blogPost.create({
       data: {
         title: parsed.data.title,
         slug: parsed.data.slug,

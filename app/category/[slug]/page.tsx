@@ -5,10 +5,15 @@ import { CategoryView } from "./view";
 
 export const runtime = "nodejs";
 
-type PageProps = { params: { slug: string } };
+type PageProps = { params: { slug?: string } | Promise<{ slug?: string }> };
 
 export default async function CategoryPage({ params }: PageProps) {
-  const { slug } = params;
+  const resolvedParams =
+    typeof (params as unknown as Promise<unknown>)?.then === "function"
+      ? await (params as Promise<{ slug?: string }>)
+      : (params as { slug?: string });
+  
+  const slug = resolvedParams?.slug;
   if (!slug) notFound();
 
   const data = await fetchProductsByCategorySlug(slug);

@@ -77,22 +77,18 @@ export default async function AdminProductsPage() {
   // ✅ Ensure description is a string (not null) to satisfy ProductListItem prop type
   const productsForDisplay: AdminProductRow[] = products.map((p: any) => ({
     id: p.id,
-    title: toStringOr(p.title),
+    title: toStringOr(p.name), // Schema has 'name', not 'title'
     description: toStringOr(p.description, ""), // ← fix: never null
     price: Number(p.price),
     priceLabel: formatCurrency(p.price),
-    inventory: Number(p.inventory ?? 0),
+    inventory: 0, // Schema doesn't have inventory field
     categoryId: toStringOr(p.categoryId ?? ""),
     categoryName: p.category?.name ?? null,
-    published: !!p.published,
-    featuredImageId: p.featuredImageId ?? null,
-    featuredImageUrl: p.featuredImage?.url ?? null,
-    featuredImageAlt: p.featuredImage?.alt ?? null,
-    galleryMediaIds: Array.isArray(p.gallery)
-      ? p.gallery
-          .map((g: { mediaId?: string; media?: { id?: string } }) => toStringOr(g?.mediaId ?? g?.media?.id ?? ""))
-          .filter(Boolean)
-      : [],
+    published: !!p.inStock, // Schema has 'inStock', not 'published'
+    featuredImageId: null,
+    featuredImageUrl: p.image ?? null,
+    featuredImageAlt: null,
+    galleryMediaIds: [],
   }));
 
   return (

@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { fetchCategoriesWithProducts, fetchPublishedProducts } from "@/lib/products"
+import { formatCurrency } from "@/lib/currency"
 
 export default async function CollectionsPage() {
   const [categories, products] = await Promise.all([
@@ -76,7 +77,7 @@ export default async function CollectionsPage() {
             >
               <div className="relative h-60 w-full overflow-hidden">
                 <Image
-                  src={product.featuredImageUrl ?? product.gallery[0]?.url ?? "/placeholder.svg"}
+                  src={product.featuredImageUrl ?? "/placeholder.svg"}
                   alt={product.featuredImageAlt ?? product.title}
                   fill
                   className="object-cover transition duration-500 group-hover:scale-105"
@@ -90,7 +91,7 @@ export default async function CollectionsPage() {
                   {product.title}
                 </h3>
                 <p className="text-sm text-gray-700">
-                  ${typeof product.price === "number" ? product.price.toFixed(2) : product.price}
+                  {formatCurrency(product.price)}
                 </p>
               </div>
             </Link>

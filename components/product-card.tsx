@@ -3,6 +3,7 @@
 import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
+import { formatCurrency } from "@/lib/currency"
 type ProductCardProduct = {
   id: string
   title: string
@@ -53,7 +54,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         </div>
         <div className="mt-auto flex items-center justify-between">
           <span className="text-base font-semibold">
-            ${product.price.toFixed(0)}
+            {formatCurrency(product.price)}
           </span>
           <Button size="sm" onClick={() => onAddToCart(product.id)}>
             Add to cart
