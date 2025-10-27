@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react"
+import { Toast } from "@/components/ui/toast"
 
 const CartContext = createContext<CartContextValue | undefined>(undefined)
 
@@ -31,6 +32,8 @@ export type CartContextValue = {
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
+  const [toastMessage, setToastMessage] = useState("")
+  const [showToast, setShowToast] = useState(false)
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -52,6 +55,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   }, [items, isHydrated])
 
+  const showToastWithMessage = useCallback((message: string) => {
+    setToastMessage(message)
+    setShowToast(true)
+  }, [])
+
   const addItem = useCallback((id: string, quantity = 1) => {
     setItems((prev) => {
       const existing = prev.find((item) => item.id === id)
@@ -64,7 +72,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prev, { id, quantity }]
     })
-  }, [])
+    showToastWithMessage("Item added to cart")
+  }, [showToastWithMessage])
 
   const removeItem = useCallback((id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id))
@@ -93,7 +102,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [addItem, clearCart, isHydrated, items, removeItem, updateQuantity]
   )
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      <Toast
+        message={toastMessage}
+        show={showToast}
+        onClose={() => setShowToast(false)}
+      />
+    </CartContext.Provider>
+  )
 }
 
 export function useCart() {

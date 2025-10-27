@@ -1,20 +1,25 @@
 "use client"
 
-import { useActionState } from "react"
+import { useState, useTransition } from "react"
 import { uploadMediaAction } from "@/app/admin/actions"
 import { Button } from "@/components/ui/button"
 
-const initialState = { success: "", error: "" }
+type State = { success?: string; error?: string };
 
 export function MediaUploadForm() {
-  const [state, formAction, isPending] = useActionState(
-    uploadMediaAction,
-    initialState
-  )
+  const [state, setState] = useState<State>({});
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = async (formData: FormData) => {
+    startTransition(async () => {
+      const result = await uploadMediaAction(formData);
+      setState(result);
+    });
+  };
 
   return (
     <form
-      action={formAction}
+      action={handleSubmit}
       className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-background/90 p-6 shadow-lg"
     >
       <div>

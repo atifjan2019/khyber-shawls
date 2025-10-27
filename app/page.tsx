@@ -5,24 +5,25 @@ import Link from "next/link"
 import { HeroCarousel } from "@/components/hero-carousel"
 import { fetchAllHeroContent } from "@/lib/hero"
 import { fetchCategoriesWithProducts, fetchPublishedProducts } from "@/lib/products"
-import { formatCurrency } from "@/lib/currency"
+import { formatCurrency } from "@/lib/currency";
+import { FromTheJournal } from "@/components/from-the-journal";
+import { fetchLatestPosts, SerializedPost } from "@/lib/journal";
+import { Testimonials } from "@/components/testimonials";
+import { ProductCard } from "@/components/product-card";
 
 export default async function HomePage() {
 
-  const [heroSlides, products, categories]: [any[], import("@/lib/products").SerializedProduct[], import("@/lib/products").SerializedCategory[]] = await Promise.all([
+  const [heroSlides, products, categories, posts]: [any[], import("@/lib/products").SerializedProduct[], import("@/lib/products").SerializedCategory[], SerializedPost[]] = await Promise.all([
     fetchAllHeroContent(),
     fetchPublishedProducts(),
     fetchCategoriesWithProducts(),
-  ])
-
-  const homeHeroSlides = heroSlides.filter((slide) =>
-    slide.key === "home"
-  )
+    fetchLatestPosts(),
+  ]);
 
   return (
     <div className="bg-white">
       {/* ======================= HERO ======================= */}
-      <HeroCarousel slides={homeHeroSlides} fallbackImage="/hero/khyber-hero.jpg" />
+      <HeroCarousel slides={heroSlides} fallbackImage="/hero/khyber-hero.jpg" />
 
            {/* ======================= BEST SELLERS ======================= */}
       <section className="mx-auto max-w-7xl px-6 py-20">
@@ -37,30 +38,41 @@ export default async function HomePage() {
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {products.slice(0, 8).map((p: import("@/lib/products").SerializedProduct) => (
+          {products.slice(0, 8).map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      </section>
+
+      {/* ======================= SHOP BY CATEGORY ======================= */}
+      <section className="mx-auto max-w-7xl px-6 py-20">
+        <div className="flex items-end justify-between gap-4 mb-8">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Shop by Category</p>
+            <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Explore Our Collections</h2>
+          </div>
+          <Link href="/collections" className="text-sm font-medium text-amber-700 hover:text-amber-800">
+            View all →
+          </Link>
+        </div>
+
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.slice(0, 3).map((category) => (
             <Link
-              key={p.id}
-              href={`/products/${p.slug}`}
-              className="group rounded-3xl overflow-hidden bg-white shadow hover:shadow-lg transition"
+              key={category.id}
+              href={`/category/${category.slug}`}
+              className="group relative block overflow-hidden rounded-3xl"
             >
-              <div className="relative h-64">
-                <Image
-                  src={p.featuredImageUrl ?? p.gallery?.[0]?.url ?? "/placeholder.svg"}
-                  alt={p.featuredImageAlt ?? p.gallery?.[0]?.alt ?? p.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <span className="absolute bottom-3 right-3 rounded-full bg-amber-700/95 px-3 py-1 text-xs text-white">
-                  {formatCurrency(p.price)}
-                </span>
-              </div>
-              <div className="p-4">
-                <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
-                  {p.categoryName ?? "Signature"}
-                </p>
-                <h3 className="mt-1 text-base font-semibold text-gray-900 group-hover:text-amber-700">
-                  {p.title}
-                </h3>
+              <Image
+                src={category.featuredImageUrl ?? "/placeholder.svg"}
+                alt={category.name}
+                width={800}
+                height={600}
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <h3 className="text-2xl font-semibold text-white">{category.name}</h3>
               </div>
             </Link>
           ))}
@@ -111,35 +123,19 @@ export default async function HomePage() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {products
             .slice(0, 12)
-            .sort((a: import("@/lib/products").SerializedProduct, b: import("@/lib/products").SerializedProduct) => (a.id < b.id ? 1 : -1)) // simple pseudo "new" order
+            .sort((a, b) => (a.id < b.id ? 1 : -1)) // simple pseudo "new" order
             .slice(0, 8)
-            .map((p: import("@/lib/products").SerializedProduct) => (
-              <Link
-                key={p.id}
-                href={`/products/${p.slug}`}
-                className="group rounded-3xl overflow-hidden bg-white shadow hover:shadow-lg transition"
-              >
-                <div className="relative h-64">
-                  <Image
-                    src={p.featuredImageUrl ?? p.gallery?.[0]?.url ?? "/placeholder.svg"}
-                    alt={p.featuredImageAlt ?? p.gallery?.[0]?.alt ?? p.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
-                    {p.categoryName ?? "Signature"}
-                  </p>
-                  <h3 className="mt-1 text-base font-semibold text-gray-900 group-hover:text-amber-700">
-                    {p.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-600">{formatCurrency(p.price)}</p>
-                </div>
-              </Link>
+            .map((p) => (
+              <ProductCard key={p.id} product={p} />
             ))}
         </div>
       </section>
+
+      <FromTheJournal posts={posts} />
+
+      <Testimonials />
+
+      {/* ======================= WHY KHYBER IS THE BEST ======================= */}
 
       {/* ======================= WHY KHYBER IS THE BEST ======================= */}
       <section className="mx-auto max-w-6xl px-6 py-20">
@@ -219,35 +215,13 @@ export default async function HomePage() {
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {categories
-            .filter((c: import("@/lib/products").SerializedCategory) => c.slug.includes("women"))
+            .filter((c) => c.slug.includes("women"))
             .slice(0, 1)
-            .flatMap((c: import("@/lib/products").SerializedCategory) =>
-              products.filter((p: import("@/lib/products").SerializedProduct) => p.categoryName === c.name).slice(0, 8)
+            .flatMap((c) =>
+              products.filter((p) => p.categoryName === c.name).slice(0, 8)
             )
-            .map((p: import("@/lib/products").SerializedProduct) => (
-              <Link
-                key={p.id}
-                href={`/products/${p.slug}`}
-                className="group rounded-3xl overflow-hidden bg-white shadow hover:shadow-lg transition"
-              >
-                <div className="relative h-64">
-                  <Image
-                    src={p.featuredImageUrl ?? p.gallery?.[0]?.url ?? "/placeholder.svg"}
-                    alt={p.featuredImageAlt ?? p.gallery?.[0]?.alt ?? p.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
-                    {p.categoryName ?? "Signature"}
-                  </p>
-                  <h3 className="mt-1 text-base font-semibold text-gray-900 group-hover:text-amber-700">
-                    {p.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-600">{formatCurrency(p.price)}</p>
-                </div>
-              </Link>
+            .map((p) => (
+              <ProductCard key={p.id} product={p} />
             ))}
         </div>
       </section>
@@ -280,30 +254,8 @@ export default async function HomePage() {
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {products.slice(0, 12).map((p: import("@/lib/products").SerializedProduct) => (
-            <Link
-              key={p.id}
-              href={`/products/${p.slug}`}
-              className="group rounded-3xl overflow-hidden bg-white shadow hover:shadow-lg transition"
-            >
-              <div className="relative h-64">
-                <Image
-                  src={p.featuredImageUrl ?? p.gallery?.[0]?.url ?? "/placeholder.svg"}
-                  alt={p.featuredImageAlt ?? p.gallery?.[0]?.alt ?? p.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
-                  {p.categoryName ?? "Signature"}
-                </p>
-                <h3 className="mt-1 text-base font-semibold text-gray-900 group-hover:text-amber-700">
-                  {p.title}
-                </h3>
-                <p className="mt-1 text-sm text-gray-600">{formatCurrency(p.price)}</p>
-              </div>
-            </Link>
+          {products.slice(0, 12).map((p) => (
+            <ProductCard key={p.id} product={p} />
           ))}
         </div>
       </section>

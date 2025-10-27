@@ -7,7 +7,7 @@ import path from "path";
 import { mkdir, writeFile, unlink } from "fs/promises";
 
 import { prisma } from "@/lib/prisma";
-import { requireUser, requireAdmin } from "@/lib/auth";
+import { requireUser, requireAdmin, getCurrentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
 
 export type ActionState = { error?: string; success?: string };
@@ -498,14 +498,20 @@ export async function updateOrderStatusAction(
 // ============================================================================
 
 export async function uploadMediaAction(
-  _prev: ActionState | null,
   formData: FormData
 ): Promise<ActionState> {
+  console.log("uploadMediaAction called");
   try {
-    await requireUser();
+    const user = await getCurrentUser();
+    if (!user) {
+      console.log("uploadMediaAction: user not authenticated");
+      return { error: "Authentication required" };
+    }
 
     const files = formData.getAll("file") as File[];
     const alt = formData.get("alt") as string;
+    console.log(`uploadMediaAction: received ${files.length} files`);
+
 
     if (!files || files.length === 0) {
       return { error: "No files provided" };
@@ -529,9 +535,11 @@ export async function uploadMediaAction(
     let uploadedCount = 0;
     const errors: string[] = [];
 
+    console.log(`uploadMediaAction: starting upload of ${validFiles.length} files`);
     // Upload files sequentially to avoid overwhelming the server
     for (const file of validFiles) {
       try {
+        console.log(`uploadMediaAction: uploading ${file.name}`);
         const buffer = Buffer.from(await file.arrayBuffer());
         const safeName = file.name.replace(/\s+/g, "-");
         // Add timestamp and random number to avoid collisions when uploading multiple files at once
@@ -545,12 +553,14 @@ export async function uploadMediaAction(
         });
         
         uploadedCount++;
+        console.log(`uploadMediaAction: successfully uploaded ${file.name}`);
       } catch (error) {
         errors.push(file.name);
         console.error(`Error uploading ${file.name}:`, error);
       }
     }
 
+    console.log("uploadMediaAction: finished uploading files");
     revalidatePath("/admin/media");
     
     if (errors.length > 0) {
@@ -561,8 +571,8 @@ export async function uploadMediaAction(
     
     return { success: `${uploadedCount} file${uploadedCount === 1 ? '' : 's'} uploaded successfully` };
   } catch (error) {
-    console.error("Error uploading media:", error);
-    return { error: "Upload failed" };
+    console.error("Error in uploadMediaAction:", error);
+    return { error: "Upload failed due to an unexpected error." };
   }
 }
 

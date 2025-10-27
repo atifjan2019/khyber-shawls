@@ -2,9 +2,9 @@
 import prisma from "@/lib/prisma"
 
 export const HERO_CONFIGS = [
-  { key: "home",      label: "Homepage Hero" },
-  { key: "editorial", label: "Editorial Hero" },
-  { key: "seasonal",  label: "Seasonal Hero" },
+  { key: "home",      label: "Hero 1" },
+  { key: "editorial", label: "Hero 2" },
+  { key: "seasonal",  label: "Hero 3" },
 ] as const
 
 export type HeroKey = (typeof HERO_CONFIGS)[number]["key"]

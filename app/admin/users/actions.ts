@@ -100,7 +100,7 @@ export async function createUser(formData: FormData) {
       data: {
         email: parsed.data.email,
         name: parsed.data.name,
-        passwordHash: hashedPassword,
+        password: hashedPassword,
         role: parsed.data.role,
       },
     });

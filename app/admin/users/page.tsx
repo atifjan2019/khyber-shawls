@@ -6,30 +6,20 @@ import { UserRoleForm } from "./_components/user-role-form";
 import { CreateUserForm } from "./_components/create-user-form";
 import { deleteUser } from "./actions";
 
+type User = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  createdAt: Date;
+};
+
 export default async function AdminUsersPage() {
-  const users: Array<{
-    id: string;
-    email: string;
-    name: string | null;
-    role: string;
-    createdAt: Date;
-    _count: { orders: number };
-  }> = await prisma.user.findMany({
+  const users: User[] = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      createdAt: true,
-      _count: {
-        select: { orders: true }
-      }
-    }
   });
 
-  // Count admins for safety checks
-  const adminCount = users.filter(user => user.role === "ADMIN").length;
+  const adminCount = users.filter((user) => user.role === "ADMIN").length;
 
   return (
     <div className="space-y-6 p-6">
@@ -51,7 +41,6 @@ export default async function AdminUsersPage() {
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Joined</th>
-                <th className="px-4 py-3 font-medium">Orders</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
@@ -61,8 +50,8 @@ export default async function AdminUsersPage() {
                   <td className="px-4 py-3">{user.email}</td>
                   <td className="px-4 py-3">{user.name || "—"}</td>
                   <td className="px-4 py-3">
-                    <UserRoleForm 
-                      userId={user.id} 
+                    <UserRoleForm
+                      userId={user.id}
                       currentRole={user.role as "ADMIN" | "USER"}
                       disabled={user.role === "ADMIN" && adminCount === 1}
                     />
@@ -71,20 +60,8 @@ export default async function AdminUsersPage() {
                     {formatDate(user.createdAt)}
                   </td>
                   <td className="px-4 py-3">
-                    {user._count.orders > 0 ? (
-                      <Link 
-                        href={`/admin/orders?userId=${user.id}`}
-                        className="text-amber-700 hover:underline"
-                      >
-                        {user._count.orders} orders
-                      </Link>
-                    ) : (
-                      "No orders"
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
                     <form action={deleteUser.bind(null, user.id)}>
-                      <Button 
+                      <Button
                         type="submit"
                         variant="destructive"
                         size="sm"
