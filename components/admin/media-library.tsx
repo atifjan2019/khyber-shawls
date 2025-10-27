@@ -218,6 +218,9 @@ function MediaCard({ item }: { item: MediaLibraryItem }) {
 }
 
 export function MediaLibrary({ items }: { items: MediaLibraryItem[] }) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 3
+
   const sorted = useMemo(
     () =>
       [...items].sort((a, b) =>
@@ -225,6 +228,17 @@ export function MediaLibrary({ items }: { items: MediaLibraryItem[] }) {
       ),
     [items]
   )
+
+  const totalPages = Math.ceil(sorted.length / itemsPerPage)
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return sorted.slice(startIndex, startIndex + itemsPerPage)
+  }, [sorted, currentPage, itemsPerPage])
+
+  // Reset to page 1 when items change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [items.length])
 
   if (sorted.length === 0) {
     return (
@@ -235,10 +249,36 @@ export function MediaLibrary({ items }: { items: MediaLibraryItem[] }) {
   }
 
   return (
-    <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {sorted.map((item) => (
-        <MediaCard key={item.id} item={item} />
-      ))}
-    </ul>
+    <div className="space-y-4">
+      <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {paginatedItems.map((item) => (
+          <MediaCard key={item.id} item={item} />
+        ))}
+      </ul>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+    </div>
   )
 }

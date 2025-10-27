@@ -14,6 +14,7 @@ export default function CheckoutPage() {
   const [productMap, setProductMap] = useState<Record<string, SerializedProduct>>({})
 
   useEffect(() => {
+    let isMounted = true
     const controller = new AbortController()
     const ids = items.map((item) => item.id)
 
@@ -30,15 +31,29 @@ export default function CheckoutPage() {
     })
       .then((response) => response.json())
       .then((data: { products: SerializedProduct[] }) => {
+        if (!isMounted) return
         const nextMap: Record<string, SerializedProduct> = {}
         data.products.forEach((product) => {
           nextMap[product.id] = product
         })
         setProductMap(nextMap)
       })
-      .catch(() => {})
+      .catch((error) => {
+        if (!isMounted) return
+        // Ignore AbortError - it's expected when component unmounts or dependencies change
+        if (error instanceof Error && error.name === "AbortError") {
+          return
+        }
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return
+        }
+        // Silently handle other errors
+      })
 
-    return () => controller.abort()
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
   }, [items])
 
   const summary = useMemo(() => {

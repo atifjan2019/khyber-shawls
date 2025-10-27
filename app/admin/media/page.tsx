@@ -36,7 +36,7 @@ function toDate(value: string | Date | undefined): Date | undefined {
 export default async function AdminMediaPage() {
   const [heroes, mediaLibrary] = await Promise.all([
     fetchAllHeroContent(),
-    fetchMediaLibrary(24),
+    fetchMediaLibrary(30), // Fetch 30 items for pagination (10 pages of 3 items)
   ])
 
   const heroMap = new Map<string, any>(heroes.map((h: any) => [h.key, h]))

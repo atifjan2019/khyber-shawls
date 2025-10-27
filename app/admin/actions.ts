@@ -504,29 +504,62 @@ export async function uploadMediaAction(
   try {
     await requireUser();
 
-    const file = formData.get("file") as File;
+    const files = formData.getAll("file") as File[];
     const alt = formData.get("alt") as string;
 
-    if (!file || file.size === 0) {
-      return { error: "No file provided" };
+    if (!files || files.length === 0) {
+      return { error: "No files provided" };
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    // Filter out empty files
+    const validFiles = files.filter(file => file && file.size > 0);
+    
+    if (validFiles.length === 0) {
+      return { error: "No valid files to upload" };
+    }
+
+    // Limit to 100 files
+    if (validFiles.length > 100) {
+      return { error: "Maximum 100 files allowed per upload" };
+    }
+
     const uploadDir = path.join(process.cwd(), "public", "uploads");
     await mkdir(uploadDir, { recursive: true });
+    
+    let uploadedCount = 0;
+    const errors: string[] = [];
 
-    const safeName = file.name.replace(/\s+/g, "-");
-    const filename = `${Date.now()}-${safeName}`;
-    const publicUrl = `/uploads/${filename}`;
+    // Upload files sequentially to avoid overwhelming the server
+    for (const file of validFiles) {
+      try {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const safeName = file.name.replace(/\s+/g, "-");
+        // Add timestamp and random number to avoid collisions when uploading multiple files at once
+        const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${safeName}`;
+        const publicUrl = `/uploads/${filename}`;
 
-    await writeFile(path.join(uploadDir, filename), buffer);
+        await writeFile(path.join(uploadDir, filename), buffer);
 
-    await prisma.media.create({
-      data: { url: publicUrl, alt: alt || null },
-    });
+        await prisma.media.create({
+          data: { url: publicUrl, alt: alt || file.name },
+        });
+        
+        uploadedCount++;
+      } catch (error) {
+        errors.push(file.name);
+        console.error(`Error uploading ${file.name}:`, error);
+      }
+    }
 
     revalidatePath("/admin/media");
-    return { success: "File uploaded successfully" };
+    
+    if (errors.length > 0) {
+      return { 
+        error: `Uploaded ${uploadedCount} files, but failed to upload: ${errors.join(", ")}` 
+      };
+    }
+    
+    return { success: `${uploadedCount} file${uploadedCount === 1 ? '' : 's'} uploaded successfully` };
   } catch (error) {
     console.error("Error uploading media:", error);
     return { error: "Upload failed" };
