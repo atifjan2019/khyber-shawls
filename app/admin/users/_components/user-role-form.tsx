@@ -12,6 +12,7 @@ type UserRoleFormProps = {
 
 export function UserRoleForm({ userId, currentRole, disabled }: UserRoleFormProps) {
   const [isPending, setIsPending] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(currentRole);
 
   async function onSubmit(formData: FormData) {
     try {
@@ -27,14 +28,16 @@ export function UserRoleForm({ userId, currentRole, disabled }: UserRoleFormProp
       <input type="hidden" name="userId" value={userId} />
       <select
         name="role"
-        defaultValue={currentRole}
+        value={selectedRole}
+        onChange={(e) => setSelectedRole(e.target.value as "USER" | "ADMIN")}
         className="rounded-md border bg-background px-2 py-1.5 text-sm outline-none focus-visible:border-primary"
         disabled={disabled || isPending}
       >
         <option value="USER">User</option>
         <option value="ADMIN">Admin</option>
       </select>
-      {currentRole !== ((document.querySelector(`select[name="role"][value="${userId}"]`) as HTMLSelectElement)?.value) && (
+
+      {selectedRole !== currentRole && (
         <Button type="submit" size="sm" className="ml-2" disabled={disabled || isPending}>
           Save
         </Button>

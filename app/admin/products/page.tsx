@@ -50,14 +50,8 @@ export default async function AdminProductsPage() {
   const [categories, products, mediaLibrary] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({
-      where: { deletedAt: null },
       include: {
         category: true,
-        featuredImage: true,
-        gallery: {
-          include: { media: true },
-          orderBy: { position: "asc" },
-        },
       },
       orderBy: { createdAt: "desc" },
     }),

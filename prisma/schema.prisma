@@ -1,12 +1,5 @@
-// ---------------------------------------------
-// Prisma Schema for KhyberShawls (Next.js + MySQL)
-// ---------------------------------------------
-
 generator client {
   provider = "prisma-client-js"
-  // For Vercel, you can enable these:
-  // binaryTargets = ["native", "rhel-openssl-3.0.x"]
-  // engineType    = "binary"
 }
 
 datasource db {
@@ -14,116 +7,150 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ---------------------------------------------
-// ENUMS
-// ---------------------------------------------
-enum Role {
-  USER
-  ADMIN
-}
-
-// ---------------------------------------------
-// MODELS
-// ---------------------------------------------
-
 model User {
-  id           String  @id @default(cuid())
-  email        String  @unique
-  name         String?
-  role         Role    @default(USER)
-  passwordHash String
-
-  products       Product[]      @relation("UserProducts")
-  orders         Order[]
-  contactEntries ContactEntry[]
+  id             String         @id @default(cuid())
+  email          String         @unique
+  name           String?
+  password       String
+  role           String         @default("user")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   blogPosts      BlogPost[]     @relation("UserBlogPosts")
+  contactEntries ContactEntry[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("user")
+  @@map("users")
 }
 
-// ---------------------------------------------
+model ContactEntry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  userId    String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "contact_entries_userId_fkey")
+  @@map("contact_entries")
+}
 
 model Category {
   id               String    @id @default(cuid())
-  name             String
+  name             String    @unique
   slug             String    @unique
   summary          String?
   featuredImageUrl String?
   featuredImageAlt String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   products         Product[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("category")
+  @@map("categories")
 }
-
-// ---------------------------------------------
-
-model Media {
-  id        String   @id @default(cuid())
-  url       String
-  alt       String?
-  createdAt DateTime @default(now())
-
-  // ✅ Reverse relations added to satisfy Prisma
-  featuredInProducts Product[]      @relation("ProductFeaturedImage")
-  productMedia       ProductMedia[]
-  heroBackgrounds    HeroMedia[]    @relation("HeroBackgroundImage")
-}
-
-// ---------------------------------------------
 
 model Product {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  description String
-  price       Decimal   @db.Decimal(10, 2)
-  inventory   Int       @default(0)
-  published   Boolean   @default(false)
-  deletedAt   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          String      @id @default(cuid())
+  name        String
+  description String      @db.Text
+  price       Float
+  image       String
+  categoryId  String
+  inStock     Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  authorId String
-  author   User   @relation("UserProducts", fields: [authorId], references: [id])
-
-  orderItems OrderItem[]
-
-  featuredImageId String?
-  featuredImage   Media?  @relation("ProductFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
-
-  gallery ProductMedia[]
-
-  @@map("product")
+  @@index([categoryId], map: "products_categoryId_fkey")
+  @@map("products")
 }
 
-// ---------------------------------------------
-
-model ProductMedia {
-  id String @id @default(cuid())
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  mediaId String
-  media   Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-
-  position  Int      @default(0)
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  orders    Order[]
 
-  @@map("product_media")
+  @@map("customers")
 }
 
-// ---------------------------------------------
+model Order {
+  id         String      @id @default(cuid())
+  customerId String
+  total      Float
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  items      OrderItem[]
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId], map: "orders_customerId_fkey")
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([orderId], map: "order_items_orderId_fkey")
+  @@index([productId], map: "order_items_productId_fkey")
+  @@map("order_items")
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  excerpt   String?
+  content   String   @db.Text
+  published Boolean  @default(false)
+  authorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  image     String?
+  author    User?    @relation("UserBlogPosts", fields: [authorId], references: [id])
+
+  @@index([authorId], map: "blog_post_authorId_fkey")
+  @@map("blog_post")
+}
+
+model Media {
+  id        String      @id @default(cuid())
+  url       String
+  alt       String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  heroes    HeroMedia[]
+
+  @@map("media")
+}
+
+model HeroMedia {
+  id                String   @id @default(cuid())
+  key               String   @unique
+  title             String?
+  subtitle          String?
+  description       String?
+  ctaLabel          String?
+  ctaHref           String?
+  backgroundImageId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  backgroundImage   Media?   @relation(fields: [backgroundImageId], references: [id])
+
+  @@index([backgroundImageId], map: "hero_media_backgroundImageId_fkey")
+  @@map("hero_media")
+}
 
 enum OrderStatus {
   PENDING
@@ -131,93 +158,4 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
-}
-
-model Order {
-  id              String      @id @default(cuid())
-  userId          String?
-  user            User?       @relation(fields: [userId], references: [id])
-  customerName    String
-  customerEmail   String
-  customerPhone   String?
-  shippingAddress String
-  notes           String?     @db.Text
-  total           Decimal     @db.Decimal(10, 2)
-  status          OrderStatus @default(PENDING)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  items OrderItem[]
-
-  @@map("order")
-}
-
-// ---------------------------------------------
-
-model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  productId String
-  quantity  Int     @default(1)
-  price     Decimal @db.Decimal(10, 2)
-
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
-
-  @@map("order_item")
-}
-
-// ---------------------------------------------
-// CONTACT ENTRIES
-// ---------------------------------------------
-model ContactEntry {
-  id        String   @id @default(cuid())
-  email     String
-  name      String
-  message   String   @db.Text
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("contact_entry")
-}
-
-// ---------------------------------------------
-// HERO MEDIA
-// ---------------------------------------------
-model HeroMedia {
-  id                String   @id @default(cuid())
-  key               String   @unique
-  title             String
-  subtitle          String?
-  description       String?  
-  ctaLabel          String?
-  ctaHref           String?
-  backgroundImageId String?
-  backgroundImage   Media?   @relation("HeroBackgroundImage", fields: [backgroundImageId], references: [id])
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@map("hero_media")
-}
-
-// ---------------------------------------------
-// BLOG POST (JOURNAL)
-// ---------------------------------------------
-model BlogPost {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  content     String   @db.Text
-  excerpt     String?
-  image       String?
-  published   Boolean  @default(false)
-  authorId    String?
-  author      User?    @relation("UserBlogPosts", fields: [authorId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("blog_posts")
 }

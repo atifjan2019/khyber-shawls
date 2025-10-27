@@ -1,48 +1,29 @@
-// /app/admin/categories/page.tsx
 import Image from "next/image";
-import { CategoryForm } from "@/components/admin/category-form";
 import prisma from "@/lib/prisma";
+import { CategoryForm } from "@/components/admin/category-form";
+import { CategoryEditForm } from "@/components/admin/category-edit-form";
+import { DeleteCategoryButton } from "@/components/admin/delete-category-button";
 
 export const runtime = "nodejs";
-
-type AnyCategory = any; // keep it loose since schema differs locally
-
-// Try to pick an image URL from common scalar field names
-function getCategoryImage(category: AnyCategory) {
-  return (
-    category?.featuredImageUrl ||
-    category?.imageUrl ||
-    category?.thumbnailUrl ||
-    category?.heroImageUrl ||
-    category?.featuredImage ||     // if you happened to store a plain string in this name
-    ""
-  );
-}
-
-function getCategoryAlt(category: AnyCategory) {
-  return (
-    category?.featuredImageAlt ||
-    category?.imageAlt ||
-    category?.name ||
-    "Category"
-  );
-}
 
 export default async function AdminCategoriesPage() {
   if (!process.env.DATABASE_URL) {
     return (
       <div className="overflow-hidden rounded-4xl border border-primary/20 bg-gradient-to-br from-background via-background/90 to-primary/10 p-12 shadow-xl">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-          Database not configured
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Database not configured</h1>
         <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
           Add a valid <code>DATABASE_URL</code> to <code>.env.local</code> and restart the server to manage categories.
         </p>
       </div>
     );
   }
+  console.log('DB URL at runtime:', process.env.DATABASE_URL);
 
-  // IMPORTANT: no include for a non-existent relation
+// Raw checks (temporary)
+await prisma.$queryRawUnsafe('SELECT 1');
+await prisma.$queryRawUnsafe('SELECT COUNT(*) AS c FROM `categories`');
+
+
   const categories = await prisma.category.findMany({
     include: { products: true },
     orderBy: { name: "asc" },
@@ -72,34 +53,46 @@ export default async function AdminCategoriesPage() {
               Start by outlining your first category—everything you add appears instantly.
             </p>
           ) : (
-            categories.map((category: AnyCategory) => {
-              const url = getCategoryImage(category);
-              const alt = getCategoryAlt(category);
+            categories.map((c) => {
+              const url = c.featuredImageUrl || '';
+              const alt = c.featuredImageAlt || c.name || 'Category';
+
               return (
                 <div
-                  key={category.id}
+                  key={c.id}
                   className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5"
                 >
                   <div className="relative h-32 overflow-hidden rounded-2xl bg-muted">
                     {url ? (
                       <Image src={url} alt={alt} fill className="object-cover" />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                        No media
-                      </div>
+                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">No media</div>
                     )}
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-foreground">{category.name}</p>
-                    {category.summary ? (
-                      <p className="mt-2 text-xs text-muted-foreground">{category.summary}</p>
-                    ) : null}
+                    <p className="text-sm font-medium text-foreground">{c.name}</p>
+                    {c.summary ? <p className="mt-2 text-xs text-muted-foreground">{c.summary}</p> : null}
                   </div>
 
                   <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                    {category.products?.length ?? 0} styles
+                    {c.products?.length ?? 0} styles
                   </p>
+
+                  <div className="mt-2 grid gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-background/60 p-3">
+                      <p className="mb-2 text-xs text-muted-foreground">Edit</p>
+                      <CategoryEditForm
+                        id={c.id}
+                        name={c.name}
+                        summary={c.summary}
+                        featuredImageUrl={c.featuredImageUrl}
+                        featuredImageAlt={c.featuredImageAlt}
+                      />
+                    </div>
+
+                    <DeleteCategoryButton id={c.id} />
+                  </div>
                 </div>
               );
             })

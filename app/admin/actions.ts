@@ -1,440 +1,606 @@
 "use server";
 
-import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
+import path from "path";
+import { mkdir, writeFile, unlink } from "fs/promises";
 
-// Product Actions
-export async function getProducts() {
+import { prisma } from "@/lib/prisma";
+import { requireUser, requireAdmin } from "@/lib/auth";
+import { slugify } from "@/lib/slugify";
+
+export type ActionState = { error?: string; success?: string };
+export type CategoryActionState =
+  | { ok: true; message: string }
+  | { ok: false; message: string; issues?: string[] };
+
+// ============================================================================
+// PRODUCT ACTIONS
+// ============================================================================
+
+const CreateProductInput = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  price: z.coerce.number().positive(),
+  inventory: z.coerce.number().int().min(0).optional().default(0),
+  categoryId: z.string().min(1),
+  published: z.union([z.literal("on"), z.string()]).optional().nullable(),
+});
+
+export async function createProductAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
   try {
-    const products = await db.product.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+    const user = await requireUser();
+
+    const parsed = CreateProductInput.safeParse({
+      title: formData.get("title"),
+      description: formData.get("description"),
+      price: formData.get("price"),
+      inventory: formData.get("inventory"),
+      categoryId: formData.get("categoryId"),
+      published: formData.get("published"),
     });
-    return products;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    throw new Error("Failed to fetch products");
-  }
-}
 
-export async function getProductById(id: string) {
-  try {
-    const product = await db.product.findUnique({
-      where: { id },
-    });
-    return product;
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    throw new Error("Failed to fetch product");
-  }
-}
+    if (!parsed.success) {
+      return { error: "Please check all required fields" };
+    }
 
-export async function createProduct(formData: FormData) {
-  try {
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const price = parseFloat(formData.get("price") as string);
-    const image = formData.get("image") as string;
-    const category = formData.get("category") as string;
-    const inStock = formData.get("inStock") === "true";
+    // Handle featured image file upload
+    let featuredImageId: string | null = null;
+    const featuredImageFile = formData.get("featuredImageFile") as File | null;
+    if (featuredImageFile && featuredImageFile.size > 0) {
+      const buffer = Buffer.from(await featuredImageFile.arrayBuffer());
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
 
-    await db.product.create({
+      const safeName = featuredImageFile.name.replace(/\s+/g, "-");
+      const filename = `${Date.now()}-${safeName}`;
+      const publicUrl = `/uploads/${filename}`;
+
+      await writeFile(path.join(uploadDir, filename), buffer);
+
+      const media = await prisma.media.create({
+        data: { url: publicUrl, alt: "" },
+      });
+      featuredImageId = media.id;
+    }
+
+    // Handle gallery files
+    let galleryMediaIds: string[] = [];
+    const galleryFiles = formData.getAll("galleryFiles") as File[];
+    for (const file of galleryFiles) {
+      if (file.size === 0) continue;
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
+
+      const safeName = file.name.replace(/\s+/g, "-");
+      const filename = `${Date.now()}-${safeName}`;
+      const publicUrl = `/uploads/${filename}`;
+
+      await writeFile(path.join(uploadDir, filename), buffer);
+
+      const media = await prisma.media.create({
+        data: { url: publicUrl, alt: "" },
+      });
+      galleryMediaIds.push(media.id);
+    }
+
+    await prisma.product.create({
       data: {
-        name,
-        description,
-        price,
-        image,
-        category,
-        inStock,
+        title: parsed.data.title,
+        slug: slugify(parsed.data.title),
+        description: parsed.data.description,
+        price: parsed.data.price,
+        inventory: parsed.data.inventory,
+        published: !!parsed.data.published,
+        categoryId: parsed.data.categoryId,
+        authorId: user.id,
+        ...(featuredImageId && { featuredImageId }),
+        ...(galleryMediaIds.length > 0 && {
+          gallery: {
+            create: galleryMediaIds.map((mediaId, index) => ({
+              mediaId,
+              position: index,
+            })),
+          },
+        }),
       },
     });
 
     revalidatePath("/admin/products");
-    redirect("/admin/products");
+    return { success: "Product created successfully" };
   } catch (error) {
     console.error("Error creating product:", error);
-    throw new Error("Failed to create product");
+    return { error: "Failed to create product" };
   }
 }
 
-export async function updateProduct(id: string, formData: FormData) {
-  try {
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const price = parseFloat(formData.get("price") as string);
-    const image = formData.get("image") as string;
-    const category = formData.get("category") as string;
-    const inStock = formData.get("inStock") === "true";
+const UpdateProductInput = z.object({
+  productId: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  price: z.coerce.number().positive(),
+  inventory: z.coerce.number().int().min(0),
+  categoryId: z.string().min(1),
+  published: z.union([z.boolean(), z.string()]).optional(),
+});
 
-    await db.product.update({
-      where: { id },
+export async function updateProductAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    await requireUser();
+
+    const parsed = UpdateProductInput.safeParse({
+      productId: formData.get("productId"),
+      title: formData.get("title"),
+      description: formData.get("description"),
+      price: formData.get("price"),
+      inventory: formData.get("inventory"),
+      categoryId: formData.get("categoryId"),
+      published: formData.get("published"),
+    });
+
+    if (!parsed.success) {
+      return { error: "Invalid product data" };
+    }
+
+    // Handle featured image file upload
+    let featuredImageId: string | null = null;
+    const featuredImageFile = formData.get("featuredImageFile") as File | null;
+    if (featuredImageFile && featuredImageFile.size > 0) {
+      const buffer = Buffer.from(await featuredImageFile.arrayBuffer());
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
+
+      const safeName = featuredImageFile.name.replace(/\s+/g, "-");
+      const filename = `${Date.now()}-${safeName}`;
+      const publicUrl = `/uploads/${filename}`;
+
+      await writeFile(path.join(uploadDir, filename), buffer);
+
+      const media = await prisma.media.create({
+        data: { url: publicUrl, alt: "" },
+      });
+      featuredImageId = media.id;
+    }
+
+    // Handle gallery files
+    const galleryFiles = formData.getAll("galleryFiles") as File[];
+    for (const file of galleryFiles) {
+      if (file.size === 0) continue;
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
+
+      const safeName = file.name.replace(/\s+/g, "-");
+      const filename = `${Date.now()}-${safeName}`;
+      const publicUrl = `/uploads/${filename}`;
+
+      await writeFile(path.join(uploadDir, filename), buffer);
+
+      const media = await prisma.media.create({
+        data: { url: publicUrl, alt: "" },
+      });
+
+      // Add to gallery
+      await prisma.productMedia.create({
+        data: {
+          productId: parsed.data.productId,
+          mediaId: media.id,
+          position: 0,
+        },
+      });
+    }
+
+    await prisma.product.update({
+      where: { id: parsed.data.productId },
       data: {
-        name,
-        description,
-        price,
-        image,
-        category,
-        inStock,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        price: parsed.data.price,
+        inventory: parsed.data.inventory,
+        categoryId: parsed.data.categoryId,
+        published: parsed.data.published === "true" || parsed.data.published === true,
+        ...(featuredImageId && { featuredImageId }),
       },
     });
 
     revalidatePath("/admin/products");
-    revalidatePath(`/admin/products/${id}`);
-    redirect("/admin/products");
+    return { success: "Product updated successfully" };
   } catch (error) {
     console.error("Error updating product:", error);
-    throw new Error("Failed to update product");
+    return { error: "Failed to update product" };
   }
 }
 
-export async function deleteProduct(id: string) {
+const DeleteProductInput = z.object({ productId: z.string().min(1) });
+
+export async function deleteProductAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
   try {
-    await db.product.delete({
-      where: { id },
+    await requireUser();
+
+    const parsed = DeleteProductInput.safeParse({
+      productId: formData.get("productId"),
+    });
+
+    if (!parsed.success) {
+      return { error: "Invalid product ID" };
+    }
+
+    await prisma.product.update({
+      where: { id: parsed.data.productId },
+      data: { deletedAt: new Date() },
     });
 
     revalidatePath("/admin/products");
+    return { success: "Product deleted" };
   } catch (error) {
     console.error("Error deleting product:", error);
-    throw new Error("Failed to delete product");
+    return { error: "Failed to delete product" };
   }
 }
 
-// Order Actions
-export async function getOrders() {
-  try {
-    const orders = await db.order.findMany({
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    return orders;
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    throw new Error("Failed to fetch orders");
-  }
-}
+// ============================================================================
+// CATEGORY ACTIONS
+// ============================================================================
 
-export async function getOrderById(id: string) {
-  try {
-    const order = await db.order.findUnique({
-      where: { id },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    });
-    return order;
-  } catch (error) {
-    console.error("Error fetching order:", error);
-    throw new Error("Failed to fetch order");
-  }
-}
+const CategoryInput = z.object({
+  name: z.string().min(1),
+  summary: z.string().optional().nullable(),
+});
 
-export async function updateOrderStatus(id: string, status: string) {
+export async function createCategoryAction(
+  _prev: CategoryActionState | null,
+  formData: FormData
+): Promise<CategoryActionState> {
   try {
-    await db.order.update({
-      where: { id },
-      data: { status },
+    await requireUser();
+
+    const parsed = CategoryInput.safeParse({
+      name: formData.get("name"),
+      summary: formData.get("summary"),
     });
 
-    revalidatePath("/admin/orders");
-    revalidatePath(`/admin/orders/${id}`);
-  } catch (error) {
-    console.error("Error updating order status:", error);
-    throw new Error("Failed to update order status");
-  }
-}
+    if (!parsed.success) {
+      return {
+        ok: false,
+        message: "Invalid input",
+        issues: parsed.error.issues.map((i) => i.message),
+      };
+    }
 
-export async function deleteOrder(id: string) {
-  try {
-    // Delete order items first
-    await db.orderItem.deleteMany({
-      where: { orderId: id },
-    });
+    // Handle featured image file
+    let featuredImageId: string | null = null;
+    const imageFile = formData.get("featuredImageFile") as File | null;
+    if (imageFile && imageFile.size > 0) {
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
 
-    // Then delete the order
-    await db.order.delete({
-      where: { id },
-    });
+      const safeName = imageFile.name.replace(/\s+/g, "-");
+      const filename = `${Date.now()}-${safeName}`;
+      const publicUrl = `/uploads/${filename}`;
 
-    revalidatePath("/admin/orders");
-  } catch (error) {
-    console.error("Error deleting order:", error);
-    throw new Error("Failed to delete order");
-  }
-}
+      await writeFile(path.join(uploadDir, filename), buffer);
 
-// Customer Actions
-export async function getCustomers() {
-  try {
-    const customers = await db.customer.findMany({
-      include: {
-        orders: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    return customers;
-  } catch (error) {
-    console.error("Error fetching customers:", error);
-    throw new Error("Failed to fetch customers");
-  }
-}
+      const media = await prisma.media.create({
+        data: { url: publicUrl, alt: formData.get("featuredImageAlt") as string || "" },
+      });
+      featuredImageId = media.id;
+    }
 
-export async function getCustomerById(id: string) {
-  try {
-    const customer = await db.customer.findUnique({
-      where: { id },
-      include: {
-        orders: {
-          include: {
-            items: {
-              include: {
-                product: true,
-              },
-            },
-          },
-        },
-      },
-    });
-    return customer;
-  } catch (error) {
-    console.error("Error fetching customer:", error);
-    throw new Error("Failed to fetch customer");
-  }
-}
-
-export async function deleteCustomer(id: string) {
-  try {
-    await db.customer.delete({
-      where: { id },
-    });
-
-    revalidatePath("/admin/customers");
-  } catch (error) {
-    console.error("Error deleting customer:", error);
-    throw new Error("Failed to delete customer");
-  }
-}
-
-// Blog Post Actions
-export async function getBlogPosts() {
-  try {
-    const posts = await db.blogPost.findMany({
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    return posts;
-  } catch (error) {
-    console.error("Error fetching blog posts:", error);
-    throw new Error("Failed to fetch blog posts");
-  }
-}
-
-export async function getBlogPostById(id: string) {
-  try {
-    const post = await db.blogPost.findUnique({
-      where: { id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-    return post;
-  } catch (error) {
-    console.error("Error fetching blog post:", error);
-    throw new Error("Failed to fetch blog post");
-  }
-}
-
-export async function getBlogPostBySlug(slug: string) {
-  try {
-    const post = await db.blogPost.findUnique({
-      where: { slug },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-    return post;
-  } catch (error) {
-    console.error("Error fetching blog post:", error);
-    throw new Error("Failed to fetch blog post");
-  }
-}
-
-export async function createBlogPost(formData: FormData) {
-  try {
-    const title = formData.get("title") as string;
-    const slug = formData.get("slug") as string;
-    const content = formData.get("content") as string;
-    const excerpt = formData.get("excerpt") as string;
-    const image = formData.get("image") as string;
-    const published = formData.get("published") === "true";
-    const authorId = formData.get("authorId") as string | null;
-
-    await db.blogPost.create({
+    await prisma.category.create({
       data: {
-        title,
-        slug,
-        content,
-        excerpt,
-        image,
-        published,
-        ...(authorId && { authorId }),
+        name: parsed.data.name,
+        slug: slugify(parsed.data.name),
+        summary: parsed.data.summary || null,
+        ...(featuredImageId && {
+          featuredImageUrl: (await prisma.media.findUnique({ where: { id: featuredImageId } }))?.url || null,
+          featuredImageAlt: formData.get("featuredImageAlt") as string || null,
+        }),
       },
     });
 
-    revalidatePath("/admin/blog");
+    revalidatePath("/admin/categories");
+    return { ok: true, message: "Category created" };
+  } catch (err: any) {
+    console.error("Error creating category:", err);
+    return {
+      ok: false,
+      message: "Failed to create category",
+      issues: [String(err?.message ?? err)],
+    };
+  }
+}
+
+// ============================================================================
+// BLOG ACTIONS
+// ============================================================================
+
+const BlogInput = z.object({
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  content: z.string().min(1),
+  excerpt: z.string().optional(),
+  image: z.string().optional(),
+  published: z.union([z.literal("on"), z.string()]).optional(),
+});
+
+export async function createBlogPostAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    const user = await requireUser();
+
+    const parsed = BlogInput.safeParse({
+      title: formData.get("title"),
+      slug: formData.get("slug") || slugify(formData.get("title") as string),
+      content: formData.get("content"),
+      excerpt: formData.get("excerpt"),
+      image: formData.get("image"),
+      published: formData.get("published"),
+    });
+
+    if (!parsed.success) {
+      return { error: "Please fill in all required fields" };
+    }
+
+    await prisma.BlogPost.create({
+      data: {
+        title: parsed.data.title,
+        slug: parsed.data.slug,
+        content: parsed.data.content,
+        excerpt: parsed.data.excerpt || null,
+        image: parsed.data.image || null,
+        published: !!parsed.data.published,
+        authorId: user.id,
+      },
+    });
+
+    revalidatePath("/admin/journal");
     revalidatePath("/blog");
-    redirect("/admin/blog");
+    return { success: "Blog post published" };
   } catch (error) {
     console.error("Error creating blog post:", error);
-    throw new Error("Failed to create blog post");
+    return { error: "Failed to create blog post" };
   }
 }
 
-export async function updateBlogPost(id: string, formData: FormData) {
-  try {
-    const title = formData.get("title") as string;
-    const slug = formData.get("slug") as string;
-    const content = formData.get("content") as string;
-    const excerpt = formData.get("excerpt") as string;
-    const image = formData.get("image") as string;
-    const published = formData.get("published") === "true";
-    const authorId = formData.get("authorId") as string | null;
+// ============================================================================
+// HERO MEDIA ACTIONS
+// ============================================================================
 
-    await db.blogPost.update({
-      where: { id },
-      data: {
-        title,
-        slug,
-        content,
-        excerpt,
-        image,
-        published,
-        ...(authorId && { authorId }),
-      },
+const HeroInput = z.object({
+  heroKey: z.string().min(1),
+  title: z.string().optional(),
+  subtitle: z.string().optional(),
+  description: z.string().optional(),
+  ctaLabel: z.string().optional(),
+  ctaHref: z.string().optional(),
+  backgroundImageUrl: z.string().url().optional(),
+  backgroundImageAlt: z.string().optional(),
+});
+
+export async function upsertHeroMediaAction(
+  _prev: CategoryActionState | null,
+  formData: FormData
+): Promise<CategoryActionState> {
+  try {
+    await requireAdmin();
+
+    const parsed = HeroInput.safeParse({
+      heroKey: formData.get("heroKey"),
+      title: formData.get("title"),
+      subtitle: formData.get("subtitle"),
+      description: formData.get("description"),
+      ctaLabel: formData.get("ctaLabel"),
+      ctaHref: formData.get("ctaHref"),
+      backgroundImageUrl: formData.get("backgroundImageUrl"),
+      backgroundImageAlt: formData.get("backgroundImageAlt"),
     });
 
-    revalidatePath("/admin/blog");
-    revalidatePath(`/admin/blog/${id}`);
-    revalidatePath("/blog");
-    revalidatePath(`/blog/${slug}`);
-    redirect("/admin/blog");
-  } catch (error) {
-    console.error("Error updating blog post:", error);
-    throw new Error("Failed to update blog post");
-  }
-}
+    if (!parsed.success) {
+      return {
+        ok: false,
+        message: "Invalid hero data",
+        issues: parsed.error.issues.map((i) => i.message),
+      };
+    }
 
-export async function deleteBlogPost(id: string) {
-  try {
-    await db.blogPost.delete({
-      where: { id },
-    });
+    // Handle background image
+    let backgroundImageId: string | null = null;
+    if (parsed.data.backgroundImageUrl) {
+      const existing = await prisma.media.findFirst({
+        where: { url: parsed.data.backgroundImageUrl },
+      });
 
-    revalidatePath("/admin/blog");
-    revalidatePath("/blog");
-  } catch (error) {
-    console.error("Error deleting blog post:", error);
-    throw new Error("Failed to delete blog post");
-  }
-}
-
-export async function toggleBlogPostPublished(id: string, published: boolean) {
-  try {
-    await db.blogPost.update({
-      where: { id },
-      data: { published },
-    });
-
-    revalidatePath("/admin/blog");
-    revalidatePath("/blog");
-  } catch (error) {
-    console.error("Error toggling blog post published status:", error);
-    throw new Error("Failed to toggle blog post published status");
-  }
-}
-
-// Analytics/Dashboard Actions
-export async function getDashboardStats() {
-  try {
-    const [totalProducts, totalOrders, totalCustomers, totalRevenue] = await Promise.all([
-      db.product.count(),
-      db.order.count(),
-      db.customer.count(),
-      db.order.aggregate({
-        _sum: {
-          total: true,
-        },
-      }),
-    ]);
-
-    return {
-      totalProducts,
-      totalOrders,
-      totalCustomers,
-      totalRevenue: totalRevenue._sum.total || 0,
-    };
-  } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
-    throw new Error("Failed to fetch dashboard stats");
-  }
-}
-
-export async function getRecentOrders(limit: number = 5) {
-  try {
-    const orders = await db.order.findMany({
-      take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
+      if (existing) {
+        backgroundImageId = existing.id;
+      } else {
+        const media = await prisma.media.create({
+          data: {
+            url: parsed.data.backgroundImageUrl,
+            alt: parsed.data.backgroundImageAlt || null,
           },
-        },
+        });
+        backgroundImageId = media.id;
+      }
+    }
+
+    await prisma.heroMedia.upsert({
+      where: { key: parsed.data.heroKey },
+      update: {
+        title: parsed.data.title || "",
+        subtitle: parsed.data.subtitle || null,
+        description: parsed.data.description || null,
+        ctaLabel: parsed.data.ctaLabel || null,
+        ctaHref: parsed.data.ctaHref || null,
+        ...(backgroundImageId && { backgroundImageId }),
+      },
+      create: {
+        key: parsed.data.heroKey,
+        title: parsed.data.title || "",
+        subtitle: parsed.data.subtitle || null,
+        description: parsed.data.description || null,
+        ctaLabel: parsed.data.ctaLabel || null,
+        ctaHref: parsed.data.ctaHref || null,
+        ...(backgroundImageId && { backgroundImageId }),
       },
     });
-    return orders;
+
+    revalidatePath("/admin/media");
+    revalidatePath("/");
+    return { ok: true, message: "Hero banner saved" };
+  } catch (error: any) {
+    console.error("Error upserting hero media:", error);
+    return { ok: false, message: `Failed to save hero banner: ${error.message}` };
+  }
+}
+
+// ============================================================================
+// ORDER ACTIONS
+// ============================================================================
+
+export async function updateOrderStatusAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    await requireAdmin();
+
+    const orderId = formData.get("orderId") as string;
+    const status = formData.get("status") as string;
+
+    if (!orderId || !status) {
+      return { error: "Missing order ID or status" };
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: status as any },
+    });
+
+    revalidatePath("/admin/orders");
+    return { success: "Order updated" };
   } catch (error) {
-    console.error("Error fetching recent orders:", error);
-    throw new Error("Failed to fetch recent orders");
+    console.error("Error updating order:", error);
+    return { error: "Failed to update order" };
+  }
+}
+
+// ============================================================================
+// MEDIA ACTIONS
+// ============================================================================
+
+export async function uploadMediaAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    await requireUser();
+
+    const file = formData.get("file") as File;
+    const alt = formData.get("alt") as string;
+
+    if (!file || file.size === 0) {
+      return { error: "No file provided" };
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+
+    const safeName = file.name.replace(/\s+/g, "-");
+    const filename = `${Date.now()}-${safeName}`;
+    const publicUrl = `/uploads/${filename}`;
+
+    await writeFile(path.join(uploadDir, filename), buffer);
+
+    await prisma.media.create({
+      data: { url: publicUrl, alt: alt || null },
+    });
+
+    revalidatePath("/admin/media");
+    return { success: "File uploaded successfully" };
+  } catch (error) {
+    console.error("Error uploading media:", error);
+    return { error: "Upload failed" };
+  }
+}
+
+export async function updateMediaAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    await requireUser();
+
+    const id = formData.get("id") as string;
+    const alt = formData.get("alt") as string;
+
+    if (!id) {
+      return { error: "No media ID provided" };
+    }
+
+    await prisma.media.update({
+      where: { id },
+      data: { alt: alt || null },
+    });
+
+    revalidatePath("/admin/media");
+    return { success: "Media updated" };
+  } catch (error) {
+    console.error("Error updating media:", error);
+    return { error: "Failed to update media" };
+  }
+}
+
+export async function deleteMediaAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    await requireUser();
+
+    const id = formData.get("id") as string;
+
+    if (!id) {
+      return { error: "No media ID provided" };
+    }
+
+    const media = await prisma.media.findUnique({ where: { id } });
+
+    if (!media) {
+      return { error: "Media not found" };
+    }
+
+    await prisma.media.delete({ where: { id } });
+
+    // Delete file from disk
+    if (media.url.startsWith("/uploads/")) {
+      try {
+        await unlink(path.join(process.cwd(), "public", media.url));
+      } catch {
+        // File might not exist, ignore
+      }
+    }
+
+    revalidatePath("/admin/media");
+    return { success: "Media deleted" };
+  } catch (error) {
+    console.error("Error deleting media:", error);
+    return { error: "Failed to delete media" };
   }
 }

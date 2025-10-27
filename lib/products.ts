@@ -162,7 +162,7 @@ export async function fetchPublishedProducts() {
   }
 
   const products = await prisma.product.findMany({
-    where: { published: true, deletedAt: null },
+    where: { inStock: true },
     include: {
       category: true,
       featuredImage: true,
@@ -194,7 +194,7 @@ export async function fetchProductsByCategorySlug(slug: string) {
     where: { slug },
     include: {
       products: {
-        where: { published: true, deletedAt: null },
+        where: { inStock: true },
         include: {
           category: true,
           featuredImage: true,
@@ -225,7 +225,7 @@ export async function fetchCategoriesWithProducts() {
 
   const categories = await prisma.category.findMany({
     include: {
-      products: { where: { published: true, deletedAt: null } },
+      products: { where: { inStock: true } },
     },
     orderBy: { name: "asc" },
   });
@@ -255,7 +255,7 @@ export async function fetchProductSummariesByIds(ids: string[]) {
   }
 
   const products = await prisma.product.findMany({
-    where: { id: { in: ids }, deletedAt: null },
+    where: { id: { in: ids } },
     include: {
       category: true,
       featuredImage: true,
@@ -282,7 +282,7 @@ export async function fetchProductBySlug(slug: string): Promise<SerializedProduc
 
   // findFirst so we can ensure deletedAt: null
   const product = await prisma.product.findFirst({
-    where: { slug, deletedAt: null },
+    where: { slug },
     include: {
       category: true,
       featuredImage: true,
@@ -290,7 +290,7 @@ export async function fetchProductBySlug(slug: string): Promise<SerializedProduc
     },
   });
 
-  if (!product || !product.published) return null;
+  if (!product || !product.inStock) return null;
 
   return { ...(serializeProduct(product as unknown as ProductWithRelations)), inventory: (product as any).inventory };
 }
