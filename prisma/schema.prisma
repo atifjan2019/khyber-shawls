@@ -159,3 +159,22 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
 }
+
+model Settings {
+  id                String  @id @default(cuid())
+  websiteName       String?
+  websiteLogoUrl    String?
+  websiteFaviconUrl String?
+  contactPhone      String?
+  contactEmail      String?
+  contactAddress    String?
+  smtpHost          String?
+  smtpPort          Int?
+  smtpUser          String?
+  smtpPass          String?
+  stripePublicKey   String?
+  stripeSecretKey   String?
+  socialLinks       Json?
+
+  @@map("settings")
+}

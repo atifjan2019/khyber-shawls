@@ -15,7 +15,6 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     let isMounted = true
-    const controller = new AbortController()
     const ids = items.map((item) => item.id)
 
     if (ids.length === 0) {
@@ -27,7 +26,6 @@ export default function CheckoutPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ids }),
-      signal: controller.signal,
     })
       .then((response) => response.json())
       .then((data: { products: SerializedProduct[] }) => {
@@ -40,19 +38,11 @@ export default function CheckoutPage() {
       })
       .catch((error) => {
         if (!isMounted) return
-        // Ignore AbortError - it's expected when component unmounts or dependencies change
-        if (error instanceof Error && error.name === "AbortError") {
-          return
-        }
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return
-        }
         // Silently handle other errors
       })
 
     return () => {
       isMounted = false
-      controller.abort()
     }
   }, [items])
 

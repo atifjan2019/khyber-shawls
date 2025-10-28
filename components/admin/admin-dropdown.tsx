@@ -1,10 +1,8 @@
 "use client";
 
-import { Package, Tags, Images, FileText, ShoppingCart, MessageSquare } from 'lucide-react';
+import { Package, Tags, Images, FileText, ShoppingCart, MessageSquare, Users, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-
-import { Users } from 'lucide-react';
 
 const ADMIN_MENU_ITEMS = [
   { href: '/admin/products', label: 'Products', icon: Package },
@@ -14,6 +12,7 @@ const ADMIN_MENU_ITEMS = [
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AdminDropdown() {

@@ -30,14 +30,22 @@ export async function POST(request: Request) {
 
   const user = await getCurrentUser()
 
+  try {
     await prisma.contact_entry.create({
-    data: {
-      name: parsed.data.name,
-      email: parsed.data.email,
-      message: parsed.data.message,
-      userId: user?.id,
-    },
-  })
+      data: {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        message: parsed.data.message,
+        userId: user?.id,
+      },
+    })
+  } catch (error) {
+    console.error("Failed to create contact entry:", error)
+    return NextResponse.json(
+      { error: "Could not save message." },
+      { status: 500 }
+    )
+  }
 
   revalidatePath("/admin/messages")
 

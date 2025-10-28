@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/providers/cart-provider"
+import { formatCurrency } from "@/lib/currency"
 import type { SerializedProduct } from "@/lib/products"
 
 type CartProduct = SerializedProduct & {
@@ -19,7 +20,6 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    const controller = new AbortController()
     let active = true
 
     const ids = items.map((item) => item.id)
@@ -29,7 +29,6 @@ export default function CartPage() {
 
       return () => {
         active = false
-        controller.abort()
       }
     }
 
@@ -40,7 +39,6 @@ export default function CartPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ids }),
-          signal: controller.signal,
         })
         if (!response.ok) {
           throw new Error("Failed to load cart products")
@@ -53,13 +51,6 @@ export default function CartPage() {
         })
         setProductMap(nextMap)
       } catch (error) {
-        // Ignore AbortError - it's expected when component unmounts or dependencies change
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return
-        }
-        if (error instanceof Error && error.name === "AbortError") {
-          return
-        }
         if (!active) return
         
         console.error("Unable to fetch cart products", error)
@@ -75,7 +66,6 @@ export default function CartPage() {
 
     return () => {
       active = false
-      controller.abort()
     }
   }, [items])
 
@@ -200,7 +190,7 @@ export default function CartPage() {
                     </div>
                   </div>
                   <span className="text-sm font-semibold">
-                    ${product.subtotal.toFixed(0)}
+                    {formatCurrency(product.subtotal)}
                   </span>
                 </div>
               </div>
@@ -218,7 +208,7 @@ export default function CartPage() {
           <dl className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">Subtotal</dt>
-              <dd className="font-medium">${cartTotal.toFixed(0)}</dd>
+              <dd className="font-medium">{formatCurrency(cartTotal)}</dd>
             </div>
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">Shipping</dt>
@@ -226,7 +216,7 @@ export default function CartPage() {
             </div>
             <div className="flex items-center justify-between border-t pt-3 text-base font-semibold">
               <dt>Total</dt>
-              <dd>${cartTotal.toFixed(0)}</dd>
+              <dd>{formatCurrency(cartTotal)}</dd>
             </div>
           </dl>
           <Button className="w-full" asChild>

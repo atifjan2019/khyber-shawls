@@ -12,6 +12,7 @@ import {
   FileText,
   ShoppingCart,
   MessageSquare,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils'; // if you don't have cn, replace cn(...) with string joins
 
@@ -28,6 +29,7 @@ const NAV_ITEMS: Item[] = [
   { href: '/admin/journal', label: 'Blogs', Icon: FileText },
   { href: '/admin/orders', label: 'Orders', Icon: ShoppingCart },
   { href: '/admin/messages', label: 'Messages', Icon: MessageSquare },
+  { href: '/admin/settings', label: 'Settings', Icon: Settings },
 ];
 
 export default function SidebarNav() {
