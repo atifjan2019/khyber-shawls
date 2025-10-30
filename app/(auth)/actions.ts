@@ -59,6 +59,50 @@ export async function loginAction(
   redirect(callbackUrl);
 }
 
+export async function registerAction(
+  _prev: LoginState,
+  formData: FormData
+): Promise<LoginState> {
+  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const password = String(formData.get('password') ?? '');
+  const name = String(formData.get('name') ?? '').trim();
+  const redirectTo = String(formData.get('redirectTo') ?? '') || '/';
+
+  if (!email || !password || !name) {
+    return { error: 'All fields are required.' };
+  }
+
+  if (password.length < 6) {
+    return { error: 'Password must be at least 6 characters.' };
+  }
+
+  // TEMP auth: accept registration and auto-login; set role from ADMIN_EMAILS
+  const role = isAdminEmail(email) ? 'ADMIN' : 'USER';
+
+  const sessionPayload = JSON.stringify({
+    id: hashToId(email),
+    email,
+    name,
+    role,
+  });
+
+  const jar = await cookies();
+  jar.set(SESSION_COOKIE, sessionPayload, {
+    httpOnly: true,
+    path: '/',
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
+  // If they're admin, redirect to admin overview
+  if (role === 'ADMIN') {
+    redirect('/admin/products');
+  }
+
+  redirect(redirectTo);
+}
+
 export async function logout(): Promise<void> {
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);

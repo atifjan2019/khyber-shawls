@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     }) as unknown as Promise<OrderRow[]>,
     (async () => {
       try {
-        return (await prisma.contact_entry.findMany({
+        return (await prisma.contactEntry.findMany({
           where: { userId: user.id },
           orderBy: { createdAt: "desc" },
           take: 6,

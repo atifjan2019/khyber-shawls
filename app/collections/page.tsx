@@ -16,7 +16,7 @@ export default async function CollectionsPage() {
     <div className="space-y-20 bg-gradient-to-b from-white via-[#faf7f2] to-[#f4ede3] pb-24">
       <section className="relative isolate left-1/2 right-1/2 w-screen -translate-x-1/2 overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-900 via-amber-700 to-black" />
-        <div className="mx-auto max-w-6xl px-6 py-24 text-center text-white sm:py-32">
+        <div className="mx-auto max-w-[1600px] px-6 py-24 text-center text-white sm:py-32">
           <p className="text-xs uppercase tracking-[0.3em] text-white/80">
             Curated by the atelier
           </p>
@@ -27,7 +27,7 @@ export default async function CollectionsPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6">
+      <section className="mx-auto max-w-[1600px] px-6">
         <h2 className="text-2xl font-semibold text-gray-900">Shop by story</h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
@@ -59,7 +59,7 @@ export default async function CollectionsPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6">
+      <section className="mx-auto max-w-[1600px] px-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-2xl font-semibold text-gray-900">
             Atelier favourites

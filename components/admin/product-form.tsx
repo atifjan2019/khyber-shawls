@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useEffect, useRef } from "react"
+import { useActionState, useEffect, useRef, useState } from "react"
+import Image from "next/image"
 
 import { createProductAction } from "@/app/admin/actions"
 import { Button } from "@/components/ui/button"
@@ -13,14 +14,44 @@ const initialState = { error: undefined as string | undefined, success: undefine
 
 export function ProductForm({ categories }: ProductFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
+  const [featuredPreview, setFeaturedPreview] = useState<string | null>(null)
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
   const [state, formAction, isPending] = useActionState(createProductAction, initialState)
 
   useEffect(() => {
     if (state.success) {
       formRef.current?.reset()
+      setFeaturedPreview(null)
+      setGalleryPreviews([])
     }
   }, [state.success])
 
+  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFeaturedPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    const previews: string[] = []
+    
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        previews.push(reader.result as string)
+        if (previews.length === files.length) {
+          setGalleryPreviews(previews)
+        }
+      }
+      reader.readAsDataURL(file)
+    })
+  }
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <div className="grid gap-3">
@@ -47,6 +78,32 @@ export function ProductForm({ categories }: ProductFormProps) {
           placeholder="Explain the fibres, pattern inspiration, and styling suggestions."
           className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
         />
+      </div>
+      <div className="grid gap-3">
+        <label className="text-sm font-medium" htmlFor="product-details">
+          Product Details
+        </label>
+        <textarea
+          id="product-details"
+          name="details"
+          rows={4}
+          placeholder="Material, dimensions, origin, certification details (one per line or formatted text)"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+        />
+        <p className="text-xs text-muted-foreground">Optional - Shows in Details tab</p>
+      </div>
+      <div className="grid gap-3">
+        <label className="text-sm font-medium" htmlFor="product-care">
+          Care Instructions
+        </label>
+        <textarea
+          id="product-care"
+          name="careInstructions"
+          rows={4}
+          placeholder="Cleaning, storage, handling instructions (one per line or formatted text)"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+        />
+        <p className="text-xs text-muted-foreground">Optional - Shows in Care tab</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm font-medium" htmlFor="product-price">
@@ -76,12 +133,24 @@ export function ProductForm({ categories }: ProductFormProps) {
         <label className="text-sm font-medium" htmlFor="product-featured-image">
           Featured image
         </label>
+
+        {featuredPreview && (
+          <div className="relative h-48 w-full overflow-hidden rounded-md border">
+            <Image
+              src={featuredPreview}
+              alt="Featured image preview"
+              fill
+              className="object-contain"
+            />
+          </div>
+        )}
  
         <input
           id="product-featured-image-file"
           name="featuredImageFile"
           type="file"
           accept="image/*"
+          onChange={handleFeaturedImageChange}
           className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
         />
         <p className="text-xs text-muted-foreground">
@@ -102,12 +171,29 @@ export function ProductForm({ categories }: ProductFormProps) {
         <label className="text-sm font-medium" htmlFor="product-gallery-files">
           Upload gallery images
         </label>
+
+        {galleryPreviews.length > 0 && (
+          <div className="grid grid-cols-3 gap-3">
+            {galleryPreviews.map((preview, index) => (
+              <div key={index} className="relative h-32 overflow-hidden rounded-md border">
+                <Image
+                  src={preview}
+                  alt={`Gallery image ${index + 1} preview`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         <input
           id="product-gallery-files"
           name="galleryFiles"
           type="file"
           multiple
           accept="image/*"
+          onChange={handleGalleryChange}
           className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
         />
         <p className="text-xs text-muted-foreground">

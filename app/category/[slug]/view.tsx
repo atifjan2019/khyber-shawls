@@ -5,7 +5,6 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { ProductCard } from "@/components/product-card"
-import { useCart } from "@/components/providers/cart-provider"
 import type { SerializedProduct } from "@/lib/products"
 
 type CategoryViewProps = {
@@ -23,8 +22,6 @@ export function CategoryView({
   featuredImageAlt,
   products,
 }: CategoryViewProps) {
-  const { addItem } = useCart()
-
   return (
     <div className="space-y-10">
       <div className="grid gap-8 rounded-3xl border bg-card/50 p-8 shadow-sm md:grid-cols-[1.2fr,1fr] md:p-12">
@@ -75,7 +72,6 @@ export function CategoryView({
             <ProductCard
               key={product.id}
               product={product}
-              onAddToCart={addItem}
             />
           ))}
         </div>

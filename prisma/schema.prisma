@@ -49,17 +49,25 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  description String      @db.Text
-  price       Float
-  image       String
-  categoryId  String
-  inStock     Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
-  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  id               String             @id @default(cuid())
+  name             String
+  description      String             @db.Text
+  details          String?            @db.Text
+  careInstructions String?            @db.Text
+  price            Float
+  image            String
+  categoryId       String
+  inStock          Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  published        Boolean            @default(false)
+  slug             String             @unique
+  orderItems       OrderItem[]
+  product_images   product_images[]
+  product_variants product_variants[]
+  category         Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products_A       Product[]          @relation("RelatedProducts")
+  products_B       Product[]          @relation("RelatedProducts")
 
   @@index([categoryId], map: "products_categoryId_fkey")
   @@map("products")
@@ -73,22 +81,24 @@ model Customer {
   address   String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  orders    Order[]
 
   @@map("customers")
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  customerId String
-  total      Float
-  status     OrderStatus @default(PENDING)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  items      OrderItem[]
-  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  id              String      @id @default(cuid())
+  userId          String?
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  shippingAddress String      @db.Text
+  notes           String?     @db.Text
+  total           Float
+  status          OrderStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  items           OrderItem[]
 
-  @@index([customerId], map: "orders_customerId_fkey")
   @@map("orders")
 }
 
@@ -152,14 +162,6 @@ model HeroMedia {
   @@map("hero_media")
 }
 
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
 model Settings {
   id                String  @id @default(cuid())
   websiteName       String?
@@ -174,7 +176,42 @@ model Settings {
   smtpPass          String?
   stripePublicKey   String?
   stripeSecretKey   String?
-  socialLinks       Json?
+  socialLinks       String? @db.LongText
 
   @@map("settings")
+}
+
+model product_images {
+  id        String   @id
+  url       String
+  alt       String?
+  productId String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  products  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "product_images_productId_fkey")
+}
+
+model product_variants {
+  id        String   @id
+  name      String
+  sku       String   @unique
+  price     Float?
+  inventory Int      @default(0)
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  products  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "product_variants_productId_fkey")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }

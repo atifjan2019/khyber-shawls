@@ -1,5 +1,6 @@
 // lib/journal.ts
 import { prisma } from "@/lib/prisma";
+import type { BlogPost } from "@prisma/client";
 
 export type SerializedPost = {
   id: string;
@@ -10,7 +11,7 @@ export type SerializedPost = {
   publishedAt: string;
 };
 
-function serializePost(post: any): SerializedPost {
+function serializePost(post: BlogPost): SerializedPost {
   return {
     id: post.id,
     title: post.title,
@@ -26,16 +27,18 @@ function serializePost(post: any): SerializedPost {
 }
 
 export async function fetchLatestPosts(limit: number = 3): Promise<SerializedPost[]> {
-  if (!prisma) {
-    console.warn("[database] DATABASE_URL is not configured. Returning empty post list.");
+  try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL is not configured.');
+    }
+    const posts = await prisma.blogPost.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+    return posts.map(serializePost);
+  } catch (error) {
+    console.warn("[database] Failed to fetch latest posts. Returning empty list.", error);
     return [];
   }
-
-  const posts = await prisma.blogPost.findMany({
-    where: { published: true },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
-
-  return posts.map(serializePost);
 }

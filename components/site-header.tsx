@@ -32,7 +32,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
 
         {/* Left: primary nav */}
         <div className="flex items-center gap-6">

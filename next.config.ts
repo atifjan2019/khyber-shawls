@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
     })),
   },
   experimental: {
-    serverExternalPackages: ["@prisma/client", "prisma"],
     serverActions: {
       bodySizeLimit: "10mb",
     },

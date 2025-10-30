@@ -19,6 +19,8 @@ type ProductData = {
   id: string
   title: string
   description: string
+  details?: string | null
+  careInstructions?: string | null
   price: number
   priceLabel: string
   inventory: number
@@ -29,6 +31,7 @@ type ProductData = {
   featuredImageUrl: string | null
   featuredImageAlt: string | null
   galleryMediaIds: string[]
+  galleryImages?: Array<{ url: string; alt: string | null }>
 }
 
 type ProductListItemProps = {
@@ -182,6 +185,34 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
                 className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
               />
             </div>
+            <div className="grid gap-3">
+              <label className="text-sm font-medium" htmlFor={`${product.id}-details`}>
+                Product Details
+              </label>
+              <textarea
+                id={`${product.id}-details`}
+                name="details"
+                defaultValue={product.details || ""}
+                rows={3}
+                placeholder="Material, dimensions, origin, certification details"
+                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              <p className="text-xs text-muted-foreground">Optional - Shows in Details tab</p>
+            </div>
+            <div className="grid gap-3">
+              <label className="text-sm font-medium" htmlFor={`${product.id}-care`}>
+                Care Instructions
+              </label>
+              <textarea
+                id={`${product.id}-care`}
+                name="careInstructions"
+                defaultValue={product.careInstructions || ""}
+                rows={3}
+                placeholder="Cleaning, storage, handling instructions"
+                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              <p className="text-xs text-muted-foreground">Optional - Shows in Care tab</p>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-medium" htmlFor={`${product.id}-price`}>
                 Price (PKR)
@@ -230,6 +261,22 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
               <label className="text-sm font-medium" htmlFor={`${product.id}-featured`}>
                 Featured image
               </label>
+              
+              {/* Show current featured image preview */}
+              {product.featuredImageUrl && (
+                <div className="relative w-32 h-32 rounded-md overflow-hidden border border-white/10">
+                  <Image
+                    src={product.featuredImageUrl}
+                    alt={product.featuredImageAlt ?? "Current featured image"}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                    <p className="text-xs text-white truncate">Current</p>
+                  </div>
+                </div>
+              )}
+              
               <select
                 id={`${product.id}-featured`}
                 name="featuredImageId"
@@ -268,6 +315,23 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
               <label className="text-sm font-medium" htmlFor={`${product.id}-gallery-files`}>
                 Upload gallery images
               </label>
+              
+              {/* Show current gallery images */}
+              {product.galleryImages && product.galleryImages.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {product.galleryImages.map((img, idx) => (
+                    <div key={idx} className="relative w-20 h-20 rounded-md overflow-hidden border border-white/10">
+                      <Image
+                        src={img.url}
+                        alt={img.alt ?? `Gallery image ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <input
                 id={`${product.id}-gallery-files`}
                 name="galleryFiles"

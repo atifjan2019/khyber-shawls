@@ -237,8 +237,10 @@ export function MediaLibrary({ items }: { items: MediaLibraryItem[] }) {
 
   // Reset to page 1 when items change
   useEffect(() => {
-    setCurrentPage(1)
-  }, [items.length])
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1)
+    }
+  }, [items.length, currentPage, totalPages])
 
   if (sorted.length === 0) {
     return (

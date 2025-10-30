@@ -13,7 +13,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 })
 
 export default async function AdminJournalPage() {
-  if (!prisma) {
+  if (!process.env.DATABASE_URL) {
     return (
       <div className="overflow-hidden rounded-4xl border border-primary/20 bg-gradient-to-br from-background via-background/90 to-primary/10 p-12 shadow-xl">
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">

@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
-import type { HeroContent } from "@/lib/hero"
+import type { HeroRecord } from "@/lib/hero"
 
 const ROTATION_INTERVAL_MS = 8000
 
 type HeroCarouselProps = {
-  slides: HeroContent[]
+  slides: HeroRecord[]
   fallbackImage?: string
 }
 
@@ -18,7 +18,7 @@ export function HeroCarousel({ slides, fallbackImage = "/hero/khyber-hero.jpg" }
     if (slides.length === 0) {
       return [
         {
-          key: "fallback",
+          key: "home" as const,
           title: "Welcome to Khyber Shawls",
           subtitle: "Each shawl tells a story",
           description:
@@ -27,8 +27,7 @@ export function HeroCarousel({ slides, fallbackImage = "/hero/khyber-hero.jpg" }
           ctaHref: "/collections",
           backgroundImageUrl: fallbackImage,
           backgroundImageAlt: "Hero background",
-          backgroundImageId: null,
-        } satisfies HeroContent,
+        } satisfies HeroRecord,
       ]
     }
 

@@ -22,6 +22,8 @@ export type CategoryActionState =
 const CreateProductInput = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
+  details: z.string().optional(),
+  careInstructions: z.string().optional(),
   price: z.coerce.number().positive(),
   inventory: z.coerce.number().int().min(0).optional().default(0),
   categoryId: z.string().min(1),
@@ -38,6 +40,8 @@ export async function createProductAction(
     const parsed = CreateProductInput.safeParse({
       title: formData.get("title"),
       description: formData.get("description"),
+      details: formData.get("details"),
+      careInstructions: formData.get("careInstructions"),
       price: formData.get("price"),
       inventory: formData.get("inventory"),
       categoryId: formData.get("categoryId"),
@@ -68,27 +72,6 @@ export async function createProductAction(
       featuredImageId = media.id;
     }
 
-    // Handle gallery files - schema doesn't support gallery, just create media
-    const galleryFiles = formData.getAll("galleryFiles") as File[];
-    for (const file of galleryFiles) {
-      if (file.size === 0) continue;
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await mkdir(uploadDir, { recursive: true });
-
-      const safeName = file.name.replace(/\s+/g, "-");
-      const filename = `${Date.now()}-${safeName}`;
-      const publicUrl = `/uploads/${filename}`;
-
-      await writeFile(path.join(uploadDir, filename), buffer);
-
-      await prisma.media.create({
-        data: { url: publicUrl, alt: "" },
-      });
-      // Note: Gallery is not supported in current schema
-    }
-
     // Get image URL if featuredImageId exists
     let imageUrl = "";
     if (featuredImageId) {
@@ -96,14 +79,47 @@ export async function createProductAction(
       imageUrl = media?.url || "";
     }
 
+    // Handle gallery files - upload and prepare for product_images
+    const galleryImages = [];
+    const galleryFiles = formData.getAll("galleryFiles") as File[];
+    for (let i = 0; i < galleryFiles.length; i++) {
+      const file = galleryFiles[i];
+      if (!file || file.size === 0) continue;
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
+
+      const safeName = file.name.replace(/\s+/g, "-");
+      const filename = `${Date.now()}-${i}-${safeName}`;
+      const publicUrl = `/uploads/${filename}`;
+
+      await writeFile(path.join(uploadDir, filename), buffer);
+
+      galleryImages.push({
+        id: `img_${Date.now()}_${i}_${Math.random().toString(36).substring(7)}`,
+        url: publicUrl,
+        alt: parsed.data.title,
+        position: i,
+        updatedAt: new Date(),
+      });
+    }
+
     await prisma.product.create({
       data: {
         name: parsed.data.title,
         description: parsed.data.description,
+        details: parsed.data.details || null,
+        careInstructions: parsed.data.careInstructions || null,
         price: parsed.data.price,
         image: imageUrl,
         categoryId: parsed.data.categoryId,
         inStock: !!parsed.data.published,
+        slug: slugify(parsed.data.title),
+        published: !!parsed.data.published,
+        product_images: {
+          create: galleryImages,
+        },
       },
     });
 
@@ -119,10 +135,12 @@ const UpdateProductInput = z.object({
   productId: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
+  details: z.string().optional(),
+  careInstructions: z.string().optional(),
   price: z.coerce.number().positive(),
   inventory: z.coerce.number().int().min(0),
   categoryId: z.string().min(1),
-  published: z.union([z.boolean(), z.string()]).optional(),
+  published: z.union([z.literal("on"), z.boolean(), z.string()]).optional(),
 });
 
 export async function updateProductAction(
@@ -136,6 +154,8 @@ export async function updateProductAction(
       productId: formData.get("productId"),
       title: formData.get("title"),
       description: formData.get("description"),
+      details: formData.get("details"),
+      careInstructions: formData.get("careInstructions"),
       price: formData.get("price"),
       inventory: formData.get("inventory"),
       categoryId: formData.get("categoryId"),
@@ -143,7 +163,8 @@ export async function updateProductAction(
     });
 
     if (!parsed.success) {
-      return { error: "Invalid product data" };
+      console.error("Validation errors:", parsed.error.issues);
+      return { error: "Invalid product data: " + parsed.error.issues.map((e: any) => e.message).join(", ") };
     }
 
     // Handle featured image file upload
@@ -166,25 +187,36 @@ export async function updateProductAction(
       featuredImageId = media.id;
     }
 
-    // Handle gallery files - schema doesn't support gallery, so we just create media
+    // Handle gallery files
     const galleryFiles = formData.getAll("galleryFiles") as File[];
-    for (const file of galleryFiles) {
-      if (file.size === 0) continue;
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await mkdir(uploadDir, { recursive: true });
-
-      const safeName = file.name.replace(/\s+/g, "-");
-      const filename = `${Date.now()}-${safeName}`;
-      const publicUrl = `/uploads/${filename}`;
-
-      await writeFile(path.join(uploadDir, filename), buffer);
-
-      await prisma.media.create({
-        data: { url: publicUrl, alt: "" },
+    if (galleryFiles.length > 0 && galleryFiles[0].size > 0) {
+      const galleryImages = [];
+        for (let i = 0; i < galleryFiles.length; i++) {
+          const file = galleryFiles[i];
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        await mkdir(uploadDir, { recursive: true });
+        const safeName = file.name.replace(/\s+/g, "-");
+        const filename = `${Date.now()}-${safeName}`;
+        const publicUrl = `/uploads/${filename}`;
+        await writeFile(path.join(uploadDir, filename), buffer);
+        galleryImages.push({ 
+          id: `img_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          url: publicUrl, 
+          alt: parsed.data.title,
+            position: i,
+          updatedAt: new Date()
+        });
+      }
+      
+      await prisma.product.update({
+        where: { id: parsed.data.productId },
+        data: {
+          product_images: {
+            create: galleryImages,
+          },
+        },
       });
-      // Note: Gallery is not supported in current schema
     }
 
     // Get image URL if featuredImageId exists
@@ -194,14 +226,19 @@ export async function updateProductAction(
       imageUrl = media?.url || "";
     }
 
+    const isPublished = parsed.data.published === "on" || parsed.data.published === "true" || parsed.data.published === true;
+    
     await prisma.product.update({
       where: { id: parsed.data.productId },
       data: {
         name: parsed.data.title,
         description: parsed.data.description,
+        details: parsed.data.details || null,
+        careInstructions: parsed.data.careInstructions || null,
         price: parsed.data.price,
         categoryId: parsed.data.categoryId,
-        inStock: parsed.data.published === "true" || parsed.data.published === true,
+        published: isPublished,
+        inStock: isPublished,
         ...(imageUrl !== undefined && { image: imageUrl }),
       },
     });
@@ -210,7 +247,8 @@ export async function updateProductAction(
     return { success: "Product updated successfully" };
   } catch (error) {
     console.error("Error updating product:", error);
-    return { error: "Failed to update product" };
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return { error: "Failed to update product: " + errorMessage };
   }
 }
 

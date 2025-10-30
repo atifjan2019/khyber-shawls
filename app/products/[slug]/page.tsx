@@ -8,6 +8,7 @@ import { CheckCircle2, ShieldCheck, Truck } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/currency"
 import { fetchProductBySlug } from "@/lib/products"
+import { ProductGalleryTabs } from "@/components/product/product-gallery-tabs"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -116,8 +117,7 @@ export default async function ProductPage({ params }: PageProps) {
     )
   }
 
-  // Gallery is empty since schema doesn't support it - just use featured image
-  const galleryItems = product.gallery || []
+  const galleryItems = product.gallery ?? []
   const mainImageUrl = product.featuredImageUrl ?? "/placeholder.svg"
   const mainImageAlt = product.featuredImageAlt ?? product.title
 
@@ -129,10 +129,11 @@ export default async function ProductPage({ params }: PageProps) {
       include: {
         products: {
           where: {
-            inStock: true,
+            published: true,
             id: { not: product.id },
           },
           take: 4,
+          include: { product_images: true, category: true },
         },
       },
     })
@@ -140,7 +141,7 @@ export default async function ProductPage({ params }: PageProps) {
     related.push(...(category?.products || []).map(p => ({
       id: p.id,
       title: p.name,
-      slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      slug: p.slug,
       price: p.price,
       featuredImage: { url: p.image, alt: p.name },
     })))
@@ -150,7 +151,7 @@ export default async function ProductPage({ params }: PageProps) {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
-    image: [mainImageUrl],
+    image: [mainImageUrl, ...galleryItems.map(i => i.url)],
     description: product.description,
     brand: "Khyber Shawls",
     offers: {
@@ -164,17 +165,17 @@ export default async function ProductPage({ params }: PageProps) {
 
   const trustSignals = [
     {
-      icon: Truck,
+      iconName: "truck" as const,
       title: "Express nationwide shipping",
       description: "Secure delivery across Pakistan within 2-4 business days.",
     },
     {
-      icon: ShieldCheck,
+      iconName: "shield" as const,
       title: "Authenticity guaranteed",
       description: "Each shawl ships with provenance certification and lifetime support.",
     },
     {
-      icon: CheckCircle2,
+      iconName: "check" as const,
       title: "30-day easy returns",
       description: "Complimentary exchanges to help you find the perfect colourway.",
     },
@@ -182,82 +183,25 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <main className="w-full px-6 py-10">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-10 lg:flex-row lg:items-start lg:gap-16">
-        <section className="flex-1 space-y-4">
-          <div className="relative aspect-square w-full overflow-hidden rounded-3xl bg-muted">
-            <Image
-              src={mainImageUrl}
-              alt={mainImageAlt}
-              fill
-              sizes="(min-width:1280px) 55vw, (min-width:1024px) 50vw, 100vw"
-              priority
-              className="object-cover"
-            />
-          </div>
-
-          {/* Gallery not supported in current schema */}
-        </section>
-
-        <aside className="w-full rounded-3xl border border-white/10 bg-background/70 p-6 shadow-xl backdrop-blur lg:max-w-sm">
-          <header className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-amber-700">
-              {product.categoryName ?? "Signature Collection"}
-            </p>
-            <h1 className="text-3xl font-semibold text-foreground lg:text-[2.2rem]">
-              {product.title}
-            </h1>
-            <p className="text-2xl font-medium text-amber-700">{formatCurrency(product.price)}</p>
-          </header>
-
-          {product.description && (
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              {product.description}
-            </p>
-          )}
-
-          <div className="mt-6 flex flex-col gap-3">
-            <button className="w-full rounded-full bg-amber-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-amber-800">
-              Add to cart
-            </button>
-            <button className="w-full rounded-full border border-amber-700 px-6 py-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-700 hover:text-white">
-              Buy it now
-            </button>
-          </div>
-
-          <div className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-background/80 p-5">
-            {trustSignals.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="flex items-start gap-3">
-                <Icon className="mt-0.5 size-5 text-amber-700" />
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-foreground">{title}</p>
-                  <p className="text-xs text-muted-foreground">{description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <nav className="mt-6 text-xs text-muted-foreground" aria-label="Breadcrumb">
-            <div className="flex flex-wrap items-center gap-2">
-              <Link href="/" className="hover:text-foreground">Home</Link>
-              <span>/</span>
-              <Link href="/products" className="hover:text-foreground">Products</Link>
-              {product.categorySlug && product.categoryName && (
-                <>
-                  <span>/</span>
-                  <Link href={`/category/${product.categorySlug}`} className="hover:text-foreground">
-                    {product.categoryName}
-                  </Link>
-                </>
-              )}
-              <span>/</span>
-              <span className="text-foreground font-medium">{product.title}</span>
-            </div>
-          </nav>
-        </aside>
+      <div className="mx-auto w-full max-w-[1600px]">
+        <ProductGalleryTabs
+          mainImageUrl={mainImageUrl}
+          mainImageAlt={mainImageAlt}
+          galleryItems={galleryItems}
+          productTitle={product.title}
+          productDescription={product.description}
+          productDetails={product.details}
+          careInstructions={product.careInstructions}
+          categoryName={product.categoryName ?? null}
+          formattedPrice={formatCurrency(product.price)}
+          trustSignals={trustSignals}
+          categorySlug={product.categorySlug ?? null}
+          slug={slug}
+        />
       </div>
 
       {related.length > 0 && (
-        <section className="mx-auto mt-12 max-w-[1200px] space-y-6">
+        <section className="mx-auto mt-12 max-w-[1600px] space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold text-foreground">You may also like</h2>

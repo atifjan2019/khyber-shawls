@@ -10,7 +10,7 @@ type ToastProps = {
 };
 
 export function Toast({ message, show, onClose }: ToastProps) {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(show);
 
   useEffect(() => {
     if (show) {

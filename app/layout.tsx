@@ -23,49 +23,42 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await prisma.settings.findFirst()
   console.log("Settings from generateMetadata:", settings);
 
+  const defaultDescription = "Discover authentic, handcrafted shawls from the historic Khyber region. Each piece tells a story of tradition and artistry.";
+
   return {
-    metadataBase: new URL("https://khybershawls.com"),
+    metadataBase: new URL(
+      process.env.NODE_ENV === "production" ? "https://khybershawls.com" : "http://localhost:3000"
+    ),
     title: {
-      default: settings?.websiteName || "Khyber Shawls | Luxury Kashmiri Shawls Online",
+      default: settings?.websiteName || "Khyber Shawls",
       template: `%s | ${settings?.websiteName || "Khyber Shawls"}`,
     },
-    description:
-      "Shop handcrafted Kashmiri shawls, scarves, and wraps made from the finest Pashmina for discerning customers worldwide.",
-    keywords: [
-      "Kashmiri shawls",
-      "Pashmina",
-      "luxury shawls",
-      "Khyber Shawls",
-      "handcrafted textiles",
-    ],
+    description: defaultDescription,
     openGraph: {
-      type: "website",
-      locale: "en_US",
-      url: "https://khybershawls.com",
-      title: settings?.websiteName || "Khyber Shawls | Luxury Kashmiri Shawls Online",
-      description:
-        "Discover heirloom-quality Kashmiri shawls and wraps, sustainably sourced from artisans in the Khyber region.",
+      title: settings?.websiteName || "Khyber Shawls",
+      description: defaultDescription,
+      url: "/",
+      siteName: settings?.websiteName || "Khyber Shawls",
       images: [
         {
-          url: settings?.websiteLogoUrl || "/hero-shawl.svg",
+          url: settings?.websiteLogoUrl || "/logo.png",
           width: 1200,
           height: 630,
-          alt: "Khyber Shawls hero imagery featuring handcrafted textiles",
         },
       ],
+      locale: "en_US",
+      type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: settings?.websiteName || "Khyber Shawls | Luxury Kashmiri Shawls Online",
-      description:
-        "Elevate your wardrobe with premium handcrafted shawls sourced from Khyber artisans.",
-      images: [settings?.websiteLogoUrl || "/hero-shawl.svg"],
-    },
-    alternates: {
-      canonical: "/",
+      title: settings?.websiteName || "Khyber Shawls",
+      description: defaultDescription,
+      images: [settings?.websiteLogoUrl || "/logo.png"],
     },
     icons: {
       icon: settings?.websiteFaviconUrl || "/favicon.ico",
+      shortcut: settings?.websiteFaviconUrl || "/favicon.ico",
+      apple: settings?.websiteFaviconUrl || "/favicon.ico",
     },
   }
 }
@@ -86,7 +79,7 @@ export default async function RootLayout({
         <CartProvider>
           <SiteHeader user={user} />
           <main className="flex-1">
-            <div className="mx-auto max-w-6xl px-6 pb-12">{children}</div>
+            <div className="mx-auto px-6 pb-12">{children}</div>
           </main>
           <SiteFooter />
         </CartProvider>

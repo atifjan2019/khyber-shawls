@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   const user = await getCurrentUser()
 
   try {
-    await prisma.contact_entry.create({
+    await prisma.contactEntry.create({
       data: {
         name: parsed.data.name,
         email: parsed.data.email,

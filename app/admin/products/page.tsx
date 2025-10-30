@@ -16,6 +16,8 @@ type AdminProductRow = {
   id: string;
   title: string;
   description: string; // ✅ coerced to string
+  details: string | null;
+  careInstructions: string | null;
   price: number;
   priceLabel: string;
   inventory: number;
@@ -26,6 +28,7 @@ type AdminProductRow = {
   featuredImageUrl: string | null;
   featuredImageAlt: string | null;
   galleryMediaIds: string[];
+  galleryImages: Array<{ url: string; alt: string | null }>;
 };
 
 // Helpers
@@ -52,6 +55,9 @@ export default async function AdminProductsPage() {
     prisma.product.findMany({
       include: {
         category: true,
+        product_images: {
+          orderBy: { position: "asc" }
+        }
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -79,6 +85,8 @@ export default async function AdminProductsPage() {
     id: p.id,
     title: toStringOr(p.name), // Schema has 'name', not 'title'
     description: toStringOr(p.description, ""), // ← fix: never null
+    details: p.details ?? null,
+    careInstructions: p.careInstructions ?? null,
     price: Number(p.price),
     priceLabel: formatCurrency(p.price),
     inventory: 0, // Schema doesn't have inventory field
@@ -89,6 +97,10 @@ export default async function AdminProductsPage() {
     featuredImageUrl: p.image ?? null,
     featuredImageAlt: null,
     galleryMediaIds: [],
+    galleryImages: p.product_images?.map((img: any) => ({
+      url: img.url,
+      alt: img.alt
+    })) ?? []
   }));
 
   return (

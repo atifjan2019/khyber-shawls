@@ -26,7 +26,7 @@ export default async function HomePage() {
       <HeroCarousel slides={heroSlides} fallbackImage="/hero/khyber-hero.jpg" />
 
            {/* ======================= BEST SELLERS ======================= */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
+      <section className="mx-auto max-w-[1600px] px-6 py-20">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Editor’s Choice</p>
@@ -45,7 +45,7 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= SHOP BY CATEGORY ======================= */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
+      <section className="mx-auto max-w-[1600px] px-6 py-20">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Shop by Category</p>
@@ -80,7 +80,7 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= BRAND / EDITORIAL INTRO ======================= */}
-      <section className="mx-auto max-w-6xl px-6 pb-6">
+      <section className="mx-auto max-w-[1600px] px-6 pb-6">
         <div className="grid gap-8 lg:grid-cols-[1.2fr,1fr] items-center">
           <div>
             <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
@@ -109,7 +109,7 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= NEW ARRIVALS ======================= */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
+      <section className="mx-auto max-w-[1600px] px-6 py-20">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Just In</p>
@@ -138,7 +138,7 @@ export default async function HomePage() {
       {/* ======================= WHY KHYBER IS THE BEST ======================= */}
 
       {/* ======================= WHY KHYBER IS THE BEST ======================= */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
+      <section className="mx-auto max-w-[1600px] px-6 py-20">
         <div className="grid gap-10 lg:grid-cols-2 items-center">
           <div className="relative rounded-3xl overflow-hidden h-80">
             <Image
@@ -175,7 +175,7 @@ export default async function HomePage() {
 
       {/* ======================= FEATURES OF KHYBER SHAWLS ======================= */}
       <section className="bg-[#f4ede3]/50">
-        <div className="mx-auto max-w-7xl px-6 py-20">
+        <div className="mx-auto max-w-[1600px] px-6 py-20">
           <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 text-center">
             Features of Khyber Shawls
           </h2>
@@ -202,7 +202,7 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= WOMEN’S EDIT (OPTIONAL) ======================= */}
-      <section className="mx-auto max-w-7xl px-6 py-20">
+      <section className="mx-auto max-w-[1600px] px-6 py-20">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-700">For Her</p>
@@ -227,7 +227,7 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= PROMISE / WARRANTY ======================= */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section className="mx-auto max-w-[1600px] px-6 py-16">
         <div className="rounded-3xl bg-gradient-to-r from-amber-600 to-amber-700 text-white p-8 sm:p-12 text-center">
           <h2 className="text-2xl sm:text-3xl font-semibold">Khyber Care Promise</h2>
           <p className="mt-2 text-white/90 max-w-2xl mx-auto">
@@ -242,7 +242,7 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= ALL PRODUCTS (TEASER) ======================= */}
-      <section className="mx-auto max-w-7xl px-6 pb-24">
+      <section className="mx-auto max-w-[1600px] px-6 pb-24">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-amber-700">All Styles</p>

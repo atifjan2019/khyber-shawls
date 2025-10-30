@@ -75,7 +75,7 @@ export default async function AdminOrdersPage() {
                 <div className="mt-4 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
                   {order.items.map((item) => (
                     <p key={item.id}>
-                      {item.quantity} × {item.product?.title ?? "Removed product"}
+                      {item.quantity} × {item.product?.name ?? "Removed product"}
                     </p>
                   ))}
                 </div>

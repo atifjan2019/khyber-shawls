@@ -116,14 +116,14 @@ export async function createProductAction(
 
   // Use UncheckedCreate so we can set foreign keys directly
   const data: Prisma.ProductUncheckedCreateInput = {
-    title: parsed.data.title,
+    name: parsed.data.title,
     slug: slugify(parsed.data.title),
     description: parsed.data.description,
     price: parsed.data.price as any, // Decimal accepts number in JS
-    inventory: parsed.data.inventory ?? 0,
+    image: "", // Default empty image
+    inStock: !!parsed.data.published,
     published: !!parsed.data.published,
     categoryId: parsed.data.categoryId,
-    authorId: user.id, // REQUIRED by your schema
     // createdAt/updatedAt will be defaulted by the DB
   };
 
@@ -170,13 +170,14 @@ export async function updateProductAction(
 
     // Build a partial update with precise keys
     const data: Prisma.ProductUncheckedUpdateInput = {};
-    if (rest.title !== undefined) data.title = rest.title;
+    if (rest.title !== undefined) data.name = rest.title;
     if (rest.description !== undefined) data.description = rest.description;
     if (rest.price !== undefined) data.price = rest.price as any;
-    if (rest.inventory !== undefined) data.inventory = rest.inventory;
     if (rest.categoryId !== undefined) data.categoryId = rest.categoryId;
-    if (rest.published !== undefined)
+    if (rest.published !== undefined) {
       data.published = rest.published === "true" || rest.published === true;
+      data.inStock = rest.published === "true" || rest.published === true;
+    }
 
     await db.product.update({ where: { id }, data });
     return { success: "Product updated" };
@@ -199,9 +200,8 @@ export async function deleteProductAction(
 
   const db = ensurePrismaClient();
   try {
-    await db.product.update({
+    await db.product.delete({
       where: { id: parsed.data.id },
-      data: { deletedAt: new Date() },
     });
     return { success: "Product deleted" };
   } catch (e: any) {

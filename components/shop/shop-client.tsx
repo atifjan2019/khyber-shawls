@@ -4,7 +4,6 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { ProductCard } from "@/components/product-card"
-import { useCart } from "@/components/providers/cart-provider"
 import { Button } from "@/components/ui/button"
 import type { SerializedCategory, SerializedProduct } from "@/lib/products"
 
@@ -20,8 +19,6 @@ type ShopClientProps = {
 }
 
 export function ShopClient({ products, categories }: ShopClientProps) {
-  const { addItem } = useCart()
-
   return (
     <div className="space-y-20">
       <section className="grid items-center gap-12 rounded-[2.5rem] border bg-gradient-to-br from-background via-background to-secondary/20 p-10 md:grid-cols-[1.1fr,0.9fr] md:p-16">
@@ -92,7 +89,6 @@ export function ShopClient({ products, categories }: ShopClientProps) {
               <ProductCard
                 key={product.id}
                 product={product}
-                onAddToCart={addItem}
               />
             ))
           )}
