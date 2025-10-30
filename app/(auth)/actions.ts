@@ -76,8 +76,8 @@ export async function registerAction(
     return { error: 'Password must be at least 6 characters.' };
   }
 
-  // TEMP auth: accept registration and auto-login; set role from ADMIN_EMAILS
-  const role = isAdminEmail(email) ? 'ADMIN' : 'USER';
+  // Only allow admin registration
+  const role = 'ADMIN';
 
   const sessionPayload = JSON.stringify({
     id: hashToId(email),

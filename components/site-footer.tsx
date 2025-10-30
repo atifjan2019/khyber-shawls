@@ -11,6 +11,10 @@ export function SiteFooter() {
           </p>
         </div>
         <nav className="flex items-center justify-center gap-4 text-sm font-medium text-muted-foreground">
+          <Link href="/shop" className="transition hover:text-foreground">
+            Shop
+          </Link>
+          <span className="h-1 w-1 rounded-full bg-muted-foreground/40" aria-hidden />
           <Link href="/about" className="transition hover:text-foreground">
             About
           </Link>

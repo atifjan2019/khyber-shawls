@@ -1,0 +1,8 @@
+<svg width="400" height="500" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="500" rx="32" fill="#f4ede3"/>
+  <g opacity="0.5">
+    <rect x="60" y="120" width="280" height="200" rx="24" fill="#e0cba7"/>
+    <rect x="120" y="340" width="160" height="24" rx="12" fill="#e0cba7"/>
+  </g>
+  <text x="50%" y="60%" text-anchor="middle" fill="#bfa76a" font-size="32" font-family="Arial, Helvetica, sans-serif" dy=".3em">No Image</text>
+</svg>

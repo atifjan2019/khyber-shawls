@@ -107,15 +107,20 @@ export default function CheckoutPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to place order")
+        let errorMsg = "Failed to place order"
+        try {
+          const data = await response.json()
+          if (data?.error) errorMsg = data.error
+        } catch {}
+        throw new Error(errorMsg)
       }
 
       setSubmitted(true)
       clearCart()
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
       alert(
-        "We could not process your order. Please review your details and try again."
+        error?.message || "We could not process your order. Please review your details and try again."
       )
     } finally {
       setIsSubmitting(false)
@@ -282,10 +287,10 @@ export default function CheckoutPage() {
                 <div>
                   <p className="font-medium">{product.title}</p>
                   <p className="text-muted-foreground">
-                    Qty {product.quantity} &times; ${product.price.toFixed(0)}
+                    Qty {product.quantity} &times; Rs {product.price.toFixed(0)}
                   </p>
                 </div>
-                <span className="font-semibold">${product.subtotal.toFixed(0)}</span>
+                <span className="font-semibold">Rs {product.subtotal.toFixed(0)}</span>
               </li>
             ))}
           </ul>
@@ -293,7 +298,7 @@ export default function CheckoutPage() {
 
         <div className="flex items-center justify-between border-t pt-4 text-base font-semibold">
           <span>Total</span>
-          <span>${summary.total.toFixed(0)}</span>
+          <span>Rs {summary.total.toFixed(0)}</span>
         </div>
       </aside>
     </div>

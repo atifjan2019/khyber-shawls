@@ -32,6 +32,7 @@ type ProductData = {
   featuredImageAlt: string | null
   galleryMediaIds: string[]
   galleryImages?: Array<{ url: string; alt: string | null }>
+  tags?: string[]
 }
 
 type ProductListItemProps = {
@@ -45,6 +46,10 @@ const initialState: ActionState = { error: undefined, success: undefined }
 export function ProductListItem({ product, categories, mediaLibrary }: ProductListItemProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
+  // Reset edit mode
+  const handleEditToggle = () => {
+    setIsEditing((prev) => !prev);
+  };
 
   const [updateState, updateAction, isUpdating] = useActionState<ActionState, FormData>(
     async (prev, formData) => {
@@ -79,74 +84,76 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
   )
 
   return (
-    <div className="grid gap-6 rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5 md:grid-cols-[160px,1fr]">
-      <div className="relative hidden overflow-hidden rounded-2xl bg-muted md:block">
+    <div className="flex flex-col md:flex-row gap-6 rounded-3xl border border-white/10 bg-white/90 p-6 shadow-lg transition-all hover:border-primary/40 hover:shadow-2xl relative">
+      <div className="relative w-full max-w-[140px] aspect-square overflow-hidden rounded-2xl bg-gray-100 flex-shrink-0 flex items-center justify-center border border-gray-200">
         {product.featuredImageUrl ? (
           <Image
             src={product.featuredImageUrl}
             alt={product.featuredImageAlt ?? product.title}
             fill
             className="object-cover"
+            sizes="140px"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-            No media
-          </div>
+          <span className="text-xs text-gray-400">No image</span>
         )}
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="font-medium text-foreground">{product.title}</p>
-            <p className="text-xs text-muted-foreground">
+      <div className="flex flex-col gap-2 flex-1 min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-lg font-semibold text-gray-900 truncate">{product.title}</p>
+            <p className="text-xs text-gray-500 truncate">
               {product.categoryName ?? "Uncategorised"}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1 text-sm">
-            <p>{product.priceLabel}</p>
-            <p className="text-xs text-muted-foreground">
-              {product.published ? "Published" : "Draft"} · {product.inventory} in stock
-            </p>
+            <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-primary font-bold text-sm">
+              {product.priceLabel}
+            </span>
+            <span className={`text-xs ${product.published ? "text-green-600" : "text-gray-400"}`}>
+              {product.published ? "Published" : "Draft"}
+            </span>
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
+        <p className="text-sm text-gray-700 line-clamp-2 mt-1">{product.description}</p>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => setIsEditing((value) => !value)}
-          >
-            {isEditing ? <X className="size-3.5" /> : <Pencil className="size-3.5" />}
-            {isEditing ? "Cancel" : "Edit"}
-          </Button>
-          <form action={deleteAction}>
-            <input type="hidden" name="productId" value={product.id} />
-            <Button
-              type="submit"
-              variant="destructive"
-              size="sm"
-              className="flex items-center gap-1"
-              disabled={isDeleting}
-              onClick={(event) => {
-                const confirmed = window.confirm(
-                  `Delete "${product.title}"? This action cannot be undone.`
-                )
-                if (!confirmed) {
-                  event.preventDefault()
-                  event.stopPropagation()
-                }
-              }}
-            >
-              <Trash className="size-3.5" />
-              {isDeleting ? "Deleting…" : "Delete"}
-            </Button>
-          </form>
-        </div>
+
+  <div className="flex flex-wrap items-center gap-2 mt-2">
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="flex items-center gap-1"
+  onClick={handleEditToggle}
+    >
+      {isEditing ? <X className="size-3.5" /> : <Pencil className="size-3.5" />}
+      {isEditing ? "Cancel" : "Edit"}
+    </Button>
+    <form action={deleteAction}>
+      <input type="hidden" name="productId" value={product.id} />
+      <Button
+        type="submit"
+        variant="destructive"
+        size="sm"
+        className="flex items-center gap-1"
+        disabled={isDeleting}
+        onClick={(event) => {
+          const confirmed = window.confirm(
+            `Delete "${product.title}"? This action cannot be undone.`
+          )
+          if (!confirmed) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        }}
+      >
+        <Trash className="size-3.5" />
+        {isDeleting ? "Deleting…" : "Delete"}
+      </Button>
+    </form>
+  </div>
 
         {(deleteState.error || deleteState.success) && (
           <p className={`text-xs ${deleteState.error ? "text-destructive" : "text-primary"}`}>
@@ -160,6 +167,21 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
             className="space-y-4 rounded-2xl border border-white/10 bg-background/80 p-4"
           >
             <input type="hidden" name="productId" value={product.id} />
+            {/* Tags input/select */}
+            <div className="grid gap-3">
+              <label className="text-sm font-medium" htmlFor={`${product.id}-tags`}>
+                Tags
+              </label>
+              <input
+                id={`${product.id}-tags`}
+                name="tags"
+                type="text"
+                defaultValue={product.tags ? product.tags.join(", ") : ""}
+                placeholder="e.g. wool, winter, luxury"
+                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+              />
+              <p className="text-xs text-muted-foreground">Comma-separated (e.g. wool, winter, luxury)</p>
+            </div>
             <div className="grid gap-3">
               <label className="text-sm font-medium" htmlFor={`${product.id}-title`}>
                 Title
@@ -344,6 +366,8 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
                 Additional uploads are appended to the gallery and saved in the media library.
               </p>
             </div>
+
+            
             <label className="flex items-center gap-2 text-sm font-medium">
               <input type="checkbox" name="published" defaultChecked={product.published} />
               Publish product

@@ -28,6 +28,7 @@ const CreateProductInput = z.object({
   inventory: z.coerce.number().int().min(0).optional().default(0),
   categoryId: z.string().min(1),
   published: z.union([z.literal("on"), z.string()]).optional().nullable(),
+  // removed featured
 });
 
 export async function createProductAction(
@@ -46,6 +47,7 @@ export async function createProductAction(
       inventory: formData.get("inventory"),
       categoryId: formData.get("categoryId"),
       published: formData.get("published"),
+  // removed featured
     });
 
     if (!parsed.success) {
@@ -105,6 +107,28 @@ export async function createProductAction(
       });
     }
 
+
+    // --- TAGS LOGIC ---
+    const tagsRaw = formData.get("tags");
+    let tagNames: string[] = [];
+    if (typeof tagsRaw === "string") {
+      tagNames = tagsRaw.split(",").map(t => t.trim()).filter(Boolean);
+    }
+    type TagConnect = { id: string };
+    let tagConnect: TagConnect[] = [];
+    if (tagNames.length > 0) {
+      tagConnect = await Promise.all(
+        tagNames.map(async (name) => {
+          const tag = await prisma.tag.upsert({
+            where: { name },
+            update: {},
+            create: { name },
+          });
+          return { id: tag.id };
+        })
+      );
+    }
+
     await prisma.product.create({
       data: {
         name: parsed.data.title,
@@ -120,6 +144,7 @@ export async function createProductAction(
         product_images: {
           create: galleryImages,
         },
+  tags: tagConnect.length > 0 ? { connect: tagConnect } : undefined,
       },
     });
 
@@ -141,6 +166,7 @@ const UpdateProductInput = z.object({
   inventory: z.coerce.number().int().min(0),
   categoryId: z.string().min(1),
   published: z.union([z.literal("on"), z.boolean(), z.string()]).optional(),
+  // removed featured
 });
 
 export async function updateProductAction(
@@ -160,7 +186,32 @@ export async function updateProductAction(
       inventory: formData.get("inventory"),
       categoryId: formData.get("categoryId"),
       published: formData.get("published"),
+  // removed featured
     });
+
+    // --- TAGS LOGIC ---
+    // Get tags from form, parse comma-separated, trim, filter empty
+    const tagsRaw = formData.get("tags");
+    let tagNames: string[] = [];
+    if (typeof tagsRaw === "string") {
+      tagNames = tagsRaw.split(",").map(t => t.trim()).filter(Boolean);
+    }
+
+    // Upsert tags and collect their IDs
+    type TagConnect = { id: string };
+    let tagConnect: TagConnect[] = [];
+    if (tagNames.length > 0) {
+      tagConnect = await Promise.all(
+        tagNames.map(async (name) => {
+          const tag = await prisma.tag.upsert({
+            where: { name },
+            update: {},
+            create: { name },
+          });
+          return { id: tag.id };
+        })
+      );
+    }
 
     if (!parsed.success) {
       console.error("Validation errors:", parsed.error.issues);
@@ -239,7 +290,10 @@ export async function updateProductAction(
         categoryId: parsed.data.categoryId,
         published: isPublished,
         inStock: isPublished,
+  // removed featured
         ...(imageUrl !== undefined && { image: imageUrl }),
+        // Update tags relation
+  tags: tagConnect.length > 0 ? { connect: tagConnect } : { disconnect: [] },
       },
     });
 

@@ -12,254 +12,202 @@ import { Testimonials } from "@/components/testimonials";
 import { ProductCard } from "@/components/product-card";
 
 export default async function HomePage() {
-
-  const [heroSlides, products, categories, posts]: [any[], import("@/lib/products").SerializedProduct[], import("@/lib/products").SerializedCategory[], SerializedPost[]] = await Promise.all([
+  const [heroSlides, products, categories] = await Promise.all([
     fetchAllHeroContent(),
     fetchPublishedProducts(),
     fetchCategoriesWithProducts(),
-    fetchLatestPosts(),
   ]);
+
+  // Featured, Men, Women, Kids logic
+  const featuredProducts = products.filter((p) => (p as any).featured === true);
+  // Shawls with the 'Featured' tag
+  const tagFeaturedProducts = products.filter((p) => Array.isArray((p as any).tags) && (p as any).tags.includes('Featured'));
+  const menCategory = categories.find((c) => c.slug.toLowerCase().includes("men"));
+  const womenCategory = categories.find((c) => c.slug.toLowerCase().includes("women"));
+  const kidsCategory = categories.find((c) => c.slug.toLowerCase().includes("kid"));
+  const menProducts = menCategory ? products.filter((p) => p.categorySlug === menCategory.slug) : [];
+  const womenProducts = womenCategory ? products.filter((p) => p.categorySlug === womenCategory.slug) : [];
+  const kidsProducts = kidsCategory ? products.filter((p) => p.categorySlug === kidsCategory.slug) : [];
+  const newArrivals = products.slice(0, 6);
+
 
   return (
     <div className="bg-white">
       {/* ======================= HERO ======================= */}
       <HeroCarousel slides={heroSlides} fallbackImage="/hero/khyber-hero.jpg" />
 
-           {/* ======================= BEST SELLERS ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 py-20">
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Editor’s Choice</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Best Sellers</h2>
+      {/* ======================= FEATURED PRODUCTS ======================= */}
+      {featuredProducts.length > 0 && (
+        <section className="mx-auto max-w-[1600px] px-6 py-16">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-amber-800">Featured Shawls</h2>
+            <p className="mt-2 text-lg text-gray-700 font-medium">"Hand-selected creations woven from pure heritage and luxury."</p>
           </div>
-          <Link href="/products" className="text-sm font-medium text-amber-700 hover:text-amber-800">
-            View all →
-          </Link>
-        </div>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {products.slice(0, 8).map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      </section>
-
-      {/* ======================= SHOP BY CATEGORY ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 py-20">
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Shop by Category</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Explore Our Collections</h2>
-          </div>
-          <Link href="/collections" className="text-sm font-medium text-amber-700 hover:text-amber-800">
-            View all →
-          </Link>
-        </div>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.slice(0, 3).map((category) => (
-            <Link
-              key={category.id}
-              href={`/category/${category.slug}`}
-              className="group relative block overflow-hidden rounded-3xl"
-            >
-              <Image
-                src={category.featuredImageUrl ?? "/placeholder.svg"}
-                alt={category.name}
-                width={800}
-                height={600}
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <h3 className="text-2xl font-semibold text-white">{category.name}</h3>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ======================= BRAND / EDITORIAL INTRO ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 pb-6">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr,1fr] items-center">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
-              Pashmina Shawls — Heritage Craft Meets Modern Style
-            </h2>
-            <p className="mt-4 text-gray-700 leading-relaxed">
-              Our shawls are hand-woven with carefully selected fibres and finished with natural dyes.
-              The result is a drape that feels featherlight yet enduring — designed for celebrations,
-              seasons, and the stories you’ll carry forward.
-            </p>
-            <p className="mt-3 text-gray-700 leading-relaxed">
-              From timeless solids to intricate borders, each piece is editioned and finished by artisans
-              using techniques passed down through generations.
-            </p>
-          </div>
-          <div className="relative h-72 overflow-hidden rounded-3xl">
-            <Image
-              src="/hero/atelier-story.jpg"
-              alt="Atelier craftsmanship"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          </div>
-        </div>
-      </section>
-
-      {/* ======================= NEW ARRIVALS ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 py-20">
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Just In</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">New Arrivals</h2>
-          </div>
-          <Link href="/products" className="text-sm font-medium text-amber-700 hover:text-amber-800">
-            Shop new →
-          </Link>
-        </div>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {products
-            .slice(0, 12)
-            .sort((a, b) => (a.id < b.id ? 1 : -1)) // simple pseudo "new" order
-            .slice(0, 8)
-            .map((p) => (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
-        </div>
-      </section>
-
-      <FromTheJournal posts={posts} />
-
-      <Testimonials />
-
-      {/* ======================= WHY KHYBER IS THE BEST ======================= */}
-
-      {/* ======================= WHY KHYBER IS THE BEST ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 py-20">
-        <div className="grid gap-10 lg:grid-cols-2 items-center">
-          <div className="relative rounded-3xl overflow-hidden h-80">
-            <Image
-              src="/hero/khyber-hero.jpg"
-              alt="Why Khyber is the best"
-              fill
-              className="object-cover"
-            />
           </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">Why Khyber</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">
-              The Best of Pashmina Craft
-            </h2>
-            <p className="mt-4 text-gray-700 leading-relaxed">
-              We combine premium fibres, natural dyeing, and slow finishing to create modern heirlooms.
-              Our editioned drops keep each design rare and special.
-            </p>
-            <ul className="mt-4 grid gap-3 text-gray-700 text-sm">
-              <li>• Premium fibres & natural pigments</li>
-              <li>• Hand-woven motifs & finished embroidery</li>
-              <li>• Editioned releases to preserve rarity</li>
-              <li>• Traceable provenance with each piece</li>
-            </ul>
-            <Link
-              href="/about"
-              className="inline-block mt-6 rounded-full bg-amber-700 px-5 py-3 text-sm font-medium text-white hover:bg-amber-800 transition"
-            >
-              Discover our values
-            </Link>
+          <div className="mt-10 flex justify-center">
+            <Link href="/products" className="px-8 py-3 rounded-full bg-amber-700 text-white font-bold text-lg hover:bg-amber-100 hover:text-amber-900 transition">View All Shawls</Link>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ======================= FEATURES OF KHYBER SHAWLS ======================= */}
-      <section className="bg-[#f4ede3]/50">
-        <div className="mx-auto max-w-[1600px] px-6 py-20">
-          <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 text-center">
-            Features of Khyber Shawls
-          </h2>
-          <p className="mt-3 text-center text-gray-700 max-w-2xl mx-auto">
-            Crafted to last a lifetime — soft on the skin, strong in structure, and timeless in style.
-          </p>
-          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { t: "Pure Pashmina Weave", d: "Featherlight drape with enduring structure." },
-              { t: "Natural Dye Palette", d: "Pigments from walnut, saffron, and madder roots." },
-              { t: "Editioned Designs", d: "Limited quantities to preserve rarity and value." },
-              { t: "Provenance Certificate", d: "Trace fibres back to artisan cooperatives." },
-            ].map((f) => (
-              <div
-                key={f.t}
-                className="rounded-2xl bg-white p-6 shadow-sm hover:shadow-md transition"
-              >
-                <h3 className="text-lg font-semibold text-amber-700">{f.t}</h3>
-                <p className="mt-2 text-sm text-gray-700 leading-relaxed">{f.d}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ======================= WOMEN’S EDIT (OPTIONAL) ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 py-20">
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">For Her</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Women’s Edit</h2>
-          </div>
-          <Link href="/category/women-shawls" className="text-sm font-medium text-amber-700 hover:text-amber-800">
-            Explore →
+      {/* ======================= SHOP BY CATEGORY (3 Main Blocks) ======================= */}
+      <section className="mx-auto max-w-[1600px] px-6 py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[{cat: menCategory, label: "Men Shawls", desc: "Classic, bold textures."}, {cat: womenCategory, label: "Women Shawls", desc: "Graceful, premium designs."}, {cat: kidsCategory, label: "Kids Shawls", desc: "Soft, lightweight comfort."}].map(({cat, label, desc}, idx) => cat && (
+          <Link key={cat.id} href={`/category/${cat.slug}`} className="relative group rounded-3xl overflow-hidden min-h-[220px] flex flex-col justify-end shadow-lg">
+            <div className="absolute inset-0 w-full h-full">
+              <Image src={cat.featuredImageUrl ?? "/placeholder.svg"} alt={cat.name} fill className="object-cover" />
+              <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition" />
+            </div>
+            <div className="relative z-10 p-6 flex flex-col items-start">
+              <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{label}</h3>
+              <p className="text-base text-white/90 mb-4 drop-shadow">{desc}</p>
+              <span className="px-6 py-2 rounded-full bg-amber-700 text-white font-semibold text-lg shadow mt-2">Shop Now</span>
+            </div>
           </Link>
-        </div>
+        ))}
+      </section>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {categories
-            .filter((c) => c.slug.includes("women"))
-            .slice(0, 1)
-            .flatMap((c) =>
-              products.filter((p) => p.categoryName === c.name).slice(0, 8)
-            )
-            .map((p) => (
+      {/* ======================= FEATURED TAG SHAWLS ======================= */}
+      {tagFeaturedProducts.length > 0 && (
+        <section className="mx-auto max-w-[1600px] px-6 py-16">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-amber-800">Featured Products</h2>
+            <p className="mt-2 text-lg text-gray-700 font-medium">"Best"</p>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {tagFeaturedProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================= MEN SHAWLS ======================= */}
+      {menCategory && menProducts.length > 0 && (
+        <section className="mx-auto max-w-[1600px] px-6 py-16">
+          <div className="flex items-end justify-between gap-4 mb-8">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-700">For Him</p>
+              <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Men's Shawls</h2>
+            </div>
+            <Link href={`/category/${menCategory.slug}`} className="text-sm font-medium text-amber-700 hover:text-amber-800">
+              Explore →
+            </Link>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {menProducts.slice(0, 8).map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================= WOMEN SHAWLS ======================= */}
+      {womenCategory && womenProducts.length > 0 && (
+        <section className="mx-auto max-w-[1600px] px-6 py-16">
+          <div className="flex items-end justify-between gap-4 mb-8">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-700">For Her</p>
+              <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Women's Shawls</h2>
+            </div>
+            <Link href={`/category/${womenCategory.slug}`} className="text-sm font-medium text-amber-700 hover:text-amber-800">
+              Explore →
+            </Link>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {womenProducts.slice(0, 8).map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================= KIDS SHAWLS ======================= */}
+      {kidsCategory && kidsProducts.length > 0 && (
+        <section className="mx-auto max-w-[1600px] px-6 py-16">
+          <div className="flex items-end justify-between gap-4 mb-8">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-700">For Kids</p>
+              <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Kids' Shawls</h2>
+            </div>
+            <Link href={`/category/${kidsCategory.slug}`} className="text-sm font-medium text-amber-700 hover:text-amber-800">
+              Explore →
+            </Link>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {kidsProducts.slice(0, 8).map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================= WHY KHYBER SHAWLS (Trust & Craft) ======================= */}
+      <section className="bg-[#f4ede3] py-20">
+        <div className="mx-auto max-w-3xl text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-amber-800 mb-4">Authenticity Woven in Every Thread</h2>
+          <p className="text-lg text-gray-700 mb-6">Each shawl is handmade with pure wool and passion — crafted in Peshawar, designed for elegance, and trusted by families across Pakistan. Feel the warmth of heritage with Khyber Shawls.</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-8 mb-10">
+          <div className="flex flex-col items-center">
+            <span className="text-4xl">✅</span>
+            <span className="mt-2 text-base font-semibold text-amber-800">100% Pure Wool</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-4xl">🧵</span>
+            <span className="mt-2 text-base font-semibold text-amber-800">Handmade Craftsmanship</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-4xl">🚚</span>
+            <span className="mt-2 text-base font-semibold text-amber-800">Nationwide Express Delivery</span>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <Link href="/products" className="px-8 py-3 rounded-full bg-amber-700 text-white font-bold text-lg hover:bg-amber-100 hover:text-amber-900 transition">Shop Authentic Now</Link>
         </div>
       </section>
 
-      {/* ======================= PROMISE / WARRANTY ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 py-16">
-        <div className="rounded-3xl bg-gradient-to-r from-amber-600 to-amber-700 text-white p-8 sm:p-12 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold">Khyber Care Promise</h2>
-          <p className="mt-2 text-white/90 max-w-2xl mx-auto">
-            Complimentary steaming & mending for one year. Guidance for seasonal storage. Help when you need it.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
-            <span className="rounded-full bg-white/15 px-4 py-2">Fast Support</span>
-            <span className="rounded-full bg-white/15 px-4 py-2">Care Tips Included</span>
-            <span className="rounded-full bg-white/15 px-4 py-2">Hassle-free Returns</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ======================= ALL PRODUCTS (TEASER) ======================= */}
-      <section className="mx-auto max-w-[1600px] px-6 pb-24">
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-amber-700">All Styles</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl font-semibold text-gray-900">Explore the Atelier</h2>
-          </div>
-          <Link href="/products" className="text-sm font-medium text-amber-700 hover:text-amber-800">
-            View all →
-          </Link>
-        </div>
-
+      {/* ======================= CUSTOMER REVIEWS / SOCIAL PROOF ======================= */}
+      <section className="mx-auto max-w-[1000px] px-6 py-20">
+        <h2 className="text-3xl sm:text-4xl font-bold text-amber-800 text-center mb-8">Loved by Our Customers</h2>
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {products.slice(0, 12).map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+          {/* Example reviews, replace with dynamic if available */}
+          <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-center">
+            <Image src="/avatars/aisha.jpg" alt="Aisha" width={64} height={64} className="rounded-full mb-3" />
+            <div className="flex gap-1 mb-2">{Array(5).fill(0).map((_,i) => <span key={i}>★</span>)}</div>
+            <p className="text-lg font-semibold text-amber-800 text-center mb-2">"The softest shawl I've ever owned — worth every rupee."</p>
+            <span className="text-sm text-gray-700">Aisha, Lahore</span>
+          </div>
+          <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-center">
+            <Image src="/avatars/david.jpg" alt="David" width={64} height={64} className="rounded-full mb-3" />
+            <div className="flex gap-1 mb-2">{Array(5).fill(0).map((_,i) => <span key={i}>★</span>)}</div>
+            <p className="text-lg font-semibold text-amber-800 text-center mb-2">"Incredible quality and fast delivery. My family loves them!"</p>
+            <span className="text-sm text-gray-700">David, Islamabad</span>
+          </div>
+          <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-center">
+            <Image src="/avatars/fatima.jpg" alt="Fatima" width={64} height={64} className="rounded-full mb-3" />
+            <div className="flex gap-1 mb-2">{Array(5).fill(0).map((_,i) => <span key={i}>★</span>)}</div>
+            <p className="text-lg font-semibold text-amber-800 text-center mb-2">"Beautifully made, soft, and so warm. Highly recommend!"</p>
+            <span className="text-sm text-gray-700">Fatima, Karachi</span>
+          </div>
+        </div>
+        <div className="mt-8 flex justify-center">
+          <Link href="/reviews" className="text-amber-700 font-semibold hover:underline">See More Reviews</Link>
         </div>
       </section>
 
+      {/* ======================= FINAL CALL TO ACTION ======================= */}
+      <section className="relative py-20 flex flex-col items-center justify-center bg-[url('/uploads/1761561828519-1.avif')] bg-cover bg-center bg-no-repeat">
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6 drop-shadow-lg">Wrap Yourself in Heritage Today</h2>
+          <Link href="/products" className="px-10 py-4 rounded-full bg-amber-700 text-white font-bold text-2xl hover:bg-amber-100 hover:text-amber-900 transition">Shop Now →</Link>
+        </div>
+      </section>
     </div>
   )
 }

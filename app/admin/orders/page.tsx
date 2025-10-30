@@ -31,7 +31,11 @@ export default async function AdminOrdersPage() {
     },
     orderBy: { createdAt: "desc" },
     take: 20,
-  })
+  }) as Array<
+    typeof prisma.order extends { findMany: (...args: any[]) => Promise<(infer T)[]> } ?
+      T & { items: Array<{ id: string; quantity: number; price: number; product: { id: string; name: string; image: string | null } | null }> }
+      : never
+  >
 
   return (
     <div className="space-y-10 pb-16">
@@ -72,11 +76,20 @@ export default async function AdminOrdersPage() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+                <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
                   {order.items.map((item) => (
-                    <p key={item.id}>
-                      {item.quantity} × {item.product?.name ?? "Removed product"}
-                    </p>
+                    <div key={item.id} className="flex items-center gap-3">
+                      {item.product?.image && (
+                        <img
+                          src={item.product.image}
+                          alt={item.product?.name || "Product image"}
+                          className="h-10 w-10 rounded-md object-cover border"
+                        />
+                      )}
+                      <span>
+                        {item.quantity} × {item.product?.name ?? "Removed product"}
+                      </span>
+                    </div>
                   ))}
                 </div>
                 <div className="mt-5">

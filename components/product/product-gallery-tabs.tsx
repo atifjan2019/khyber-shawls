@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { CheckCircle2, ShieldCheck, Truck } from "lucide-react"
+import { useCart } from "@/components/providers/cart-provider"
 
 type GalleryItem = {
   id: string
@@ -17,6 +19,7 @@ type TrustSignal = {
 }
 
 type ProductGalleryTabsProps = {
+  productId: string
   mainImageUrl: string
   mainImageAlt: string
   galleryItems: GalleryItem[]
@@ -38,6 +41,7 @@ const iconMap = {
 }
 
 export function ProductGalleryTabs({
+  productId,
   mainImageUrl,
   mainImageAlt,
   galleryItems,
@@ -54,6 +58,36 @@ export function ProductGalleryTabs({
   const [activeImage, setActiveImage] = useState(mainImageUrl)
   const [activeImageAlt, setActiveImageAlt] = useState(mainImageAlt)
   const [activeTab, setActiveTab] = useState<"description" | "details" | "care">("description")
+  const [isAdding, setIsAdding] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  
+  const { addItem } = useCart()
+  const router = useRouter()
+
+  // Generate consistent review count based on product ID
+  const reviewCount = useMemo(() => {
+    const hash = productId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return 50 + (hash % 201) // Returns number between 50 and 250
+  }, [productId])
+
+  const handleAddToCart = () => {
+    setIsAdding(true)
+    addItem(productId, quantity)
+    setTimeout(() => setIsAdding(false), 1000)
+  }
+
+  const handleBuyNow = () => {
+    addItem(productId, quantity)
+    router.push('/cart')
+  }
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) setQuantity(quantity - 1)
+  }
+
+  const increaseQuantity = () => {
+    setQuantity(quantity + 1)
+  }
 
   const allImages = [
     { id: "main", url: mainImageUrl, alt: mainImageAlt },
@@ -62,6 +96,25 @@ export function ProductGalleryTabs({
 
   return (
     <>
+      {/* Breadcrumb at the top */}
+      <nav className="mb-6 text-sm text-gray-500" aria-label="Breadcrumb">
+        <div className="flex flex-wrap items-center gap-2">
+          <a href="/" className="hover:text-gray-900 transition">Home</a>
+          <span>/</span>
+          <a href="/products" className="hover:text-gray-900 transition">Products</a>
+          {categorySlug && categoryName && (
+            <>
+              <span>/</span>
+              <a href={`/category/${categorySlug}`} className="hover:text-gray-900 transition">
+                {categoryName}
+              </a>
+            </>
+          )}
+          <span>/</span>
+          <span className="text-gray-900 font-medium">{productTitle}</span>
+        </div>
+      </nav>
+
       {/* Two-Column Layout: Gallery (60%) + Product Info (40%) */}
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
         {/* Left side - Gallery (60%) */}
@@ -114,10 +167,25 @@ export function ProductGalleryTabs({
         </div>
 
         {/* Right side - Product Info (40%) */}
+        
         <div className="w-full lg:w-[40%] bg-white p-8 rounded-md shadow-sm border border-gray-100">
+          {/* Star Rating and Review Count */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center">
+              <span className="text-amber-600 text-lg">★</span>
+              <span className="text-amber-600 text-lg">★</span>
+              <span className="text-amber-600 text-lg">★</span>
+              <span className="text-amber-600 text-lg">★</span>
+              <span className="text-amber-600 text-lg">★</span>
+            </div>
+            <span className="text-sm text-gray-600">({reviewCount} reviews)</span>
+          </div>
+          
           <p className="text-xs uppercase tracking-widest text-orange-700 mb-2">
             {categoryName ?? "Signature Collection"}
           </p>
+          
+        
           <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
             {productTitle}
           </h1>
@@ -125,12 +193,40 @@ export function ProductGalleryTabs({
             {formattedPrice}
           </p>
 
-          <div className="flex flex-col gap-3 mb-6">
-            <button className="w-full bg-orange-700 text-white py-3.5 rounded-md font-semibold hover:bg-orange-800 transition">
-              Add to Cart
+          {/* Quantity Selector */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
+            <div className="flex items-center gap-3 w-32">
+              <button
+                onClick={decreaseQuantity}
+                className="w-8 h-8 rounded border border-gray-300 hover:border-orange-700 hover:bg-orange-50 transition flex items-center justify-center font-semibold text-gray-700"
+              >
+                −
+              </button>
+              <span className="flex-1 text-center font-semibold text-gray-900">{quantity}</span>
+              <button
+                onClick={increaseQuantity}
+                className="w-8 h-8 rounded border border-gray-300 hover:border-orange-700 hover:bg-orange-50 transition flex items-center justify-center font-semibold text-gray-700"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Buttons in one row */}
+          <div className="flex gap-2 mb-6">
+            <button 
+              onClick={handleAddToCart}
+              disabled={isAdding}
+              className="flex-1 bg-orange-700 text-white py-2.5 px-4 rounded-md font-semibold text-sm hover:bg-orange-800 transition disabled:opacity-50"
+            >
+              {isAdding ? "✓ Added!" : "Add to Cart"}
             </button>
-            <button className="w-full border-2 border-orange-700 text-orange-700 py-3.5 rounded-md font-semibold hover:bg-orange-50 transition">
-              Buy it Now
+            <button 
+              onClick={handleBuyNow}
+              className="flex-1 border-2 border-orange-700 text-orange-700 py-2.5 px-4 rounded-md font-semibold text-sm hover:bg-orange-50 transition"
+            >
+              Buy Now
             </button>
           </div>
 
@@ -148,25 +244,6 @@ export function ProductGalleryTabs({
               )
             })}
           </ul>
-
-          {/* Breadcrumb */}
-          <nav className="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500" aria-label="Breadcrumb">
-            <div className="flex flex-wrap items-center gap-2">
-              <a href="/" className="hover:text-gray-900">Home</a>
-              <span>/</span>
-              <a href="/products" className="hover:text-gray-900">Products</a>
-              {categorySlug && categoryName && (
-                <>
-                  <span>/</span>
-                  <a href={`/category/${categorySlug}`} className="hover:text-gray-900">
-                    {categoryName}
-                  </a>
-                </>
-              )}
-              <span>/</span>
-              <span className="text-gray-900 font-medium">{productTitle}</span>
-            </div>
-          </nav>
         </div>
       </div>
 

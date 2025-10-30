@@ -91,19 +91,9 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <div className="flex items-center gap-2">
             {user?.role === "ADMIN" ? (
               <AdminDropdown />
-            ) : (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={accountHref}>
-                  {user ? "Account" : "Login"}
-                </Link>
-              </Button>
-            )}
+            ) : null}
 
-            {!user ? (
-              <Button size="sm" asChild>
-                <Link href="/signup">Create account</Link>
-              </Button>
-            ) : (
+            {user ? (
               // ✅ Proper server-action logout (works for USER and ADMIN)
               <form action={logout}>
                 <Button size="sm" type="submit" variant="destructive" className="inline-flex items-center gap-1.5">
@@ -111,7 +101,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                   <span>Logout</span>
                 </Button>
               </form>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

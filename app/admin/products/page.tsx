@@ -57,12 +57,11 @@ export default async function AdminProductsPage() {
         category: true,
         product_images: {
           orderBy: { position: "asc" }
-        }
+        },
+        tags: true,
       },
       orderBy: { createdAt: "desc" },
     }),
-    // You had fetchMediaLibrary(100). The stub in /lib/media.ts ignores args,
-    // so this is fine either way.
     fetchMediaLibrary(),
   ]);
 
@@ -83,16 +82,16 @@ export default async function AdminProductsPage() {
   // ✅ Ensure description is a string (not null) to satisfy ProductListItem prop type
   const productsForDisplay: AdminProductRow[] = products.map((p: any) => ({
     id: p.id,
-    title: toStringOr(p.name), // Schema has 'name', not 'title'
-    description: toStringOr(p.description, ""), // ← fix: never null
+    title: toStringOr(p.name),
+    description: toStringOr(p.description, ""),
     details: p.details ?? null,
     careInstructions: p.careInstructions ?? null,
     price: Number(p.price),
     priceLabel: formatCurrency(p.price),
-    inventory: 0, // Schema doesn't have inventory field
+    inventory: 0,
     categoryId: toStringOr(p.categoryId ?? ""),
     categoryName: p.category?.name ?? null,
-    published: !!p.inStock, // Schema has 'inStock', not 'published'
+    published: !!p.inStock,
     featuredImageId: null,
     featuredImageUrl: p.image ?? null,
     featuredImageAlt: null,
@@ -100,7 +99,8 @@ export default async function AdminProductsPage() {
     galleryImages: p.product_images?.map((img: any) => ({
       url: img.url,
       alt: img.alt
-    })) ?? []
+    })) ?? [],
+    tags: p.tags ? p.tags.map((t: any) => t.name) : [],
   }));
 
   return (
@@ -115,7 +115,12 @@ export default async function AdminProductsPage() {
           </div>
         </div>
         <div className="mt-8">
-          <ProductForm categories={categoryOptions} />
+          <a
+            href="/admin/products/add"
+            className="inline-block rounded-full bg-primary px-6 py-3 text-base font-semibold text-white shadow hover:bg-primary/90 transition"
+          >
+            + Add Product
+          </a>
         </div>
       </section>
 

@@ -63,14 +63,13 @@ export async function POST(request: Request) {
     const order = await prisma.$transaction(async (tx: any) => {
       // Get products and check inventory
       const products = await tx.product.findMany({
-        where: { 
+        where: {
           id: { in: items.map((item: any) => item.id) },
-          inventory: { gt: 0 }
+          published: true,
         },
         select: {
           id: true,
           price: true,
-          inventory: true,
         },
       });
 
@@ -87,7 +86,7 @@ export async function POST(request: Request) {
       const orderItems = items
         .map((item: any) => {
           const product = productMap.get(item.id) as ProductItem | undefined;
-          if (!product || product.inventory < item.quantity) {
+          if (!product) {
             return null;
           }
           return {
@@ -99,7 +98,7 @@ export async function POST(request: Request) {
         .filter((item: any): item is { productId: string; quantity: number; price: number | string | bigint } => item !== null);
 
       if (orderItems.length === 0) {
-        throw new Error("Products are out of stock or were removed from the catalogue.");
+        throw new Error("Products were removed from the catalogue.");
       }
 
       // Calculate total
@@ -126,17 +125,8 @@ export async function POST(request: Request) {
         },
       });
 
-      // Update inventory
-      for (const item of orderItems) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            inventory: {
-              decrement: item.quantity
-            }
-          }
-        });
-      }
+
+      // No inventory decrement, allow unlimited sales
 
       return order;
     });

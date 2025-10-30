@@ -8,11 +8,15 @@ import { Button } from "@/components/ui/button"
 
 type ProductFormProps = {
   categories: Array<{ id: string; name: string }>
+  product?: {
+    featured?: boolean;
+    [key: string]: any;
+  }
 }
 
 const initialState = { error: undefined as string | undefined, success: undefined as string | undefined }
 
-export function ProductForm({ categories }: ProductFormProps) {
+export function ProductForm({ categories, product }: ProductFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [featuredPreview, setFeaturedPreview] = useState<string | null>(null)
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
@@ -218,9 +222,24 @@ export function ProductForm({ categories }: ProductFormProps) {
           ))}
         </select>
       </div>
+      <div className="grid gap-3">
+        <label className="text-sm font-medium" htmlFor="product-tags">
+          Tags
+        </label>
+        <input
+          id="product-tags"
+          name="tags"
+          type="text"
+          placeholder="Comma-separated tags (e.g. pashmina, winter, luxury)"
+          className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
+          defaultValue={product?.tags ? product.tags.map((t: any) => t.name ? t.name : t).join(", ") : ""}
+        />
+        <p className="text-xs text-muted-foreground">Optional - Separate tags with commas</p>
+      </div>
       <label className="flex items-center gap-2 text-sm font-medium">
         <input type="checkbox" name="published" /> Publish product immediately
       </label>
+      {/* Removed featured checkbox */}
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
       {state.success && <p className="text-sm text-primary">{state.success}</p>}
       <Button type="submit" disabled={isPending}>

@@ -16,44 +16,24 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "n
 
 export default async function DashboardPage() {
   if (!prisma) {
-    return (
-      <div className="overflow-hidden rounded-4xl border border-primary/20 bg-gradient-to-br from-background via-background/90 to-primary/10 p-12 shadow-xl">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Database not configured</h1>
-        <p className="mt-4 max-w-xl text-sm text-muted-foreground">
-          Add a valid <code>DATABASE_URL</code> in <code>.env.local</code> and restart the server.
-        </p>
-      </div>
-    );
-  }
-
-  const user = await requireUser();
-
-  // Admin users go to products page
-  if (user.role === "ADMIN") {
     redirect("/admin/products");
   }
 
-  const [orders, contactEntries] = await Promise.all([
-    prisma.order.findMany({
-      where: { userId: user.id },
-      include: { items: { include: { product: true } } },
-      orderBy: { createdAt: "desc" },
-    }) as unknown as Promise<OrderRow[]>,
-    (async () => {
-      try {
-        return (await prisma.contactEntry.findMany({
-          where: { userId: user.id },
-          orderBy: { createdAt: "desc" },
-          take: 6,
-        })) as ContactEntryRow[];
-      } catch {
-        return [] as ContactEntryRow[];
-      }
-    })(),
-  ]);
-
-  const fulfilledOrders = orders.filter((o: OrderRow) => o.status === "COMPLETED").length;
-
+  const user = await requireUser();
+  const ordersRaw = await prisma.order.findMany({
+    where: { userId: user.id },
+    include: { items: { include: { product: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  // Map product.name to product.title for UI compatibility
+  const orders = ordersRaw.map((order: any) => ({
+    ...order,
+    items: order.items.map((item: any) => ({
+      ...item,
+      product: item.product ? { ...item.product, title: item.product.name } : null,
+    })),
+  }));
+  const fulfilledOrders = orders.filter((o: any) => o.status === "fulfilled" || o.status === "delivered").length;
   return (
     <div className="space-y-12 pb-16">
       <section className="overflow-hidden rounded-4xl border border-primary/20 bg-gradient-to-br from-background via-background to-primary/10 p-10 shadow-xl">

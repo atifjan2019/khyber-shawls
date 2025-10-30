@@ -71,8 +71,8 @@ function serializeProduct(product: ProductWithRelations): SerializedProduct {
     price: Number(product.price),
     slug: product.slug,
     published: product.published,
-    featuredImageUrl: product.image || null,
-    featuredImageAlt: product.name || null,
+  featuredImageUrl: product.image || null,
+  featuredImageAlt: product.name || null,
     gallery: product.product_images.map(img => ({...img, alt: img.alt ?? ""})),
     categoryName: product.category?.name ?? null,
     categorySlug: product.category?.slug ?? null,
@@ -86,8 +86,8 @@ function serializeCategory(category: CategoryWithRelations): SerializedCategory 
     slug: category.slug,
     summary: category.summary ?? null,
     productCount: category.products?.length ?? 0,
-    featuredImageUrl: (category as any).featuredImageUrl ?? null,
-    featuredImageAlt: (category as any).featuredImageAlt ?? null,
+  featuredImageUrl: (category as any).featuredImageUrl ?? null,
+  featuredImageAlt: (category as any).featuredImageAlt ?? null,
   };
 }
 
@@ -97,11 +97,15 @@ export async function fetchPublishedProducts() {
     include: {
       category: true,
       product_images: true,
+      tags: true,
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return products.map(p => serializeProduct(p as unknown as ProductWithRelations));
+  return products.map(p => ({
+    ...serializeProduct(p as unknown as ProductWithRelations),
+    tags: (p as any).tags ? (p as any).tags.map((t: any) => t.name) : [],
+  }));
 }
 
 export async function fetchProductsByCategorySlug(slug: string) {
@@ -168,7 +172,7 @@ export async function fetchProductBySlug(slug: string): Promise<SerializedProduc
     where: { slug },
     include: {
       category: true,
-      product_images: true,
+        product_images: true,
     },
   });
 

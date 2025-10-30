@@ -185,6 +185,7 @@ export default async function ProductPage({ params }: PageProps) {
     <main className="w-full px-6 py-10">
       <div className="mx-auto w-full max-w-[1600px]">
         <ProductGalleryTabs
+          productId={product.id}
           mainImageUrl={mainImageUrl}
           mainImageAlt={mainImageAlt}
           galleryItems={galleryItems}

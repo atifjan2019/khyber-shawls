@@ -10,7 +10,7 @@ type PageProps = {
 export default async function SignupPage({ searchParams }: PageProps) {
   const user = await getCurrentUser()
   if (user) {
-    redirect(user.role === "ADMIN" ? "/admin" : "/dashboard")
+    redirect("/admin")
   }
 
   const params = await searchParams
@@ -19,9 +19,9 @@ export default async function SignupPage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto max-w-md space-y-8 rounded-3xl border bg-card p-10 shadow-sm">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Create an admin account</h1>
         <p className="text-sm text-muted-foreground">
-          Stay in the loop with new releases and track your bespoke orders.
+          Only admin accounts can be created. You will have full access to the store management dashboard.
         </p>
       </div>
       <SignupForm redirectTo={redirectTo} />
