@@ -32,6 +32,7 @@ type ProductGalleryTabsProps = {
   trustSignals: TrustSignal[]
   categorySlug: string | null
   slug: string
+  inStock: boolean
 }
 
 const iconMap = {
@@ -54,6 +55,7 @@ export function ProductGalleryTabs({
   trustSignals,
   categorySlug,
   slug,
+  inStock,
 }: ProductGalleryTabsProps) {
   const [activeImage, setActiveImage] = useState(mainImageUrl)
   const [activeImageAlt, setActiveImageAlt] = useState(mainImageAlt)
@@ -169,6 +171,19 @@ export function ProductGalleryTabs({
         {/* Right side - Product Info (40%) */}
         
         <div className="w-full lg:w-[40%] bg-white p-8 rounded-md shadow-sm border border-gray-100">
+          {/* Stock Badge */}
+          <div className="mb-3">
+            {inStock ? (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                ✓ In Stock - Ships within 2-4 days
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                Out of Stock - Contact us for availability
+              </span>
+            )}
+          </div>
+
           {/* Star Rating and Review Count */}
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center">

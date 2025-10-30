@@ -38,6 +38,19 @@ export function ProductCard({ product: p }: Props) {
 
       {/* Product Details */}
       <div className="p-6">
+        {/* Stock Badge */}
+        <div className="mb-3">
+          {p.inStock ? (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+              ✓ In Stock
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+              Out of Stock
+            </span>
+          )}
+        </div>
+
         {/* Product Name */}
         <Link href={`/products/${p.slug}`}>
           <h2 className="text-2xl font-bold mb-2 text-gray-800 hover:text-amber-700 transition-colors">

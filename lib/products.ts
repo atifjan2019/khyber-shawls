@@ -11,6 +11,7 @@ export type SerializedProduct = {
   price: number;
   slug: string;
   published: boolean;
+  inStock: boolean;
   featuredImageUrl: string | null;
   featuredImageAlt: string | null;
   gallery: Array<{ id: string; url: string; alt: string | null; position: number }>;
@@ -71,6 +72,7 @@ function serializeProduct(product: ProductWithRelations): SerializedProduct {
     price: Number(product.price),
     slug: product.slug,
     published: product.published,
+    inStock: product.inStock,
   featuredImageUrl: product.image || null,
   featuredImageAlt: product.name || null,
     gallery: product.product_images.map(img => ({...img, alt: img.alt ?? ""})),

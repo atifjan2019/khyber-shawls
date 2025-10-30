@@ -198,6 +198,7 @@ export default async function ProductPage({ params }: PageProps) {
           trustSignals={trustSignals}
           categorySlug={product.categorySlug ?? null}
           slug={slug}
+          inStock={product.inStock ?? true}
         />
       </div>
 
