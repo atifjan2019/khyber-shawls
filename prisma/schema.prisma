@@ -41,6 +41,11 @@ model Category {
   summary          String?
   featuredImageUrl String?
   featuredImageAlt String?
+  seoTitle         String?
+  seoDescription   String?   @db.Text
+  intro            String?   @db.LongText // JSON: { title, description, image: { url, alt } }
+  sections         String?   @db.LongText // JSON: [{ title, description, image: { url, alt } }]
+  uiConfig         String?   @db.Text // JSON: { showFilters, gridColumns: { mobile, tablet, desktop } }
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   products         Product[]
@@ -221,14 +226,4 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
-}
-
-model Newsletter {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  unsubscribed Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@map("newsletter")
 }

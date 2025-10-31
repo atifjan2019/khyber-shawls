@@ -29,6 +29,22 @@ export type SerializedCategory = {
   productCount: number;
   featuredImageUrl: string | null;
   featuredImageAlt: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  intro: {
+    title: string;
+    description: string;
+    image: { url: string; alt: string };
+  } | null;
+  sections: Array<{
+    title: string;
+    description: string;
+    image: { url: string; alt: string };
+  }>;
+  uiConfig: {
+    showFilters: boolean;
+    gridColumns: { mobile: number; tablet: number; desktop: number };
+  } | null;
 };
 
 // -------- Minimal local types to avoid stale @prisma/client ----------
@@ -39,6 +55,11 @@ type CategoryLite = {
   summary: string | null;
   featuredImageUrl?: string | null;
   featuredImageAlt?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  intro?: string | null;
+  sections?: string | null;
+  uiConfig?: string | null;
 };
 
 type ProductWithRelations = {
@@ -82,14 +103,48 @@ function serializeProduct(product: ProductWithRelations): SerializedProduct {
 }
 
 function serializeCategory(category: CategoryWithRelations): SerializedCategory {
+  // Parse JSON fields safely
+  let intro = null;
+  let sections: Array<{ title: string; description: string; image: { url: string; alt: string } }> = [];
+  let uiConfig = null;
+
+  try {
+    if (category.intro) {
+      intro = JSON.parse(category.intro);
+    }
+  } catch (e) {
+    console.error('Failed to parse category intro:', e);
+  }
+
+  try {
+    if (category.sections) {
+      sections = JSON.parse(category.sections);
+    }
+  } catch (e) {
+    console.error('Failed to parse category sections:', e);
+  }
+
+  try {
+    if (category.uiConfig) {
+      uiConfig = JSON.parse(category.uiConfig);
+    }
+  } catch (e) {
+    console.error('Failed to parse category uiConfig:', e);
+  }
+
   return {
     id: category.id,
     name: category.name,
     slug: category.slug,
     summary: category.summary ?? null,
     productCount: category.products?.length ?? 0,
-  featuredImageUrl: (category as any).featuredImageUrl ?? null,
-  featuredImageAlt: (category as any).featuredImageAlt ?? null,
+    featuredImageUrl: (category as any).featuredImageUrl ?? null,
+    featuredImageAlt: (category as any).featuredImageAlt ?? null,
+    seoTitle: (category as any).seoTitle ?? null,
+    seoDescription: (category as any).seoDescription ?? null,
+    intro,
+    sections,
+    uiConfig,
   };
 }
 

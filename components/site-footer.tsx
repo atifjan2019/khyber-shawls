@@ -1,41 +1,8 @@
-'use client'
-
-import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Facebook, Instagram, Mail, Phone, MapPin, Send } from "lucide-react"
+import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react"
 
 export function SiteFooter() {
-  const [email, setEmail] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState("")
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setMessage("")
-
-    try {
-      const response = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setMessage("Thank you for subscribing!")
-        setEmail("")
-      } else {
-        setMessage(data.error || "Failed to subscribe. Please try again.")
-      }
-    } catch (error) {
-      setMessage("Something went wrong. Please try again.")
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   return (
     <footer className="bg-gradient-to-b from-gray-50 to-gray-100 border-t border-gray-200">
@@ -215,51 +182,6 @@ export function SiteFooter() {
                 </Link>
               </li>
             </ul>
-          </div>
-        </div>
-
-        {/* Newsletter Section */}
-        <div className="border-t border-gray-300 pt-8 mb-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Subscribe to Our Newsletter
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Get updates on new arrivals, exclusive offers, and artisan stories
-            </p>
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition disabled:bg-gray-100"
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2.5 bg-amber-700 text-white rounded-lg font-semibold hover:bg-amber-800 disabled:bg-gray-400 transition flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Subscribing...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Subscribe
-                  </>
-                )}
-              </button>
-            </form>
-            {message && (
-              <p className={`mt-3 text-sm ${message.includes("Thank you") ? "text-green-600" : "text-red-600"}`}>
-                {message}
-              </p>
-            )}
           </div>
         </div>
 

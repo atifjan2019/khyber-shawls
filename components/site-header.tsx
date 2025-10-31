@@ -15,7 +15,6 @@ import { AdminDropdown } from "@/components/admin/admin-dropdown"
 import { logout } from "@/app/(auth)/actions"
 
 const primaryNav = [
-  { href: "/shop", label: "Shop" },
   { href: "/category/men-shawls", label: "Men Shawls" },
   { href: "/category/women-shawls", label: "Women Shawls" },
   { href: "/category/kids-shawls", label: "Kids Shawls" },
@@ -67,7 +66,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
-            {primaryNav.slice(0, 3).map((link) => {
+            {primaryNav.slice(0, 2).map((link) => {
               const isActive =
                 link.href === "/"
                   ? pathname === link.href

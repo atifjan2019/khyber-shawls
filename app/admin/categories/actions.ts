@@ -1,7 +1,9 @@
 'use server'
 
+// Server actions for category CRUD operations
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import path from 'path'
 import fs from 'fs/promises'
 
@@ -68,6 +70,40 @@ export async function updateCategoryAction(
     const featuredImageFile = formData.get('featuredImageFile') as File | null
     const featuredImageAlt = formData.get('featuredImageAlt')?.toString().trim() || null
 
+    // SEO fields
+    const seoTitle = formData.get('seoTitle')?.toString().trim() || null
+    const seoDescription = formData.get('seoDescription')?.toString().trim() || null
+
+    // Intro section fields
+    const introTitle = formData.get('introTitle')?.toString().trim()
+    const introDescription = formData.get('introDescription')?.toString().trim()
+    const introImageFile = formData.get('introImageFile') as File | null
+    const introImageAlt = formData.get('introImageAlt')?.toString().trim()
+
+    // Content sections (3 sections)
+    const sections = []
+    for (let i = 0; i < 3; i++) {
+      const title = formData.get(`section${i}Title`)?.toString().trim()
+      const description = formData.get(`section${i}Description`)?.toString().trim()
+      const imageFile = formData.get(`section${i}ImageFile`) as File | null
+      const imageAlt = formData.get(`section${i}ImageAlt`)?.toString().trim()
+      
+      // Upload section image if provided
+      let imageUrl = ''
+      if (imageFile && imageFile.size > 0) {
+        imageUrl = await saveUpload(imageFile)
+      }
+      
+      // Only include section if it has at least a title and description
+      if (title && description) {
+        sections.push({
+          title,
+          description,
+          image: { url: imageUrl, alt: imageAlt || '' }
+        })
+      }
+    }
+
     if (!id) return { error: 'Missing category ID' }
 
     const existing = await prisma.category.findUnique({ where: { id } })
@@ -78,30 +114,54 @@ export async function updateCategoryAction(
       featuredImageUrl = await saveUpload(featuredImageFile)
     }
 
+    // Build intro JSON
+    let introJson = null
+    if (introTitle && introDescription) {
+      // Upload intro image if provided
+      let introImageUrl = ''
+      if (introImageFile && introImageFile.size > 0) {
+        introImageUrl = await saveUpload(introImageFile)
+      }
+      
+      introJson = JSON.stringify({
+        title: introTitle,
+        description: introDescription,
+        image: { url: introImageUrl, alt: introImageAlt || '' }
+      })
+    }
+
+    // Build sections JSON (already processed with file uploads above)
+    const sectionsJson = sections.length > 0 ? JSON.stringify(sections) : null
+
     await prisma.category.update({
       where: { id },
       data: {
         name,
         summary,
         featuredImageAlt,
+        seoTitle,
+        seoDescription,
+        intro: introJson,
+        sections: sectionsJson,
         ...(featuredImageUrl !== undefined ? { featuredImageUrl } : {}),
       },
     })
 
     revalidatePath('/admin/categories')
-    return { success: 'Category updated' }
+    revalidatePath(`/admin/categories/${id}`)
+    revalidatePath(`/category/${existing.slug}`)
+    return { success: 'Category updated successfully!' }
   } catch (e: any) {
     return { error: e?.message || 'Failed to update category' }
   }
 }
 
 // ---- DELETE ----
-// /app/admin/categories/actions.ts
 export async function deleteCategoryAction(formData: FormData): Promise<void> {
   const id = formData.get('id')?.toString()
   if (!id) return
   await prisma.category.delete({ where: { id } })
   revalidatePath('/admin/categories')
-  // <- return nothing
+  redirect('/admin/categories')
 }
 

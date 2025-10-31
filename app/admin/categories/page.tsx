@@ -1,7 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { CategoryForm } from "@/components/admin/category-form";
-import { CategoryEditForm } from "@/components/admin/category-edit-form";
 import { DeleteCategoryButton } from "@/components/admin/delete-category-button";
 
 export const runtime = "nodejs";
@@ -60,7 +60,7 @@ await prisma.$queryRawUnsafe('SELECT COUNT(*) AS c FROM `categories`');
               return (
                 <div
                   key={c.id}
-                  className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-primary/40 hover:bg-primary/5"
+                  className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-background/70 p-5 shadow-sm transition hover:border-amber-700/40 hover:bg-amber-50/5"
                 >
                   <div className="relative h-32 overflow-hidden rounded-2xl bg-muted">
                     {url ? (
@@ -71,27 +71,22 @@ await prisma.$queryRawUnsafe('SELECT COUNT(*) AS c FROM `categories`');
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-foreground">{c.name}</p>
-                    {c.summary ? <p className="mt-2 text-xs text-muted-foreground">{c.summary}</p> : null}
+                    <p className="text-lg font-semibold text-foreground">{c.name}</p>
+                    {c.summary ? <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{c.summary}</p> : null}
                   </div>
 
-                  <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                    {c.products?.length ?? 0} styles
-                  </p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{c.products?.length ?? 0} products</span>
+                    <span className="uppercase tracking-wider">/{c.slug}</span>
+                  </div>
 
-                  <div className="mt-2 grid gap-3">
-                    <div className="rounded-2xl border border-white/10 bg-background/60 p-3">
-                      <p className="mb-2 text-xs text-muted-foreground">Edit</p>
-                      <CategoryEditForm
-                        id={c.id}
-                        name={c.name}
-                        summary={c.summary}
-                        featuredImageUrl={c.featuredImageUrl}
-                        featuredImageAlt={c.featuredImageAlt}
-                      />
-                    </div>
-
-                    <DeleteCategoryButton id={c.id} />
+                  <div className="mt-2 flex gap-2">
+                    <Link
+                      href={`/admin/categories/${c.id}`}
+                      className="flex-1 rounded-lg bg-amber-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-amber-800 transition"
+                    >
+                      Edit Category
+                    </Link>
                   </div>
                 </div>
               );
