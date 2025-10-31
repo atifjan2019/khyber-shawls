@@ -34,13 +34,13 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
 export async function requireUser(): Promise<AuthUser> {
   const user = await getCurrentUser();
-  if (!user) redirect('/login?callbackUrl=/dashboard');
+  if (!user) redirect('/khyberopen?callbackUrl=/dashboard');
   return user;
 }
 
 export async function requireAdmin(): Promise<AuthUser> {
   const user = await getCurrentUser();
-  if (!user) redirect('/login?callbackUrl=/admin/products');
+  if (!user) redirect('/khyberopen?callbackUrl=/admin/products');
   if (user.role !== 'ADMIN') redirect('/dashboard');
   return user;
 }

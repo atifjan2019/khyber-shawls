@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 
-import { SignupForm } from "@/app/signup/signup-form"
+import { SignupForm } from "@/app/khybercreate/signup-form"
 import { getCurrentUser } from "@/lib/auth"
 
 type PageProps = {

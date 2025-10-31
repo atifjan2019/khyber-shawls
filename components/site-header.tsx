@@ -40,7 +40,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const accountHref =
-    user ? (user.role === "ADMIN" ? "/admin/products" : "/dashboard") : "/login"
+    user ? (user.role === "ADMIN" ? "/admin/products" : "/dashboard") : "/khyberopen"
 
   // Close mobile menu when clicking a link
   const closeMobileMenu = () => setMobileMenuOpen(false)
@@ -247,7 +247,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             {!user && (
               <div className="px-6 pb-6 border-t pt-6">
                 <Link
-                  href="/login"
+                  href="/khyberopen"
                   onClick={closeMobileMenu}
                   className="block w-full text-center px-4 py-3 bg-amber-700 text-white rounded-lg text-sm font-semibold hover:bg-amber-800 transition"
                 >
