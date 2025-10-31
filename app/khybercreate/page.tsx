@@ -1,7 +1,21 @@
 import { redirect } from "next/navigation"
+import { Metadata } from 'next';
 
 import { SignupForm } from "@/app/khybercreate/signup-form"
 import { getCurrentUser } from "@/lib/auth"
+
+export const metadata: Metadata = {
+  title: 'Create Account',
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+};
 
 type PageProps = {
   searchParams: Promise<{ callbackUrl?: string }>
