@@ -20,8 +20,14 @@ const geistMono = Geist_Mono({
 })
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await prisma.settings.findFirst()
-  console.log("Settings from generateMetadata:", settings);
+  // Try to fetch settings, but don't fail the build if database is unavailable
+  let settings = null;
+  try {
+    settings = await prisma.settings.findFirst()
+    console.log("Settings from generateMetadata:", settings);
+  } catch (error) {
+    console.log("Could not fetch settings during build:", error);
+  }
 
   const defaultDescription = "Discover authentic, handcrafted shawls from the historic Khyber region. Each piece tells a story of tradition and artistry.";
 
