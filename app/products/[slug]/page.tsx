@@ -13,7 +13,7 @@ import { ProductGalleryTabs } from "@/components/product/product-gallery-tabs"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://khybershawls.com"
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://khybershawls.store"
 
 type PageProps = { params: { slug?: string } | Promise<{ slug?: string }> }
 

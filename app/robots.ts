@@ -12,9 +12,9 @@ export default function robots(): MetadataRoute.Robots {
           '/dashboard/',
           '/khyberopen',
           '/khybercreate',
-        ],
-      },
     ],
-    sitemap: 'https://khybershawls.com/sitemap.xml',
-  }
+  },
+],
+sitemap: 'https://khybershawls.store/sitemap.xml',
+}
 }

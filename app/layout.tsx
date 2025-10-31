@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(
-      process.env.NODE_ENV === "production" ? "https://khybershawls.com" : "http://localhost:3000"
+      process.env.NODE_ENV === "production" ? "https://khybershawls.store" : "http://localhost:3000"
     ),
     title: {
       default: settings?.websiteName || "Khyber Shawls",
