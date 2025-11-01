@@ -14,10 +14,7 @@ import { AdminDropdown } from "@/components/admin/admin-dropdown"
 // 👇 import your server action
 import { logout } from "@/app/(auth)/actions"
 
-const primaryNav = [
-  { href: "/category/men-shawls", label: "Men Shawls" },
-  { href: "/category/women-shawls", label: "Women Shawls" },
-  { href: "/category/kids-shawls", label: "Kids Shawls" },
+const staticNav = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ]
@@ -30,17 +27,33 @@ const secondaryNav = [
   { href: "/policies/terms", label: "Terms" },
 ]
 
-type SiteHeaderProps = {
-  user: AuthUser | null
+type Category = {
+  id: string
+  name: string
+  slug: string
 }
 
-export function SiteHeader({ user }: SiteHeaderProps) {
+type SiteHeaderProps = {
+  user: AuthUser | null
+  categories: Category[]
+}
+
+export function SiteHeader({ user, categories }: SiteHeaderProps) {
   const pathname = usePathname()
   const { itemCount, isHydrated } = useCart()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const accountHref =
     user ? (user.role === "ADMIN" ? "/admin/products" : "/dashboard") : "/khyberopen"
+
+  // Build dynamic navigation from categories
+  const categoryNav = categories.map((cat) => ({
+    href: `/category/${cat.slug}`,
+    label: cat.name,
+  }))
+
+  // Combine category navigation with static navigation for mobile
+  const primaryNav = [...categoryNav, ...staticNav]
 
   // Close mobile menu when clicking a link
   const closeMobileMenu = () => setMobileMenuOpen(false)
@@ -66,11 +79,25 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
-            {primaryNav.slice(0, 2).map((link) => {
+            {categoryNav.map((link) => {
               const isActive =
                 link.href === "/"
                   ? pathname === link.href
                   : pathname?.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+            {staticNav.map((link) => {
+              const isActive = pathname?.startsWith(link.href)
               return (
                 <Link
                   key={link.href}

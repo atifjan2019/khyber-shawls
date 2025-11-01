@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { fetchAllCategories } from "@/lib/products"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
@@ -75,6 +76,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser()
+  const categories = await fetchAllCategories()
 
   return (
     <html lang="en">
@@ -83,7 +85,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-background antialiased`}
       >
         <CartProvider>
-          <SiteHeader user={user} />
+          <SiteHeader user={user} categories={categories} />
           <main className="flex-1">
             <div className="mx-auto px-6 pt-8 pb-12">{children}</div>
           </main>
