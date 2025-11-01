@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       protocol: "https",
       hostname,
     })),
+    unoptimized: process.env.NODE_ENV === "production", // Fix for standalone builds
   },
   experimental: {
     serverActions: {
