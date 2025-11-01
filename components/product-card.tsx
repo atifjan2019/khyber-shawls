@@ -72,7 +72,7 @@ export function ProductCard({ product: p }: Props) {
 
         {/* Price and Button */}
         <div className="flex items-center justify-between gap-2 mt-3">
-          <span className="text-xl sm:text-xl md:text-2xl lg:text-3xl font-bold text-amber-800">
+          <span className="text-lg sm:text-lg md:text-xl lg:text-2xl font-bold text-amber-800">
             {formatCurrency(p.price)}
           </span>
           {/* Hide Add to Cart button on mobile - user can add from product detail page */}
