@@ -120,8 +120,8 @@ export async function registerAction(
     redirect('/admin/products');
   }
 
-  // Only allow admin registration
-  const role = 'ADMIN';
+  // Check if email is in ADMIN_EMAILS list to determine role
+  const role = isAdminEmail(email) ? 'ADMIN' : 'USER';
 
   const sessionPayload = JSON.stringify({
     id: hashToId(email),
