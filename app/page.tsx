@@ -38,7 +38,7 @@ export default async function HomePage() {
 
       {/* ======================= FEATURED PRODUCTS ======================= */}
       {featuredProducts.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-2 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+        <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800">Featured Shawls</h2>
             <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-700 font-medium px-4">"Hand-selected creations woven from pure heritage and luxury."</p>
@@ -55,7 +55,7 @@ export default async function HomePage() {
       )}
 
       {/* ======================= SHOP BY CATEGORY (3 Main Blocks) ======================= */}
-      <section className="mx-auto max-w-[1600px] px-2 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-8">
+      <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-8">
         {[{cat: menCategory, label: "Men Shawls", desc: "Classic, bold textures."}, {cat: womenCategory, label: "Women Shawls", desc: "Graceful, premium designs."}, {cat: kidsCategory, label: "Kids Shawls", desc: "Soft, lightweight comfort."}].map(({cat, label, desc}, idx) => cat && (
           <Link key={cat.id} href={`/category/${cat.slug}`} className="relative group rounded-2xl md:rounded-3xl overflow-hidden min-h-[180px] sm:min-h-[200px] md:min-h-[220px] flex flex-col justify-end shadow-lg">
             <div className="absolute inset-0 w-full h-full">
@@ -73,7 +73,7 @@ export default async function HomePage() {
 
       {/* ======================= FEATURED TAG SHAWLS ======================= */}
       {tagFeaturedProducts.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-2 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+        <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800">Featured Products</h2>
             <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-700 font-medium">"Best"</p>
@@ -88,7 +88,7 @@ export default async function HomePage() {
 
       {/* ======================= MEN SHAWLS ======================= */}
       {menCategory && menProducts.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-2 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+        <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
           <div className="flex items-end justify-between gap-2 sm:gap-4 mb-6 md:mb-8">
             <div>
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-amber-700">For Him</p>
@@ -108,7 +108,7 @@ export default async function HomePage() {
 
       {/* ======================= WOMEN SHAWLS ======================= */}
       {womenCategory && womenProducts.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-2 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+        <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
           <div className="flex items-end justify-between gap-2 sm:gap-4 mb-6 md:mb-8">
             <div>
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-amber-700">For Her</p>
@@ -128,7 +128,7 @@ export default async function HomePage() {
 
       {/* ======================= KIDS SHAWLS ======================= */}
       {kidsCategory && kidsProducts.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-2 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+        <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
           <div className="flex items-end justify-between gap-2 sm:gap-4 mb-6 md:mb-8">
             <div>
               <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-amber-700">For Kids</p>
@@ -172,7 +172,7 @@ export default async function HomePage() {
       </section>
 
       {/* ======================= CUSTOMER REVIEWS / SOCIAL PROOF ======================= */}
-      <section className="mx-auto max-w-[1000px] px-2 sm:px-4 md:px-6 py-10 sm:py-14 md:py-20">
+      <section className="mx-auto max-w-[1000px] px-2.5 sm:px-4 md:px-6 py-10 sm:py-14 md:py-20">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800 text-center mb-6 md:mb-8">Loved by Our Customers</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
           {/* Example reviews, replace with dynamic if available */}

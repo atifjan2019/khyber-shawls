@@ -57,7 +57,7 @@ export function ShopClient({ products, categories }: ShopClientProps) {
   }, [products, selectedCategory, sortBy, searchQuery])
 
   return (
-    <div className="mx-auto max-w-[1600px] px-2 sm:px-4 md:px-6 py-6 sm:py-8 md:py-10">
+    <div className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-6 sm:py-8 md:py-10">
       {/* Header */}
       <div className="mb-6 sm:mb-8 md:mb-10">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Shop All Products</h1>

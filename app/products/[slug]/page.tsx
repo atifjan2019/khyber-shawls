@@ -182,7 +182,7 @@ export default async function ProductPage({ params }: PageProps) {
   ]
 
   return (
-    <main className="w-full px-6 py-10">
+    <main className="w-full px-2.5 sm:px-4 md:px-6 py-4 sm:py-6 md:py-10">
       <div className="mx-auto w-full max-w-[1600px]">
         <ProductGalleryTabs
           productId={product.id}
@@ -203,36 +203,36 @@ export default async function ProductPage({ params }: PageProps) {
       </div>
 
       {related.length > 0 && (
-        <section className="mx-auto mt-12 max-w-[1600px] space-y-6">
+        <section className="mx-auto mt-8 sm:mt-12 max-w-[1600px] space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">You may also like</h2>
-              <p className="text-sm text-muted-foreground">Curated directly from the same atelier.</p>
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">You may also like</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">Curated directly from the same atelier.</p>
             </div>
-            <Link href="/products" className="text-sm font-medium text-amber-700 hover:underline">
+            <Link href="/products" className="text-xs sm:text-sm font-medium text-amber-700 hover:underline">
               View all
             </Link>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((item) => (
               <Link
                 key={item.id}
                 href={`/products/${item.slug}`}
-                className="group space-y-3 rounded-3xl border border-white/10 bg-background/70 p-4 transition hover:border-amber-700/40 hover:bg-amber-700/5"
+                className="group space-y-2 sm:space-y-3 rounded-2xl sm:rounded-3xl border border-white/10 bg-background/70 p-3 sm:p-4 transition hover:border-amber-700/40 hover:bg-amber-700/5"
               >
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl">
+                <div className="relative aspect-square w-full overflow-hidden rounded-xl sm:rounded-2xl">
                   <Image
                     src={item.featuredImage?.url ?? "/placeholder.svg"}
                     alt={item.featuredImage?.alt ?? item.title}
                     fill
-                    sizes="(min-width:1024px) 20vw, (min-width:640px) 30vw, 100vw"
+                    sizes="(min-width:1024px) 20vw, (min-width:640px) 30vw, 50vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
-                  <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-foreground line-clamp-2">{item.title}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
                 </div>
               </Link>
             ))}

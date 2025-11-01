@@ -98,8 +98,8 @@ export function ProductGalleryTabs({
 
   return (
     <>
-      {/* Breadcrumb at the top */}
-      <nav className="mb-6 text-sm text-gray-500" aria-label="Breadcrumb">
+      {/* Breadcrumb at the top - hide on mobile */}
+      <nav className="hidden sm:flex mb-6 text-sm text-gray-500" aria-label="Breadcrumb">
         <div className="flex flex-wrap items-center gap-2">
           <a href="/" className="hover:text-gray-900 transition">Home</a>
           <span>/</span>
@@ -118,10 +118,56 @@ export function ProductGalleryTabs({
       </nav>
 
       {/* Two-Column Layout: Gallery (60%) + Product Info (40%) */}
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-10">
         {/* Left side - Gallery (60%) */}
         <div className="w-full lg:w-[60%]">
-          <div className="flex gap-4">
+          {/* Mobile: Horizontal scrolling thumbnails at bottom */}
+          <div className="lg:hidden">
+            {/* Main Image */}
+            <div className="relative w-full overflow-hidden rounded-lg bg-gray-50 mb-3">
+              <Image
+                src={activeImage}
+                alt={activeImageAlt}
+                width={800}
+                height={800}
+                sizes="100vw"
+                priority
+                className="object-contain w-full h-auto"
+                style={{ aspectRatio: "1/1" }}
+              />
+            </div>
+            
+            {/* Thumbnails - Horizontal scroll */}
+            {allImages.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {allImages.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveImage(item.url)
+                      setActiveImageAlt(item.alt ?? productTitle)
+                    }}
+                    className={`relative flex-shrink-0 w-16 h-16 overflow-hidden rounded-md bg-muted border transition cursor-pointer ${
+                      activeImage === item.url
+                        ? "border-orange-700 ring-2 ring-orange-700/40"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <Image
+                      src={item.url}
+                      alt={item.alt ?? productTitle}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: Vertical thumbnails on left */}
+          <div className="hidden lg:flex gap-4">
             {/* Thumbnails - Vertical on Left */}
             {allImages.length > 1 && (
               <div className="flex flex-col gap-3 w-20">
@@ -158,7 +204,7 @@ export function ProductGalleryTabs({
                   alt={activeImageAlt}
                   width={800}
                   height={800}
-                  sizes="(min-width:1024px) 60vw, 100vw"
+                  sizes="60vw"
                   priority
                   className="object-contain w-full h-auto"
                   style={{ aspectRatio: "1/1" }}
@@ -170,15 +216,15 @@ export function ProductGalleryTabs({
 
         {/* Right side - Product Info (40%) */}
         
-        <div className="w-full lg:w-[40%] bg-white p-8 rounded-md shadow-sm border border-gray-100">
+        <div className="w-full lg:w-[40%] bg-white p-4 sm:p-6 lg:p-8 rounded-md shadow-sm border border-gray-100">
           {/* Stock Badge */}
           <div className="mb-3">
             {inStock ? (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+              <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-green-100 text-green-800">
                 ✓ In Stock - Ships within 2-4 days
               </span>
             ) : (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+              <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-red-100 text-red-800">
                 Out of Stock - Contact us for availability
               </span>
             )}
@@ -187,73 +233,73 @@ export function ProductGalleryTabs({
           {/* Star Rating and Review Count */}
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center">
-              <span className="text-amber-600 text-lg">★</span>
-              <span className="text-amber-600 text-lg">★</span>
-              <span className="text-amber-600 text-lg">★</span>
-              <span className="text-amber-600 text-lg">★</span>
-              <span className="text-amber-600 text-lg">★</span>
+              <span className="text-amber-600 text-base sm:text-lg">★</span>
+              <span className="text-amber-600 text-base sm:text-lg">★</span>
+              <span className="text-amber-600 text-base sm:text-lg">★</span>
+              <span className="text-amber-600 text-base sm:text-lg">★</span>
+              <span className="text-amber-600 text-base sm:text-lg">★</span>
             </div>
-            <span className="text-sm text-gray-600">({reviewCount} reviews)</span>
+            <span className="text-xs sm:text-sm text-gray-600">({reviewCount} reviews)</span>
           </div>
           
-          <p className="text-xs uppercase tracking-widest text-orange-700 mb-2">
+          <p className="text-[10px] sm:text-xs uppercase tracking-widest text-orange-700 mb-2">
             {categoryName ?? "Signature Collection"}
           </p>
           
         
-          <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight">
             {productTitle}
           </h1>
-          <p className="text-2xl font-semibold text-gray-800 mb-6">
+          <p className="text-2xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
             {formattedPrice}
           </p>
 
           {/* Quantity Selector */}
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
-            <div className="flex items-center gap-3 w-32">
+            <div className="flex items-center gap-3 w-28 sm:w-32">
               <button
                 onClick={decreaseQuantity}
-                className="w-8 h-8 rounded border border-gray-300 hover:border-orange-700 hover:bg-orange-50 transition flex items-center justify-center font-semibold text-gray-700"
+                className="w-9 h-9 sm:w-8 sm:h-8 rounded border border-gray-300 hover:border-orange-700 hover:bg-orange-50 transition flex items-center justify-center font-semibold text-gray-700 text-lg sm:text-base"
               >
                 −
               </button>
-              <span className="flex-1 text-center font-semibold text-gray-900">{quantity}</span>
+              <span className="flex-1 text-center font-semibold text-gray-900 text-base sm:text-base">{quantity}</span>
               <button
                 onClick={increaseQuantity}
-                className="w-8 h-8 rounded border border-gray-300 hover:border-orange-700 hover:bg-orange-50 transition flex items-center justify-center font-semibold text-gray-700"
+                className="w-9 h-9 sm:w-8 sm:h-8 rounded border border-gray-300 hover:border-orange-700 hover:bg-orange-50 transition flex items-center justify-center font-semibold text-gray-700 text-lg sm:text-base"
               >
                 +
               </button>
             </div>
           </div>
 
-          {/* Buttons in one row */}
-          <div className="flex gap-2 mb-6">
+          {/* Buttons - stacked on mobile, row on desktop */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mb-4 sm:mb-6">
             <button 
               onClick={handleAddToCart}
               disabled={isAdding}
-              className="flex-1 bg-orange-700 text-white py-2.5 px-4 rounded-md font-semibold text-sm hover:bg-orange-800 transition disabled:opacity-50"
+              className="w-full sm:flex-1 bg-orange-700 text-white py-3 sm:py-2.5 px-4 rounded-md font-semibold text-base sm:text-sm hover:bg-orange-800 transition disabled:opacity-50"
             >
               {isAdding ? "✓ Added!" : "Add to Cart"}
             </button>
             <button 
               onClick={handleBuyNow}
-              className="flex-1 border-2 border-orange-700 text-orange-700 py-2.5 px-4 rounded-md font-semibold text-sm hover:bg-orange-50 transition"
+              className="w-full sm:flex-1 border-2 border-orange-700 text-orange-700 py-3 sm:py-2.5 px-4 rounded-md font-semibold text-base sm:text-sm hover:bg-orange-50 transition"
             >
               Buy Now
             </button>
           </div>
 
-          <ul className="space-y-3 text-sm text-gray-600">
+          <ul className="space-y-2.5 sm:space-y-3 text-sm text-gray-600">
             {trustSignals.map(({ iconName, title, description }) => {
               const Icon = iconMap[iconName]
               return (
-                <li key={title} className="flex items-start gap-3">
+                <li key={title} className="flex items-start gap-2.5 sm:gap-3">
                   <Icon className="w-5 h-5 text-orange-700 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-gray-900">{title}</p>
-                    <p className="text-xs text-gray-600">{description}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{title}</p>
+                    <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
                   </div>
                 </li>
               )
@@ -263,12 +309,12 @@ export function ProductGalleryTabs({
       </div>
 
       {/* Full-Width Description Tabs Below */}
-      <div className="mt-10 border-t border-gray-200 pt-8">
-        {/* Tab Headers */}
-        <div className="flex gap-8 border-b border-gray-200 text-sm font-semibold text-gray-700">
+      <div className="mt-6 sm:mt-10 border-t border-gray-200 pt-6 sm:pt-8">
+        {/* Tab Headers - smaller text on mobile */}
+        <div className="flex gap-4 sm:gap-8 border-b border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab("description")}
-            className={`pb-3 border-b-2 transition ${
+            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${
               activeTab === "description"
                 ? "border-orange-700 text-orange-700"
                 : "border-transparent hover:text-gray-900"
@@ -278,7 +324,7 @@ export function ProductGalleryTabs({
           </button>
           <button
             onClick={() => setActiveTab("details")}
-            className={`pb-3 border-b-2 transition ${
+            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${
               activeTab === "details"
                 ? "border-orange-700 text-orange-700"
                 : "border-transparent hover:text-gray-900"
@@ -288,7 +334,7 @@ export function ProductGalleryTabs({
           </button>
           <button
             onClick={() => setActiveTab("care")}
-            className={`pb-3 border-b-2 transition ${
+            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${
               activeTab === "care"
                 ? "border-orange-700 text-orange-700"
                 : "border-transparent hover:text-gray-900"
@@ -299,25 +345,25 @@ export function ProductGalleryTabs({
         </div>
 
         {/* Tab Content */}
-        <div className="mt-6 text-gray-700">
+        <div className="mt-4 sm:mt-6 text-gray-700">
           {activeTab === "description" && (
-            <div className="space-y-3 max-w-4xl">
-              <h3 className="text-xl font-semibold text-gray-900">Product Description</h3>
-              <div className="text-base leading-relaxed whitespace-pre-wrap">
+            <div className="space-y-2 sm:space-y-3 max-w-4xl">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Product Description</h3>
+              <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                 {productDescription || "This premium handmade shawl is crafted with care and attention to detail. Each piece represents the finest tradition of Kashmiri craftsmanship, combining heritage techniques with contemporary design sensibilities."}
               </div>
             </div>
           )}
 
           {activeTab === "details" && (
-            <div className="space-y-3 max-w-4xl">
-              <h3 className="text-xl font-semibold text-gray-900">Product Details</h3>
+            <div className="space-y-2 sm:space-y-3 max-w-4xl">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Product Details</h3>
               {productDetails ? (
-                <div className="text-base leading-relaxed whitespace-pre-wrap">
+                <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                   {productDetails}
                 </div>
               ) : (
-                <ul className="space-y-2 text-base">
+                <ul className="space-y-1.5 sm:space-y-2 text-sm sm:text-base">
                   <li>• <strong>Material:</strong> Handcrafted with premium pashmina wool</li>
                   <li>• <strong>Dyes:</strong> Natural dyes sourced from organic materials</li>
                   <li>• <strong>Edition:</strong> Limited edition design</li>
@@ -330,18 +376,18 @@ export function ProductGalleryTabs({
           )}
 
           {activeTab === "care" && (
-            <div className="space-y-3 max-w-4xl">
-              <h3 className="text-xl font-semibold text-gray-900">Care Instructions</h3>
+            <div className="space-y-2 sm:space-y-3 max-w-4xl">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Care Instructions</h3>
               {careInstructions ? (
-                <div className="text-base leading-relaxed whitespace-pre-wrap">
+                <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                   {careInstructions}
                 </div>
               ) : (
                 <>
-                  <p className="text-base leading-relaxed mb-3">
+                  <p className="text-sm sm:text-base leading-relaxed mb-2 sm:mb-3">
                     To maintain the beauty and longevity of your handmade shawl, please follow these care guidelines:
                   </p>
-                  <ul className="space-y-2 text-base">
+                  <ul className="space-y-1.5 sm:space-y-2 text-sm sm:text-base">
                     <li>• <strong>Cleaning:</strong> Dry clean only for best results</li>
                     <li>• <strong>Storage:</strong> Store folded in a breathable cotton bag</li>
                     <li>• <strong>Light:</strong> Avoid direct sunlight when storing to prevent fading</li>
