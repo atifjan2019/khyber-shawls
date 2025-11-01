@@ -70,11 +70,6 @@ export function ProductCard({ product: p }: Props) {
           <span className="ml-1 md:ml-2 text-[11px] md:text-xs lg:text-sm text-gray-600">({reviewCount})</span>
         </div>
 
-        {/* Description - Hidden on mobile */}
-        <p className="hidden sm:block mb-3 md:mb-4 leading-relaxed text-xs md:text-sm text-gray-700 line-clamp-2">
-          {p.description}
-        </p>
-
         {/* Price and Button */}
         <div className="flex items-center justify-between gap-2 mt-3">
           <span className="text-xl sm:text-xl md:text-2xl lg:text-3xl font-bold text-amber-800">
