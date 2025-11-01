@@ -91,8 +91,13 @@ export async function loginAction(
       },
     });
 
-    if (!user || !user.password) {
+    if (!user) {
       return { error: 'Invalid email or password.' };
+    }
+
+    // Check if user has a password set
+    if (!user.password || user.password.trim() === '') {
+      return { error: 'Please register or reset your password to continue.' };
     }
 
     // Verify password
@@ -101,17 +106,26 @@ export async function loginAction(
       return { error: 'Invalid email or password.' };
     }
 
+    // Normalize role to uppercase
+    const normalizedRole = user.role.toUpperCase() as 'USER' | 'ADMIN';
+
     // Create secure session
-    await createSession(user.id, user.email, user.name, user.role as 'USER' | 'ADMIN');
+    await createSession(user.id, user.email, user.name, normalizedRole);
 
     // Redirect based on role
-    if (user.role === 'ADMIN' && (callbackUrl === '/' || callbackUrl === '/dashboard')) {
+    if (normalizedRole === 'ADMIN' && (callbackUrl === '/' || callbackUrl === '/dashboard')) {
       redirect('/admin/products');
     }
 
     redirect(callbackUrl);
   } catch (error) {
     console.error('[loginAction]', error);
+    
+    // Check if it's a redirect (which is expected)
+    if (error && typeof error === 'object' && 'digest' in error) {
+      throw error; // Re-throw redirect errors
+    }
+    
     return { error: 'An error occurred during login.' };
   }
 }
@@ -155,8 +169,8 @@ export async function registerAction(
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Determine role
-    const role = isAdminEmail(email) ? 'ADMIN' : 'USER';
+    // Determine role (normalize to uppercase)
+    const role = (isAdminEmail(email) ? 'ADMIN' : 'USER') as 'USER' | 'ADMIN';
 
     // Create user
     const user = await prisma.user.create({
@@ -164,12 +178,12 @@ export async function registerAction(
         email,
         name,
         password: hashedPassword,
-        role,
+        role: role,
       },
     });
 
     // Create session
-    await createSession(user.id, user.email, user.name, user.role as 'USER' | 'ADMIN');
+    await createSession(user.id, user.email, user.name, role);
 
     // Redirect based on role
     if (role === 'ADMIN') {
@@ -179,6 +193,12 @@ export async function registerAction(
     redirect(redirectTo);
   } catch (error) {
     console.error('[registerAction]', error);
+    
+    // Check if it's a redirect (which is expected)
+    if (error && typeof error === 'object' && 'digest' in error) {
+      throw error; // Re-throw redirect errors
+    }
+    
     return { error: 'An error occurred during registration.' };
   }
 }
