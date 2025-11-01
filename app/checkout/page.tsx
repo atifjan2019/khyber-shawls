@@ -145,7 +145,7 @@ export default function CheckoutPage() {
 
   if (submitted) {
     return (
-      <div className="py-16 mx-auto max-w-2xl space-y-6 rounded-3xl border bg-card p-10 text-center shadow-sm">
+      <div className="mx-auto max-w-2xl space-y-6 rounded-3xl border bg-card p-10 text-center shadow-sm">
         <h1 className="text-3xl font-semibold tracking-tight">
           Thank you for your order
         </h1>
@@ -160,7 +160,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="py-10 grid gap-10 lg:grid-cols-[1.4fr,1fr]">
+    <div className="grid gap-10 lg:grid-cols-[1.4fr,1fr]">
       <form
         className="space-y-6 rounded-3xl border bg-card p-8 shadow-sm"
         onSubmit={handleSubmit}
