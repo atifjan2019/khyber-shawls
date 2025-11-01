@@ -361,9 +361,12 @@ export function ProductGalleryTabs({
           {activeTab === "description" && (
             <div className="space-y-2 sm:space-y-3 max-w-4xl">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Product Description</h3>
-              <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                {productDescription || "This premium handmade shawl is crafted with care and attention to detail. Each piece represents the finest tradition of Kashmiri craftsmanship, combining heritage techniques with contemporary design sensibilities."}
-              </div>
+              <div 
+                className="text-sm sm:text-base leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: productDescription || "This premium handmade shawl is crafted with care and attention to detail. Each piece represents the finest tradition of Kashmiri craftsmanship, combining heritage techniques with contemporary design sensibilities."
+                }}
+              />
             </div>
           )}
 
@@ -371,9 +374,10 @@ export function ProductGalleryTabs({
             <div className="space-y-2 sm:space-y-3 max-w-4xl">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Product Details</h3>
               {productDetails ? (
-                <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                  {productDetails}
-                </div>
+                <div 
+                  className="text-sm sm:text-base leading-relaxed prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: productDetails }}
+                />
               ) : (
                 <ul className="space-y-1.5 sm:space-y-2 text-sm sm:text-base">
                   <li>• <strong>Material:</strong> Handcrafted with premium pashmina wool</li>
@@ -391,9 +395,10 @@ export function ProductGalleryTabs({
             <div className="space-y-2 sm:space-y-3 max-w-4xl">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Care Instructions</h3>
               {careInstructions ? (
-                <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                  {careInstructions}
-                </div>
+                <div 
+                  className="text-sm sm:text-base leading-relaxed prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: careInstructions }}
+                />
               ) : (
                 <>
                   <p className="text-sm sm:text-base leading-relaxed mb-2 sm:mb-3">

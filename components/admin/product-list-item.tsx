@@ -7,6 +7,7 @@ import { Pencil, Trash, X } from "lucide-react"
 
 import { deleteProductAction, updateProductAction, deleteProductImageAction, removeFeaturedImageAction } from "@/app/admin/actions"
 import { Button } from "@/components/ui/button"
+import { RichTextEditor } from "@/components/admin/rich-text-editor"
 
 type ActionState = { error?: string; success?: string }
 
@@ -48,9 +49,20 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
   const [isEditing, setIsEditing] = useState(false)
   const [removingImageUrl, setRemovingImageUrl] = useState<string | null>(null)
   
+  // Rich text editor state
+  const [description, setDescription] = useState(product.description)
+  const [details, setDetails] = useState(product.details || "")
+  const [careInstructions, setCareInstructions] = useState(product.careInstructions || "")
+  
   // Reset edit mode
   const handleEditToggle = () => {
     setIsEditing((prev) => !prev);
+    // Reset rich text fields when toggling
+    if (!isEditing) {
+      setDescription(product.description)
+      setDetails(product.details || "")
+      setCareInstructions(product.careInstructions || "")
+    }
   };
 
   const [updateState, updateAction, isUpdating] = useActionState<ActionState, FormData>(
@@ -233,41 +245,37 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
               <label className="text-sm font-medium" htmlFor={`${product.id}-description`}>
                 Description
               </label>
-              <textarea
+              <RichTextEditor
+                content={description}
+                onChange={setDescription}
                 id={`${product.id}-description`}
-                name="description"
-                defaultValue={product.description}
-                rows={3}
-                required
-                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
               />
+              <input type="hidden" name="description" value={description} />
             </div>
             <div className="grid gap-3">
               <label className="text-sm font-medium" htmlFor={`${product.id}-details`}>
                 Product Details
               </label>
-              <textarea
+              <RichTextEditor
+                content={details}
+                onChange={setDetails}
                 id={`${product.id}-details`}
-                name="details"
-                defaultValue={product.details || ""}
-                rows={3}
                 placeholder="Material, dimensions, origin, certification details"
-                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
               />
+              <input type="hidden" name="details" value={details} />
               <p className="text-xs text-muted-foreground">Optional - Shows in Details tab</p>
             </div>
             <div className="grid gap-3">
               <label className="text-sm font-medium" htmlFor={`${product.id}-care`}>
                 Care Instructions
               </label>
-              <textarea
+              <RichTextEditor
+                content={careInstructions}
+                onChange={setCareInstructions}
                 id={`${product.id}-care`}
-                name="careInstructions"
-                defaultValue={product.careInstructions || ""}
-                rows={3}
                 placeholder="Cleaning, storage, handling instructions"
-                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
               />
+              <input type="hidden" name="careInstructions" value={careInstructions} />
               <p className="text-xs text-muted-foreground">Optional - Shows in Care tab</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
