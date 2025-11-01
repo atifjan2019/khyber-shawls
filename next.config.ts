@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
     },
   },
   output: "standalone",
+  // Ensure public directory is properly served in standalone mode
+  outputFileTracingIncludes: {
+    '/': ['./public/**/*'],
+  },
 }
 
 export default nextConfig
