@@ -28,13 +28,24 @@ export default async function AdminOrdersPage() {
 
   const orders = await prisma.order.findMany({
     include: {
-      items: { include: { product: true } },
+      items: { 
+        include: { 
+          product: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              slug: true,
+            }
+          }
+        } 
+      },
     },
     orderBy: { createdAt: "desc" },
     take: 20,
   }) as Array<
     typeof prisma.order extends { findMany: (...args: any[]) => Promise<(infer T)[]> } ?
-      T & { items: Array<{ id: string; quantity: number; price: number; product: { id: string; name: string; image: string | null } | null }> }
+      T & { items: Array<{ id: string; quantity: number; price: number; product: { id: string; name: string; image: string | null; slug: string } | null }> }
       : never
   >
 
@@ -102,6 +113,8 @@ export default async function AdminOrdersPage() {
                     shippingAddress={order.shippingAddress}
                     notes={order.notes}
                     createdAt={order.createdAt}
+                    total={order.total}
+                    items={order.items}
                   />
                   <div className="flex-1">
                     <OrderStatusForm orderId={order.id} currentStatus={order.status} />
