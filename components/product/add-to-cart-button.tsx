@@ -24,8 +24,8 @@ export function AddToCartButton({ productId }: Props) {
 
   return (
     <Button
-      size="lg"
-      className="px-6 py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl bg-amber-700 hover:bg-amber-800 text-white"
+      size="sm"
+      className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base rounded-lg font-semibold shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl bg-amber-700 hover:bg-amber-800 text-white"
       disabled={isPending}
       onClick={handleClick}
     >

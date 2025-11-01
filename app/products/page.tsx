@@ -1,9 +1,6 @@
 // app/products/page.tsx
-import Link from "next/link";
-import Image from "next/image";
 import { fetchPublishedProducts } from "@/lib/products";
-import { formatCurrency } from "@/lib/currency";
-import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
+import { ProductCard } from "@/components/product-card";
 
 export const revalidate = 900;
 
@@ -16,28 +13,15 @@ export default async function ProductsIndex() {
   const products = await fetchPublishedProducts();
 
   return (
-    <main className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-semibold mb-8">Products</h1>
+    <main className="container mx-auto px-3 sm:px-4 md:px-6 py-8 md:py-12">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-6 md:mb-8">All Products</h1>
 
       {products.length === 0 ? (
-        <p>No products found.</p>
+        <p className="text-center text-gray-600 py-12">No products found.</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((p: { id: Key | null | undefined; slug: any; featuredImageUrl: any; featuredImageAlt: any; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; price: unknown; }) => (
-            <Link key={p.id} href={`/products/${p.slug}`} className="group">
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-                <Image
-                  src={p.featuredImageUrl ?? "/placeholder.svg"}
-                  alt={p.featuredImageAlt ?? p.title}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
-              <div className="mt-3">
-                <p className="text-sm font-medium">{p.title}</p>
-                <p className="text-sm text-muted-foreground">{formatCurrency(p.price)}</p>
-              </div>
-            </Link>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+          {products.map((p) => (
+            <ProductCard key={p.id} product={p} />
           ))}
         </div>
       )}
