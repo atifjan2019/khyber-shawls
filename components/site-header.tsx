@@ -223,13 +223,22 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 </p>
                 <div className="space-y-2">
                   {user.role === "ADMIN" && (
-                    <Link
-                      href="/admin/products"
-                      onClick={closeMobileMenu}
-                      className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                    >
-                      Admin Dashboard
-                    </Link>
+                    <>
+                      <Link
+                        href="/admin"
+                        onClick={closeMobileMenu}
+                        className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                      >
+                        Admin Dashboard
+                      </Link>
+                      <Link
+                        href="/admin/products"
+                        onClick={closeMobileMenu}
+                        className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                      >
+                        Products
+                      </Link>
+                    </>
                   )}
                   <form action={logout}>
                     <button
