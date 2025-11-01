@@ -46,21 +46,21 @@ export function SiteHeader({ user }: SiteHeaderProps) {
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 py-3 sm:py-4">
 
         {/* Left: Mobile menu button + Desktop nav */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-6">
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition"
+            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? (
-              <X className="size-6" />
+              <X className="size-5 sm:size-6" />
             ) : (
-              <Menu className="size-6" />
+              <Menu className="size-5 sm:size-6" />
             )}
           </button>
 
@@ -93,13 +93,13 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             alt="Khyber Shawls logo"
             width={180}
             height={60}
-            className="h-12 w-auto"
+            className="h-10 sm:h-12 w-auto"
             priority
           />
         </Link>
 
         {/* Right: cart + account + logout */}
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end gap-2 sm:gap-3">
           {/* Cart */}
           <Button size="sm" variant="outline" asChild>
             <Link href="/cart" className="inline-flex items-center gap-2" onClick={closeMobileMenu}>
@@ -138,36 +138,36 @@ export function SiteHeader({ user }: SiteHeaderProps) {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/60 z-[60] md:hidden backdrop-blur-sm"
           onClick={closeMobileMenu}
         />
       )}
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Drawer - Opens from RIGHT, covers 50% width, full height */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-white z-40 shadow-2xl transition-transform duration-300 md:hidden ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 right-0 h-screen w-[50vw] bg-white z-[70] shadow-2xl transition-transform duration-300 ease-in-out md:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Menu Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <span className="text-lg font-semibold">Menu</span>
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b bg-amber-700">
+            <span className="text-base sm:text-lg font-bold text-white">Menu</span>
             <button
               onClick={closeMobileMenu}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 hover:bg-amber-800 rounded-lg transition-colors"
               aria-label="Close menu"
             >
-              <X className="size-6" />
+              <X className="size-5 sm:size-6 text-white" />
             </button>
           </div>
 
           {/* Menu Content */}
           <div className="flex-1 overflow-y-auto">
             {/* Primary Navigation */}
-            <nav className="p-6 space-y-1">
-              <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
-                Main
+            <nav className="p-4 sm:p-6 space-y-1">
+              <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wider">
+                Shop
               </p>
               {primaryNav.map((link) => {
                 const isActive =
@@ -179,10 +179,10 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                     key={link.href}
                     href={link.href}
                     onClick={closeMobileMenu}
-                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                    className={`block px-4 py-3.5 rounded-lg text-base font-medium transition-colors ${
                       isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-amber-700 text-white"
+                        : "text-gray-700 hover:bg-amber-50 active:bg-amber-100"
                     }`}
                   >
                     {link.label}
@@ -192,9 +192,9 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             </nav>
 
             {/* Secondary Navigation */}
-            <nav className="px-6 pb-6 space-y-1">
-              <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
-                Help & Information
+            <nav className="px-4 sm:px-6 pb-6 space-y-1 border-t pt-4">
+              <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wider">
+                Information
               </p>
               {secondaryNav.map((link) => {
                 const isActive = pathname?.startsWith(link.href)
@@ -203,10 +203,10 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                     key={link.href}
                     href={link.href}
                     onClick={closeMobileMenu}
-                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-amber-50 text-amber-700"
-                        : "text-gray-600 hover:bg-gray-50"
+                        ? "bg-amber-100 text-amber-900"
+                        : "text-gray-600 hover:bg-gray-50 active:bg-gray-100"
                     }`}
                   >
                     {link.label}
@@ -217,8 +217,8 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
             {/* User Section */}
             {user && (
-              <div className="px-6 pb-6 border-t pt-6">
-                <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">
+              <div className="px-4 sm:px-6 pb-6 border-t pt-4">
+                <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wider">
                   Account
                 </p>
                 <div className="space-y-2">
@@ -226,7 +226,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                     <Link
                       href="/admin/products"
                       onClick={closeMobileMenu}
-                      className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
+                      className="block px-4 py-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                     >
                       Admin Dashboard
                     </Link>
@@ -234,25 +234,13 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                   <form action={logout}>
                     <button
                       type="submit"
-                      className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition flex items-center gap-2"
+                      className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors flex items-center gap-2"
                     >
                       <LogOut className="size-4" />
                       Logout
                     </button>
                   </form>
                 </div>
-              </div>
-            )}
-
-            {!user && (
-              <div className="px-6 pb-6 border-t pt-6">
-                <Link
-                  href="/khyberopen"
-                  onClick={closeMobileMenu}
-                  className="block w-full text-center px-4 py-3 bg-amber-700 text-white rounded-lg text-sm font-semibold hover:bg-amber-800 transition"
-                >
-                  Login / Sign Up
-                </Link>
               </div>
             )}
           </div>
