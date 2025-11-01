@@ -14,6 +14,23 @@ RUN npm ci
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
+# Accept build arguments
+ARG DATABASE_URL
+ARG JWT_SECRET
+ARG NEXTAUTH_SECRET
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG PORT
+
+# Set environment variables for build
+ENV DATABASE_URL=$DATABASE_URL
+ENV JWT_SECRET=$JWT_SECRET
+ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV PORT=$PORT
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
