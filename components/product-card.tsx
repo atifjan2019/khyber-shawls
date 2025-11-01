@@ -37,9 +37,9 @@ export function ProductCard({ product: p }: Props) {
       </Link>
 
       {/* Product Details */}
-      <div className="p-3 sm:p-4 md:p-6">
+      <div className="p-2 sm:p-3 md:p-4 lg:p-6">
         {/* Stock Badge */}
-        <div className="mb-2 md:mb-3">
+        <div className="mb-1 sm:mb-2 md:mb-3">
           {p.inStock ? (
             <span className="inline-flex items-center px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-semibold bg-green-100 text-green-800">
               ✓ In Stock
@@ -59,7 +59,7 @@ export function ProductCard({ product: p }: Props) {
         </Link>
 
         {/* Rating */}
-        <div className="flex items-center mb-2 md:mb-3">
+        <div className="flex items-center mb-1 sm:mb-2 md:mb-3">
           <div className="flex space-x-0.5 md:space-x-1">
             <span className="text-amber-600 text-xs md:text-base lg:text-xl">★</span>
             <span className="text-amber-600 text-xs md:text-base lg:text-xl">★</span>
@@ -80,7 +80,8 @@ export function ProductCard({ product: p }: Props) {
           <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-amber-800">
             {formatCurrency(p.price)}
           </span>
-          <div onClick={(e) => e.stopPropagation()}>
+          {/* Hide Add to Cart button on mobile - user can add from product detail page */}
+          <div onClick={(e) => e.stopPropagation()} className="hidden sm:block">
             <AddToCartButton productId={p.id} />
           </div>
         </div>
