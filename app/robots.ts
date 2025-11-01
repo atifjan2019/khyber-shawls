@@ -10,11 +10,11 @@ export default function robots(): MetadataRoute.Robots {
           '/admin/',
           '/api/',
           '/dashboard/',
-          '/khyberopen',
-          '/khybercreate',
+          '/khyberopen/',
+          '/khybercreate/',
+        ],
+      },
     ],
-  },
-],
-sitemap: 'https://khybershawls.store/sitemap.xml',
-}
+    sitemap: 'https://khybershawls.store/sitemap.xml',
+  }
 }
