@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Pencil, Trash, X } from "lucide-react"
 
-import { deleteProductAction, updateProductAction } from "@/app/admin/actions"
+import { deleteProductAction, updateProductAction, deleteProductImageAction, removeFeaturedImageAction } from "@/app/admin/actions"
 import { Button } from "@/components/ui/button"
 
 type ActionState = { error?: string; success?: string }
@@ -46,6 +46,8 @@ const initialState: ActionState = { error: undefined, success: undefined }
 export function ProductListItem({ product, categories, mediaLibrary }: ProductListItemProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
+  const [removingImageUrl, setRemovingImageUrl] = useState<string | null>(null)
+  
   // Reset edit mode
   const handleEditToggle = () => {
     setIsEditing((prev) => !prev);
@@ -73,6 +75,39 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
     },
     initialState
   )
+
+  const handleRemoveGalleryImage = async (imageUrl: string) => {
+    if (!window.confirm("Remove this image from the gallery?")) return
+    
+    setRemovingImageUrl(imageUrl)
+    const formData = new FormData()
+    formData.append("productId", product.id)
+    formData.append("imageUrl", imageUrl)
+    
+    const result = await deleteProductImageAction(null, formData)
+    setRemovingImageUrl(null)
+    
+    if (result.success) {
+      router.refresh()
+    } else {
+      alert(result.error || "Failed to remove image")
+    }
+  }
+
+  const handleRemoveFeaturedImage = async () => {
+    if (!window.confirm("Remove the featured image?")) return
+    
+    const formData = new FormData()
+    formData.append("productId", product.id)
+    
+    const result = await removeFeaturedImageAction(null, formData)
+    
+    if (result.success) {
+      router.refresh()
+    } else {
+      alert(result.error || "Failed to remove featured image")
+    }
+  }
 
   const mediaOptions: MediaOption[] = useMemo(
     () =>
@@ -286,7 +321,7 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
               
               {/* Show current featured image preview */}
               {product.featuredImageUrl && (
-                <div className="relative w-32 h-32 rounded-md overflow-hidden border border-white/10">
+                <div className="relative w-32 h-32 rounded-md overflow-hidden border border-white/10 group">
                   <Image
                     src={product.featuredImageUrl}
                     alt={product.featuredImageAlt ?? "Current featured image"}
@@ -296,6 +331,14 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
                   <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
                     <p className="text-xs text-white truncate">Current</p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFeaturedImage}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
+                    title="Remove featured image"
+                  >
+                    <X className="size-3" />
+                  </button>
                 </div>
               )}
               
@@ -342,13 +385,29 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
               {product.galleryImages && product.galleryImages.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {product.galleryImages.map((img, idx) => (
-                    <div key={idx} className="relative w-20 h-20 rounded-md overflow-hidden border border-white/10">
+                    <div 
+                      key={idx} 
+                      className="relative w-20 h-20 rounded-md overflow-hidden border border-white/10 group"
+                    >
                       <Image
                         src={img.url}
                         alt={img.alt ?? `Gallery image ${idx + 1}`}
                         fill
                         className="object-cover"
                       />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGalleryImage(img.url)}
+                        disabled={removingImageUrl === img.url}
+                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90 disabled:opacity-50"
+                        title="Remove image"
+                      >
+                        {removingImageUrl === img.url ? (
+                          <span className="text-xs">...</span>
+                        ) : (
+                          <X className="size-3" />
+                        )}
+                      </button>
                     </div>
                   ))}
                 </div>

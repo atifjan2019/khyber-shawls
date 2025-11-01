@@ -336,6 +336,80 @@ export async function deleteProductAction(
   }
 }
 
+const DeleteProductImageInput = z.object({
+  productId: z.string().min(1),
+  imageUrl: z.string().min(1),
+});
+
+export async function deleteProductImageAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    await requireUser();
+
+    const parsed = DeleteProductImageInput.safeParse({
+      productId: formData.get("productId"),
+      imageUrl: formData.get("imageUrl"),
+    });
+
+    if (!parsed.success) {
+      return { error: "Invalid input" };
+    }
+
+    const { productId, imageUrl } = parsed.data;
+
+    // Delete the gallery image from product_images table
+    await prisma.product_images.deleteMany({
+      where: {
+        productId,
+        url: imageUrl,
+      },
+    });
+
+    revalidatePath("/admin/products");
+    return { success: "Image removed" };
+  } catch (error) {
+    console.error("Error deleting product image:", error);
+    return { error: "Failed to delete image" };
+  }
+}
+
+const RemoveFeaturedImageInput = z.object({
+  productId: z.string().min(1),
+});
+
+export async function removeFeaturedImageAction(
+  _prev: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  try {
+    await requireUser();
+
+    const parsed = RemoveFeaturedImageInput.safeParse({
+      productId: formData.get("productId"),
+    });
+
+    if (!parsed.success) {
+      return { error: "Invalid product ID" };
+    }
+
+    // Clear the featured image field (set to empty string since image field is required)
+    await prisma.product.update({
+      where: { id: parsed.data.productId },
+      data: {
+        image: "",
+      },
+    });
+
+    revalidatePath("/admin/products");
+    return { success: "Featured image removed" };
+  } catch (error) {
+    console.error("Error removing featured image:", error);
+    return { error: "Failed to remove featured image" };
+  }
+}
+
 // ============================================================================
 // CATEGORY ACTIONS
 // ============================================================================
