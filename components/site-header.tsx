@@ -62,7 +62,7 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 py-3 sm:py-4">
 
-        {/* Left: Mobile menu button + Desktop nav */}
+        {/* Left: Mobile menu button + Desktop nav (Categories only) */}
         <div className="flex items-center gap-4 sm:gap-6">
           {/* Mobile menu button */}
           <button
@@ -77,27 +77,13 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
             )}
           </button>
 
-          {/* Desktop nav */}
+          {/* Desktop nav - Categories only on left */}
           <nav className="hidden md:flex items-center gap-6">
             {categoryNav.map((link) => {
               const isActive =
                 link.href === "/"
                   ? pathname === link.href
                   : pathname?.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors ${
-                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-            {staticNav.map((link) => {
-              const isActive = pathname?.startsWith(link.href)
               return (
                 <Link
                   key={link.href}
@@ -125,8 +111,26 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
           />
         </Link>
 
-        {/* Right: cart + account + logout */}
+        {/* Right: About/Contact + Cart + Account + Logout */}
         <div className="flex items-center justify-end gap-2 sm:gap-3">
+          {/* About & Contact - Desktop only */}
+          <nav className="hidden md:flex items-center gap-4 mr-2">
+            {staticNav.map((link) => {
+              const isActive = pathname?.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+          </nav>
+
           {/* Cart */}
           <Button size="sm" variant="outline" asChild>
             <Link href="/cart" className="inline-flex items-center gap-2" onClick={closeMobileMenu}>

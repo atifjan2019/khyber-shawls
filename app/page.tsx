@@ -149,27 +149,63 @@ export default async function HomePage() {
       )}
 
       {/* ======================= WHY KHYBER SHAWLS (Trust & Craft) ======================= */}
-      <section className="bg-[#f4ede3] py-10 sm:py-14 md:py-20">
-        <div className="mx-auto max-w-3xl text-center mb-6 sm:mb-8 md:mb-10 px-4">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800 mb-3 md:mb-4">Authenticity Woven in Every Thread</h2>
-          <p className="text-sm sm:text-base md:text-lg text-gray-700 mb-4 md:mb-6">Each shawl is handmade with pure wool and passion — crafted in Peshawar, designed for elegance, and trusted by families across Pakistan. Feel the warmth of heritage with Khyber Shawls.</p>
+      <section className="bg-gradient-to-b from-amber-50 via-[#f4ede3] to-amber-50 py-10 sm:py-14 md:py-20">
+        <div className="mx-auto max-w-4xl text-center mb-8 sm:mb-10 md:mb-12 px-4">
+          <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-amber-700 mb-3 md:mb-4 font-semibold">Heritage Meets Excellence</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
+            Where Tradition Meets <span className="text-amber-700">Timeless Elegance</span>
+          </h2>
+          <p className="text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+            For generations, master artisans in Peshawar have crafted each Khyber Shawl with unmatched precision and care. 
+            Every thread tells a story of heritage, warmth, and authentic Pakistani craftsmanship that families trust.
+          </p>
         </div>
-        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8 md:mb-10 px-4">
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-4xl md:text-5xl">✅</span>
-            <span className="mt-2 text-xs sm:text-sm md:text-base font-semibold text-amber-800 text-center">100% Pure Wool</span>
+        
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10 md:mb-12">
+            {/* Feature 1 */}
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-shadow border border-amber-100">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-700 to-amber-600 flex items-center justify-center mb-4 sm:mb-5">
+                <span className="text-3xl sm:text-4xl">✨</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">100% Pure Wool</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Premium quality wool sourced ethically, ensuring unmatched softness, warmth, and durability in every piece.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-shadow border border-amber-100">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-700 to-amber-600 flex items-center justify-center mb-4 sm:mb-5">
+                <span className="text-3xl sm:text-4xl">🧵</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Master Craftsmanship</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Handwoven by skilled artisans using techniques passed down through generations, creating timeless masterpieces.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-shadow border border-amber-100">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-700 to-amber-600 flex items-center justify-center mb-4 sm:mb-5">
+                <span className="text-3xl sm:text-4xl">🚚</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Delivered Nationwide</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Fast, secure shipping to every corner of Pakistan. Your heritage shawl arrives safely at your doorstep.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-4xl md:text-5xl">🧵</span>
-            <span className="mt-2 text-xs sm:text-sm md:text-base font-semibold text-amber-800 text-center">Handmade Craftsmanship</span>
+
+          <div className="flex justify-center">
+            <Link 
+              href="/products" 
+              className="group px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-gradient-to-r from-amber-700 to-amber-600 text-white font-bold text-base sm:text-lg md:text-xl shadow-lg hover:shadow-xl hover:from-amber-800 hover:to-amber-700 transition-all transform hover:scale-105 inline-flex items-center gap-2"
+            >
+              Discover Our Collection
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
           </div>
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-4xl md:text-5xl">🚚</span>
-            <span className="mt-2 text-xs sm:text-sm md:text-base font-semibold text-amber-800 text-center">Nationwide Delivery</span>
-          </div>
-        </div>
-        <div className="flex justify-center px-4">
-          <Link href="/products" className="px-6 sm:px-8 py-2 sm:py-3 rounded-full bg-amber-700 text-white font-bold text-sm sm:text-base md:text-lg hover:bg-amber-100 hover:text-amber-900 transition">Shop Authentic Now</Link>
         </div>
       </section>
 
