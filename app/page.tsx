@@ -32,7 +32,7 @@ export default async function HomePage() {
 
 
   return (
-    <div className="bg-white">
+    <div className="bg-white -mt-8">
       {/* ======================= HERO ======================= */}
       <HeroCarousel slides={heroSlides} fallbackImage="/hero/khyber-hero.jpg" />
 
