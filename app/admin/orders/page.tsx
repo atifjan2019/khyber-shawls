@@ -1,4 +1,5 @@
 import { OrderStatusForm } from "@/components/admin/order-status-form"
+import { OrderDetailsDialog } from "@/components/admin/order-details-dialog"
 import { formatCurrency } from "@/lib/currency"
 import { prisma } from "@/lib/prisma"
 
@@ -92,8 +93,19 @@ export default async function AdminOrdersPage() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-5">
-                  <OrderStatusForm orderId={order.id} currentStatus={order.status} />
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <OrderDetailsDialog
+                    orderId={order.id}
+                    customerName={order.customerName}
+                    customerEmail={order.customerEmail}
+                    customerPhone={order.customerPhone}
+                    shippingAddress={order.shippingAddress}
+                    notes={order.notes}
+                    createdAt={order.createdAt}
+                  />
+                  <div className="flex-1">
+                    <OrderStatusForm orderId={order.id} currentStatus={order.status} />
+                  </div>
                 </div>
               </div>
             ))
