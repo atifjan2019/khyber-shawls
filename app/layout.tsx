@@ -85,7 +85,7 @@ export default async function RootLayout({
         <CartProvider>
           <SiteHeader user={user} />
           <main className="flex-1">
-            <div className="mx-auto px-6 pb-12">{children}</div>
+            <div className="mx-auto px-6 pt-8 pb-12">{children}</div>
           </main>
           <SiteFooter />
         </CartProvider>

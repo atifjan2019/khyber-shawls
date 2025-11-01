@@ -51,7 +51,22 @@ export function OrderDetailsDialog({
   total,
   items,
 }: OrderDetailsDialogProps) {
-  const subtotal = total - DELIVERY_FEE
+  // Extract delivery type from notes if present
+  const deliveryInfo = notes?.match(/Delivery: (Express|Normal) \(Rs (\d+)\)/i)
+  const deliveryType = deliveryInfo ? deliveryInfo[1] : 'Normal'
+  const deliveryFee = deliveryInfo ? parseInt(deliveryInfo[2]) : DELIVERY_FEE
+  
+  // Extract payment method from notes if present
+  const paymentInfo = notes?.match(/Payment Method: (Bank Transfer|Cash on Delivery)/i)
+  const paymentMethod = paymentInfo ? paymentInfo[1] : 'Not specified'
+  
+  const subtotal = total - deliveryFee
+  
+  // Remove delivery info and payment method from notes display
+  const displayNotes = notes
+    ?.replace(/\n*Delivery: (Express|Normal) \(Rs \d+\)\n*/i, '')
+    .replace(/\n*Payment Method: (Bank Transfer|Cash on Delivery)\n*/i, '')
+    .trim()
 
   return (
     <Dialog>
@@ -181,12 +196,18 @@ export function OrderDetailsDialog({
                 <span className="font-medium">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Nationwide Delivery:</span>
-                <span className="font-medium">{formatCurrency(DELIVERY_FEE)}</span>
+                <span className="text-muted-foreground">
+                  {deliveryType} Delivery:
+                </span>
+                <span className="font-medium">{formatCurrency(deliveryFee)}</span>
               </div>
               <div className="flex justify-between pt-2 border-t text-base font-semibold">
                 <span>Total:</span>
                 <span className="text-primary">{formatCurrency(total)}</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t">
+                <span className="text-muted-foreground">Payment Method:</span>
+                <span className="font-medium">{paymentMethod}</span>
               </div>
             </div>
           </div>
@@ -202,18 +223,18 @@ export function OrderDetailsDialog({
           </div>
 
           {/* Order Notes */}
-          {notes && (
+          {displayNotes && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground border-b pb-2">
                 Order Notes
               </h3>
               <div className="rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap">
-                {notes}
+                {displayNotes}
               </div>
             </div>
           )}
 
-          {!notes && (
+          {!displayNotes && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground border-b pb-2">
                 Order Notes

@@ -202,17 +202,13 @@ export default function CartPage() {
           <div>
             <h2 className="text-xl font-semibold">Order summary</h2>
             <p className="text-sm text-muted-foreground">
-              Shipping and taxes are calculated at checkout.
+              Delivery charges will be calculated at checkout.
             </p>
           </div>
           <dl className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">Subtotal</dt>
               <dd className="font-medium">{formatCurrency(cartTotal)}</dd>
-            </div>
-            <div className="flex items-center justify-between">
-              <dt className="text-muted-foreground">Shipping</dt>
-              <dd className="font-medium">Free</dd>
             </div>
             <div className="flex items-center justify-between border-t pt-3 text-base font-semibold">
               <dt>Total</dt>

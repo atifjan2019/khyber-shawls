@@ -12,6 +12,13 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [productMap, setProductMap] = useState<Record<string, SerializedProduct>>({})
+  const [deliveryType, setDeliveryType] = useState<'normal' | 'express'>('normal')
+  const [paymentMethod, setPaymentMethod] = useState<'bank-transfer' | 'cash-on-delivery'>('cash-on-delivery')
+
+  const DELIVERY_FEES = {
+    normal: 250,
+    express: 400,
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -67,10 +74,12 @@ export default function CheckoutPage() {
       subtotal: number
     }>
 
-    const total = detailed.reduce((totalValue, product) => totalValue + product.subtotal, 0)
+    const subtotal = detailed.reduce((totalValue, product) => totalValue + product.subtotal, 0)
+    const deliveryFee = DELIVERY_FEES[deliveryType]
+    const total = subtotal + deliveryFee
 
-    return { detailed, total }
-  }, [items, productMap])
+    return { detailed, subtotal, deliveryFee, total }
+  }, [items, productMap, deliveryType])
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -91,11 +100,18 @@ export default function CheckoutPage() {
       ]
         .filter(Boolean)
         .join(", "),
-      notes: (formData.get("notes") as string) || undefined,
+      notes: [
+        formData.get("notes") as string,
+        `Payment Method: ${paymentMethod === 'bank-transfer' ? 'Bank Transfer' : 'Cash on Delivery'}`,
+        `Delivery: ${deliveryType === 'express' ? 'Express (Rs 400)' : 'Normal (Rs 250)'}`,
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
       items: summary.detailed.map((item) => ({
         id: item.id,
         quantity: item.quantity,
       })),
+      total: summary.total,
     }
 
     try {
@@ -129,7 +145,7 @@ export default function CheckoutPage() {
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6 rounded-3xl border bg-card p-10 text-center shadow-sm">
+      <div className="py-16 mx-auto max-w-2xl space-y-6 rounded-3xl border bg-card p-10 text-center shadow-sm">
         <h1 className="text-3xl font-semibold tracking-tight">
           Thank you for your order
         </h1>
@@ -144,7 +160,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1.4fr,1fr]">
+    <div className="py-10 grid gap-10 lg:grid-cols-[1.4fr,1fr]">
       <form
         className="space-y-6 rounded-3xl border bg-card p-8 shadow-sm"
         onSubmit={handleSubmit}
@@ -236,18 +252,95 @@ export default function CheckoutPage() {
         </div>
 
         <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Delivery options</h2>
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+              <input
+                type="radio"
+                name="delivery"
+                value="normal"
+                checked={deliveryType === 'normal'}
+                onChange={() => setDeliveryType('normal')}
+                className="h-4 w-4 text-primary"
+              />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Normal Delivery</span>
+                  <span className="font-semibold">Rs 250</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Delivery within 5-7 business days</p>
+              </div>
+            </label>
+            
+            <label className="flex items-center gap-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+              <input
+                type="radio"
+                name="delivery"
+                value="express"
+                checked={deliveryType === 'express'}
+                onChange={() => setDeliveryType('express')}
+                className="h-4 w-4 text-primary"
+              />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">Express Delivery</span>
+                  <span className="font-semibold">Rs 400</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Delivery within 2-3 business days</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div className="space-y-4">
           <h2 className="text-lg font-semibold">Payment details</h2>
-          <label className="flex flex-col gap-2 text-sm font-medium">
-            Preferred payment method
-            <select
-              name="payment"
-              className="rounded-md border bg-background px-3 py-2 text-base outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
-            >
-              <option value="bank-transfer">Bank transfer</option>
-              <option value="cash-on-delivery">Cash on delivery</option>
-              <option value="credit-card">Credit card (secure link)</option>
-            </select>
-          </label>
+          <div className="space-y-3">
+            <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+              <input
+                type="radio"
+                name="payment"
+                value="cash-on-delivery"
+                checked={paymentMethod === 'cash-on-delivery'}
+                onChange={() => setPaymentMethod('cash-on-delivery')}
+                className="mt-0.5 h-4 w-4 text-primary"
+              />
+              <div className="flex-1">
+                <span className="font-medium">Cash on Delivery</span>
+                <p className="text-sm text-muted-foreground">Pay when your order arrives</p>
+              </div>
+            </label>
+            
+            <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+              <input
+                type="radio"
+                name="payment"
+                value="bank-transfer"
+                checked={paymentMethod === 'bank-transfer'}
+                onChange={() => setPaymentMethod('bank-transfer')}
+                className="mt-0.5 h-4 w-4 text-primary"
+              />
+              <div className="flex-1">
+                <span className="font-medium">Bank Transfer</span>
+                <p className="text-sm text-muted-foreground">Direct bank transfer</p>
+              </div>
+            </label>
+
+            {paymentMethod === 'bank-transfer' && (
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                <h3 className="text-sm font-semibold">Bank Transfer Details</h3>
+                <div className="text-sm space-y-1">
+                  <p><span className="text-muted-foreground">Bank Name:</span> <span className="font-medium">Allied Bank Limited</span></p>
+                  <p><span className="text-muted-foreground">Account Title:</span> <span className="font-medium">Khyber Shawls</span></p>
+                  <p><span className="text-muted-foreground">Account Number:</span> <span className="font-medium">1234567890</span></p>
+                  <p><span className="text-muted-foreground">IBAN:</span> <span className="font-medium">PK12ABCD1234567890123456</span></p>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Please use your order number as reference when making the transfer. We will confirm your order once payment is received.
+                </p>
+              </div>
+            )}
+          </div>
+
           <label className="flex flex-col gap-2 text-sm font-medium">
             Order notes
             <textarea
@@ -281,19 +374,34 @@ export default function CheckoutPage() {
             Your cart is empty. Add items from the shop to proceed with checkout.
           </p>
         ) : (
-          <ul className="space-y-4 text-sm">
-            {summary.detailed.map((product) => (
-              <li key={product.id} className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="font-medium">{product.title}</p>
-                  <p className="text-muted-foreground">
-                    Qty {product.quantity} &times; Rs {product.price.toFixed(0)}
-                  </p>
-                </div>
-                <span className="font-semibold">Rs {product.subtotal.toFixed(0)}</span>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="space-y-4 text-sm">
+              {summary.detailed.map((product) => (
+                <li key={product.id} className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-medium">{product.title}</p>
+                    <p className="text-muted-foreground">
+                      Qty {product.quantity} &times; Rs {product.price.toFixed(0)}
+                    </p>
+                  </div>
+                  <span className="font-semibold">Rs {product.subtotal.toFixed(0)}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="space-y-2 border-t pt-4 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>Rs {summary.subtotal.toFixed(0)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">
+                  Delivery ({deliveryType === 'express' ? 'Express' : 'Normal'})
+                </span>
+                <span>Rs {summary.deliveryFee.toFixed(0)}</span>
+              </div>
+            </div>
+          </>
         )}
 
         <div className="flex items-center justify-between border-t pt-4 text-base font-semibold">
