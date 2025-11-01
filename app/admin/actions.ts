@@ -292,8 +292,8 @@ export async function updateProductAction(
         inStock: isPublished,
   // removed featured
         ...(imageUrl !== undefined && { image: imageUrl }),
-        // Update tags relation
-  tags: tagConnect.length > 0 ? { connect: tagConnect } : { disconnect: [] },
+        // Replace tags completely instead of connecting on top of existing ones
+        tags: { set: tagConnect },
       },
     });
 

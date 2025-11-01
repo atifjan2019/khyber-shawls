@@ -59,6 +59,7 @@ export function ProductGalleryTabs({
 }: ProductGalleryTabsProps) {
   const [activeImage, setActiveImage] = useState(mainImageUrl)
   const [activeImageAlt, setActiveImageAlt] = useState(mainImageAlt)
+  const [isImageLoading, setIsImageLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"description" | "details" | "care">("description")
   const [isAdding, setIsAdding] = useState(false)
   const [quantity, setQuantity] = useState(1)
@@ -93,8 +94,19 @@ export function ProductGalleryTabs({
 
   const allImages = [
     { id: "main", url: mainImageUrl, alt: mainImageAlt },
-    ...galleryItems.slice(0, 4),
+    ...galleryItems, // Show all gallery images without limiting
   ]
+
+  const handleImageChange = (url: string, alt: string) => {
+    if (url === activeImage) return
+    
+    setIsImageLoading(true)
+    setActiveImage(url)
+    setActiveImageAlt(alt)
+    
+    // Reset loading state after transition
+    setTimeout(() => setIsImageLoading(false), 300)
+  }
 
   return (
     <>
@@ -132,8 +144,11 @@ export function ProductGalleryTabs({
                 height={800}
                 sizes="100vw"
                 priority
-                className="object-contain w-full h-auto"
+                className={`object-contain w-full h-auto transition-opacity duration-300 ease-in-out ${
+                  isImageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
                 style={{ aspectRatio: "1/1" }}
+                onLoad={() => setIsImageLoading(false)}
               />
             </div>
             
@@ -143,14 +158,11 @@ export function ProductGalleryTabs({
                 {allImages.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => {
-                      setActiveImage(item.url)
-                      setActiveImageAlt(item.alt ?? productTitle)
-                    }}
-                    className={`relative flex-shrink-0 w-16 h-16 overflow-hidden rounded-md bg-muted border transition cursor-pointer ${
+                    onClick={() => handleImageChange(item.url, item.alt ?? productTitle)}
+                    className={`relative flex-shrink-0 w-16 h-16 overflow-hidden rounded-md bg-muted border transition-all duration-300 ease-in-out cursor-pointer ${
                       activeImage === item.url
-                        ? "border-orange-700 ring-2 ring-orange-700/40"
-                        : "border-gray-200"
+                        ? "border-orange-700 ring-2 ring-orange-700/40 scale-105"
+                        : "border-gray-200 hover:border-orange-700/40 hover:scale-105"
                     }`}
                   >
                     <Image
@@ -174,14 +186,11 @@ export function ProductGalleryTabs({
                 {allImages.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => {
-                      setActiveImage(item.url)
-                      setActiveImageAlt(item.alt ?? productTitle)
-                    }}
-                    className={`relative aspect-square w-full overflow-hidden rounded-md bg-muted border transition cursor-pointer ${
+                    onClick={() => handleImageChange(item.url, item.alt ?? productTitle)}
+                    className={`relative aspect-square w-full overflow-hidden rounded-md bg-muted border transition-all duration-300 ease-in-out cursor-pointer ${
                       activeImage === item.url
-                        ? "border-orange-700 ring-2 ring-orange-700/40"
-                        : "border-gray-200 hover:border-orange-700/40"
+                        ? "border-orange-700 ring-2 ring-orange-700/40 scale-105"
+                        : "border-gray-200 hover:border-orange-700/40 hover:scale-105"
                     }`}
                   >
                     <Image
@@ -206,8 +215,11 @@ export function ProductGalleryTabs({
                   height={800}
                   sizes="60vw"
                   priority
-                  className="object-contain w-full h-auto"
+                  className={`object-contain w-full h-auto transition-opacity duration-300 ease-in-out ${
+                    isImageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
                   style={{ aspectRatio: "1/1" }}
+                  onLoad={() => setIsImageLoading(false)}
                 />
               </div>
             </div>
