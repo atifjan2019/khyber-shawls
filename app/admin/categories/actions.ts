@@ -80,6 +80,22 @@ export async function updateCategoryAction(
     const introImageFile = formData.get('introImageFile') as File | null
     const introImageAlt = formData.get('introImageAlt')?.toString().trim()
 
+    // Get existing category data to preserve images
+    const existing = await prisma.category.findUnique({ 
+      where: { id },
+      select: { slug: true, sections: true, intro: true }
+    })
+    
+    // Parse existing data
+    let existingSections: any[] = []
+    try {
+      if (existing?.sections) {
+        existingSections = JSON.parse(existing.sections)
+      }
+    } catch (e) {
+      console.error('Failed to parse existing sections:', e)
+    }
+
     // Content sections (3 sections)
     const sections = []
     for (let i = 0; i < 3; i++) {
@@ -88,8 +104,8 @@ export async function updateCategoryAction(
       const imageFile = formData.get(`section${i}ImageFile`) as File | null
       const imageAlt = formData.get(`section${i}ImageAlt`)?.toString().trim()
       
-      // Upload section image if provided
-      let imageUrl = ''
+      // Upload section image if provided, otherwise keep existing
+      let imageUrl = existingSections[i]?.image?.url || ''
       if (imageFile && imageFile.size > 0) {
         imageUrl = await saveUpload(imageFile)
       }
@@ -106,8 +122,17 @@ export async function updateCategoryAction(
 
     if (!id) return { error: 'Missing category ID' }
 
-    const existing = await prisma.category.findUnique({ where: { id } })
     if (!existing) return { error: 'Category not found' }
+
+    // Parse existing intro data
+    let existingIntro: any = null
+    try {
+      if (existing.intro) {
+        existingIntro = JSON.parse(existing.intro)
+      }
+    } catch (e) {
+      console.error('Failed to parse existing intro:', e)
+    }
 
     let featuredImageUrl: string | null | undefined = undefined
     if (featuredImageFile && featuredImageFile.size > 0) {
@@ -117,8 +142,8 @@ export async function updateCategoryAction(
     // Build intro JSON
     let introJson = null
     if (introTitle && introDescription) {
-      // Upload intro image if provided
-      let introImageUrl = ''
+      // Upload intro image if provided, otherwise keep existing
+      let introImageUrl = existingIntro?.image?.url || ''
       if (introImageFile && introImageFile.size > 0) {
         introImageUrl = await saveUpload(introImageFile)
       }
