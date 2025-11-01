@@ -173,30 +173,67 @@ export default async function HomePage() {
 
       {/* ======================= CUSTOMER REVIEWS / SOCIAL PROOF ======================= */}
       <section className="mx-auto max-w-[1000px] px-2.5 sm:px-4 md:px-6 py-10 sm:py-14 md:py-20">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800 text-center mb-6 md:mb-8">Loved by Our Customers</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
-          {/* Example reviews, replace with dynamic if available */}
-          <div className="bg-white rounded-xl md:rounded-2xl shadow p-4 sm:p-5 md:p-6 flex flex-col items-center">
-            <Image src="/avatars/aisha.jpg" alt="Aisha" width={48} height={48} className="rounded-full mb-2 md:mb-3 sm:w-16 sm:h-16" />
-            <div className="flex gap-0.5 sm:gap-1 mb-1 md:mb-2 text-amber-600">{Array(5).fill(0).map((_,i) => <span key={i} className="text-sm sm:text-base">★</span>)}</div>
-            <p className="text-sm sm:text-base md:text-lg font-semibold text-amber-800 text-center mb-1 md:mb-2">"The softest shawl I've ever owned — worth every rupee."</p>
-            <span className="text-xs sm:text-sm text-gray-700">Aisha, Lahore</span>
-          </div>
-          <div className="bg-white rounded-xl md:rounded-2xl shadow p-4 sm:p-5 md:p-6 flex flex-col items-center">
-            <Image src="/avatars/david.jpg" alt="David" width={48} height={48} className="rounded-full mb-2 md:mb-3 sm:w-16 sm:h-16" />
-            <div className="flex gap-0.5 sm:gap-1 mb-1 md:mb-2 text-amber-600">{Array(5).fill(0).map((_,i) => <span key={i} className="text-sm sm:text-base">★</span>)}</div>
-            <p className="text-sm sm:text-base md:text-lg font-semibold text-amber-800 text-center mb-1 md:mb-2">"Incredible quality and fast delivery. My family loves them!"</p>
-            <span className="text-xs sm:text-sm text-gray-700">David, Islamabad</span>
-          </div>
-          <div className="bg-white rounded-xl md:rounded-2xl shadow p-4 sm:p-5 md:p-6 flex flex-col items-center">
-            <Image src="/avatars/fatima.jpg" alt="Fatima" width={48} height={48} className="rounded-full mb-2 md:mb-3 sm:w-16 sm:h-16" />
-            <div className="flex gap-0.5 sm:gap-1 mb-1 md:mb-2 text-amber-600">{Array(5).fill(0).map((_,i) => <span key={i} className="text-sm sm:text-base">★</span>)}</div>
-            <p className="text-sm sm:text-base md:text-lg font-semibold text-amber-800 text-center mb-1 md:mb-2">"Beautifully made, soft, and so warm. Highly recommend!"</p>
-            <span className="text-xs sm:text-sm text-gray-700">Fatima, Karachi</span>
-          </div>
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800 mb-3">What Our Customers Say</h2>
+          <p className="text-sm sm:text-base text-gray-600">Real experiences from our valued customers</p>
         </div>
-        <div className="mt-6 md:mt-8 flex justify-center">
-          <Link href="/reviews" className="text-sm sm:text-base text-amber-700 font-semibold hover:underline">See More Reviews</Link>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          {/* Review 1 */}
+          <div className="bg-gradient-to-br from-amber-50 to-white rounded-lg sm:rounded-xl border-l-4 border-amber-700 p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex gap-1 mb-3 text-amber-600">
+              {Array(5).fill(0).map((_,i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
+            </div>
+            <p className="text-sm sm:text-base text-gray-800 leading-relaxed mb-4 italic">
+              "The softest shawl I've ever owned — worth every rupee. The craftsmanship is exceptional!"
+            </p>
+            <div className="flex items-center gap-2 pt-3 border-t border-amber-200">
+              <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold">
+                A
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-sm sm:text-base">Aisha</p>
+                <p className="text-xs sm:text-sm text-gray-600">Lahore</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Review 2 */}
+          <div className="bg-gradient-to-br from-amber-50 to-white rounded-lg sm:rounded-xl border-l-4 border-amber-700 p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex gap-1 mb-3 text-amber-600">
+              {Array(5).fill(0).map((_,i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
+            </div>
+            <p className="text-sm sm:text-base text-gray-800 leading-relaxed mb-4 italic">
+              "Incredible quality and fast delivery. My family loves them! Highly recommend to everyone."
+            </p>
+            <div className="flex items-center gap-2 pt-3 border-t border-amber-200">
+              <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold">
+                D
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-sm sm:text-base">David</p>
+                <p className="text-xs sm:text-sm text-gray-600">Islamabad</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Review 3 */}
+          <div className="bg-gradient-to-br from-amber-50 to-white rounded-lg sm:rounded-xl border-l-4 border-amber-700 p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex gap-1 mb-3 text-amber-600">
+              {Array(5).fill(0).map((_,i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
+            </div>
+            <p className="text-sm sm:text-base text-gray-800 leading-relaxed mb-4 italic">
+              "Beautifully made, soft, and so warm. The attention to detail is remarkable. Love it!"
+            </p>
+            <div className="flex items-center gap-2 pt-3 border-t border-amber-200">
+              <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold">
+                F
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-sm sm:text-base">Fatima</p>
+                <p className="text-xs sm:text-sm text-gray-600">Karachi</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
