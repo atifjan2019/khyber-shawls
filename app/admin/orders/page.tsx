@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { OrderStatusForm } from "@/components/admin/order-status-form"
 import { OrderDetailsDialog } from "@/components/admin/order-details-dialog"
 import { formatCurrency } from "@/lib/currency"
@@ -92,10 +93,12 @@ export default async function AdminOrdersPage() {
                   {order.items.map((item) => (
                     <div key={item.id} className="flex items-center gap-3">
                       {item.product?.image && (
-                        <img
+                        <Image
                           src={item.product.image}
                           alt={item.product?.name || "Product image"}
-                          className="h-10 w-10 rounded-md object-cover border"
+                          width={40}
+                          height={40}
+                          className="rounded-md object-cover border"
                         />
                       )}
                       <span>

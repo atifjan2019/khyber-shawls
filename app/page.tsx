@@ -11,6 +11,8 @@ import { fetchLatestPosts, SerializedPost } from "@/lib/journal";
 import { Testimonials } from "@/components/testimonials";
 import { ProductCard } from "@/components/product-card";
 
+export const revalidate = 1800; // Revalidate every 30 minutes (ISR)
+
 export default async function HomePage() {
   const [heroSlides, products, categories] = await Promise.all([
     fetchAllHeroContent(),

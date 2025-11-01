@@ -3,6 +3,7 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import { Calendar, User, ArrowLeft } from "lucide-react"
 import { prisma } from "@/lib/prisma"
+import DOMPurify from 'isomorphic-dompurify'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -104,7 +105,12 @@ export default async function BlogPostPage({ params }: Props) {
         {/* Content */}
         <div
           className="prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-amber-700 hover:prose-a:text-amber-800 prose-strong:text-gray-900"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ 
+            __html: DOMPurify.sanitize(post.content, {
+              ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'],
+              ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class']
+            })
+          }}
         />
       </article>
 

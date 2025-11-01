@@ -1,8 +1,7 @@
 // lib/auth.ts
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-
+import { jwtVerify } from 'jose';
 
 export type AuthUser = {
   id: string;
@@ -12,20 +11,25 @@ export type AuthUser = {
 };
 
 const SESSION_COOKIE = 'session';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'fallback-secret-change-in-production'
+);
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const jar = await cookies();
-  const raw = jar.get(SESSION_COOKIE)?.value;
-  if (!raw) return null;
+  const token = jar.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
 
   try {
-    const u = JSON.parse(raw) as Partial<AuthUser>;
-    if (!u?.id || !u?.email || !u?.role) return null;
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    
+    if (!payload.userId || !payload.email || !payload.role) return null;
+    
     return {
-      id: u.id,
-      email: u.email,
-      name: u.name ?? null,
-      role: u.role === 'ADMIN' ? 'ADMIN' : 'USER',
+      id: payload.userId as string,
+      email: payload.email as string,
+      name: (payload.name as string) ?? null,
+      role: payload.role === 'ADMIN' ? 'ADMIN' : 'USER',
     };
   } catch {
     return null;

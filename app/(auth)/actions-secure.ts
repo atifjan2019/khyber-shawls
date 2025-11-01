@@ -102,7 +102,7 @@ export async function loginAction(
     }
 
     // Create secure session
-    await createSession(user.id, user.email, user.name, user.role as 'USER' | 'ADMIN');
+    await createSession(user.id, user.email, user.name, user.role);
 
     // Redirect based on role
     if (user.role === 'ADMIN' && (callbackUrl === '/' || callbackUrl === '/dashboard')) {
@@ -169,7 +169,7 @@ export async function registerAction(
     });
 
     // Create session
-    await createSession(user.id, user.email, user.name, user.role as 'USER' | 'ADMIN');
+    await createSession(user.id, user.email, user.name, user.role);
 
     // Redirect based on role
     if (role === 'ADMIN') {
