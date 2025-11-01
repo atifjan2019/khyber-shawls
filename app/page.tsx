@@ -199,7 +199,7 @@ export default async function HomePage() {
 
           <div className="flex justify-center">
             <Link 
-              href="/products" 
+              href="/shop" 
               className="group px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-gradient-to-r from-amber-700 to-amber-600 text-white font-bold text-base sm:text-lg md:text-xl shadow-lg hover:shadow-xl hover:from-amber-800 hover:to-amber-700 transition-all transform hover:scale-105 inline-flex items-center gap-2"
             >
               Discover Our Collection
