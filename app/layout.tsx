@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-
 import "./globals.css"
 import { CartProvider } from "@/components/providers/cart-provider"
 import { SiteFooter } from "@/components/site-footer"

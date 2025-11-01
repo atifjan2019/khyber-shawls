@@ -35,7 +35,7 @@ export function CategoryView({ category, products }: CategoryViewProps) {
             </div>
 
             {/* Image */}
-            {category.intro.image?.url && category.intro.image.url.startsWith('/') && (
+            {category.intro.image?.url && (
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                 <Image
                   src={category.intro.image.url}
@@ -84,7 +84,7 @@ export function CategoryView({ category, products }: CategoryViewProps) {
             </div>
 
             {/* Image on Right */}
-            {firstSection.image?.url && firstSection.image.url.startsWith('/') && (
+            {firstSection.image?.url && (
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                 <Image
                   src={firstSection.image.url}
@@ -142,7 +142,7 @@ export function CategoryView({ category, products }: CategoryViewProps) {
               >
                 <div className={`grid gap-8 lg:grid-cols-2 lg:gap-12 items-center ${imageOnRight ? 'lg:grid-flow-dense' : ''}`}>
                   {/* Image */}
-                  {section.image?.url && section.image.url.startsWith('/') && (
+                  {section.image?.url && (
                     <div className={`relative aspect-[4/3] overflow-hidden rounded-2xl ${imageOnRight ? 'lg:col-start-2' : ''}`}>
                       <Image
                         src={section.image.url}
