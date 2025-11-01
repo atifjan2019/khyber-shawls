@@ -53,16 +53,16 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/public/uploads
-RUN chown -R nextjs:nodejs /app/public/uploads
-RUN chmod -R 775 /app/public/uploads
+RUN chown -R nextjs:nodejs /app
+RUN chmod -R 775 /app/public
 
 USER nextjs
 
