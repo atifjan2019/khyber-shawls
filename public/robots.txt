@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://khybershawls.store
+
+# Sitemaps
+Sitemap: https://khybershawls.store/sitemap.xml
