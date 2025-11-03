@@ -18,38 +18,6 @@ export function CategoryView({ category, products }: CategoryViewProps) {
 
   return (
     <div className="min-h-screen">
-      {/* Intro Section - Above Everything */}
-      {category.intro && category.intro.title && (
-        <section className="mx-auto max-w-7xl px-6 py-12 lg:py-16">
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
-            {/* Text Content */}
-            <div className="space-y-6">
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-                {category.intro.title}
-              </h1>
-              {category.intro.description && (
-                <p className="text-lg leading-relaxed text-gray-600">
-                  {category.intro.description}
-                </p>
-              )}
-            </div>
-
-            {/* Image */}
-            {category.intro.image?.url && (
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
-                <Image
-                  src={category.intro.image.url}
-                  alt={category.intro.image.alt || category.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* Category Header - Shows which category user is viewing */}
       <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white">
         <div className="mx-auto max-w-7xl px-6 py-8">

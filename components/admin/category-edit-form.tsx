@@ -14,7 +14,6 @@ export function CategoryEditForm(props: {
   featuredImageAlt?: string | null
   seoTitle?: string | null
   seoDescription?: string | null
-  intro?: string | null
   sections?: string | null
   uiConfig?: string | null
 }) {
@@ -22,21 +21,14 @@ export function CategoryEditForm(props: {
     updateCategoryAction,
     initialState
   )
-  const [activeTab, setActiveTab] = useState<'basic' | 'seo' | 'intro' | 'sections'>('basic')
+  const [activeTab, setActiveTab] = useState<'basic' | 'seo' | 'sections'>('basic')
 
   // Parse JSON fields
-  let introData = { title: '', description: '', image: { url: '', alt: '' } }
   let sectionsData = [
     { title: '', description: '', image: { url: '', alt: '' } },
     { title: '', description: '', image: { url: '', alt: '' } },
     { title: '', description: '', image: { url: '', alt: '' } },
   ]
-
-  try {
-    if (props.intro) introData = JSON.parse(props.intro)
-  } catch (e) {
-    console.error('Failed to parse intro')
-  }
 
   try {
     if (props.sections) {
@@ -72,17 +64,6 @@ export function CategoryEditForm(props: {
           }`}
         >
           SEO
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('intro')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
-            activeTab === 'intro'
-              ? 'border-amber-700 text-amber-700'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Intro Section
         </button>
         <button
           type="button"
@@ -166,57 +147,6 @@ export function CategoryEditForm(props: {
                 className="rounded-md border bg-background px-3 py-2 text-sm"
               />
               <p className="text-xs text-gray-500">Recommended: 150-160 characters</p>
-            </div>
-          </div>
-        )}
-
-        {/* Intro Section Tab */}
-        {activeTab === 'intro' && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">This section appears above the products grid.</p>
-            
-            <div className="grid gap-1.5">
-              <label className="text-sm font-medium">Intro Title</label>
-              <input
-                name="introTitle"
-                defaultValue={introData.title}
-                placeholder="Discover Men's Heritage Shawls"
-                className="rounded-md border bg-background px-3 py-2 text-sm"
-              />
-            </div>
-
-            <div className="grid gap-1.5">
-              <label className="text-sm font-medium">Intro Description</label>
-              <textarea
-                name="introDescription"
-                defaultValue={introData.description}
-                rows={4}
-                placeholder="Handcrafted with care..."
-                className="rounded-md border bg-background px-3 py-2 text-sm"
-              />
-            </div>
-
-            <div className="grid gap-1.5">
-              <label className="text-sm font-medium">Intro Image</label>
-              <input
-                name="introImageFile"
-                type="file"
-                accept="image/*"
-                className="rounded-md border bg-background px-3 py-2 text-sm"
-              />
-              {introData.image?.url && (
-                <p className="text-xs text-muted-foreground">Current: {introData.image.url}</p>
-              )}
-            </div>
-
-            <div className="grid gap-1.5">
-              <label className="text-sm font-medium">Intro Image Alt Text</label>
-              <input
-                name="introImageAlt"
-                defaultValue={introData.image?.alt}
-                placeholder="Traditional shawl craftsmanship"
-                className="rounded-md border bg-background px-3 py-2 text-sm"
-              />
             </div>
           </div>
         )}

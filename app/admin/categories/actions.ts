@@ -74,16 +74,10 @@ export async function updateCategoryAction(
     const seoTitle = formData.get('seoTitle')?.toString().trim() || null
     const seoDescription = formData.get('seoDescription')?.toString().trim() || null
 
-    // Intro section fields
-    const introTitle = formData.get('introTitle')?.toString().trim()
-    const introDescription = formData.get('introDescription')?.toString().trim()
-    const introImageFile = formData.get('introImageFile') as File | null
-    const introImageAlt = formData.get('introImageAlt')?.toString().trim()
-
     // Get existing category data to preserve images
     const existing = await prisma.category.findUnique({ 
       where: { id },
-      select: { slug: true, sections: true, intro: true }
+      select: { slug: true, sections: true }
     })
     
     // Parse existing data
@@ -124,35 +118,9 @@ export async function updateCategoryAction(
 
     if (!existing) return { error: 'Category not found' }
 
-    // Parse existing intro data
-    let existingIntro: any = null
-    try {
-      if (existing.intro) {
-        existingIntro = JSON.parse(existing.intro)
-      }
-    } catch (e) {
-      console.error('Failed to parse existing intro:', e)
-    }
-
     let featuredImageUrl: string | null | undefined = undefined
     if (featuredImageFile && featuredImageFile.size > 0) {
       featuredImageUrl = await saveUpload(featuredImageFile)
-    }
-
-    // Build intro JSON
-    let introJson = null
-    if (introTitle && introDescription) {
-      // Upload intro image if provided, otherwise keep existing
-      let introImageUrl = existingIntro?.image?.url || ''
-      if (introImageFile && introImageFile.size > 0) {
-        introImageUrl = await saveUpload(introImageFile)
-      }
-      
-      introJson = JSON.stringify({
-        title: introTitle,
-        description: introDescription,
-        image: { url: introImageUrl, alt: introImageAlt || '' }
-      })
     }
 
     // Build sections JSON (already processed with file uploads above)
@@ -166,7 +134,6 @@ export async function updateCategoryAction(
         featuredImageAlt,
         seoTitle,
         seoDescription,
-        intro: introJson,
         sections: sectionsJson,
         ...(featuredImageUrl !== undefined ? { featuredImageUrl } : {}),
       },

@@ -54,7 +54,6 @@ export default async function EditCategoryPage({ params }: PageProps) {
           featuredImageAlt={category.featuredImageAlt}
           seoTitle={(category as any).seoTitle}
           seoDescription={(category as any).seoDescription}
-          intro={(category as any).intro}
           sections={(category as any).sections}
           uiConfig={(category as any).uiConfig}
         />
