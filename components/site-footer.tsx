@@ -2,7 +2,36 @@ import Link from "next/link"
 import Image from "next/image"
 import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react"
 
-export function SiteFooter() {
+type Settings = {
+  contactPhone?: string | null
+  contactEmail?: string | null
+  contactAddress?: string | null
+  socialLinks?: string | null
+} | null
+
+export function SiteFooter({ settings }: { settings?: Settings }) {
+  // Parse social links if available
+  let socialLinks = {
+    facebook: "https://facebook.com/khybershawls",
+    instagram: "https://instagram.com/khybershawls",
+    whatsapp: "+923001234567",
+    pinterest: "https://pinterest.com/khybershawls"
+  }
+  
+  try {
+    if (settings?.socialLinks) {
+      const parsed = JSON.parse(settings.socialLinks)
+      socialLinks = { ...socialLinks, ...parsed }
+    }
+  } catch (e) {
+    console.error("Failed to parse social links:", e)
+  }
+
+  const contactInfo = {
+    phone: settings?.contactPhone || "+92 300 1234567",
+    email: settings?.contactEmail || "info@khybershawls.com",
+    address: settings?.contactAddress || "Peshawar, Pakistan"
+  }
 
   return (
     <footer className="bg-gradient-to-b from-gray-50 to-gray-100 border-t border-gray-200">
@@ -29,18 +58,18 @@ export function SiteFooter() {
             <div className="space-y-3 text-sm text-gray-600">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-700" />
-                <span>Peshawar, Pakistan</span>
+                <span className="whitespace-pre-line">{contactInfo.address}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 flex-shrink-0 text-amber-700" />
-                <a href="tel:+923001234567" className="hover:text-amber-700 transition">
-                  +92 300 1234567
+                <a href={`tel:${contactInfo.phone.replace(/\s/g, '')}`} className="hover:text-amber-700 transition">
+                  {contactInfo.phone}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 flex-shrink-0 text-amber-700" />
-                <a href="mailto:info@khybershawls.com" className="hover:text-amber-700 transition">
-                  info@khybershawls.com
+                <a href={`mailto:${contactInfo.email}`} className="hover:text-amber-700 transition">
+                  {contactInfo.email}
                 </a>
               </div>
             </div>
@@ -50,7 +79,7 @@ export function SiteFooter() {
               <p className="text-sm font-semibold text-gray-900 mb-3">Follow Us</p>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://facebook.com/khybershawls"
+                  href={socialLinks.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-full bg-amber-700 text-white flex items-center justify-center hover:bg-amber-800 transition"
@@ -59,7 +88,7 @@ export function SiteFooter() {
                   <Facebook className="w-4 h-4" />
                 </a>
                 <a
-                  href="https://instagram.com/khybershawls"
+                  href={socialLinks.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-full bg-amber-700 text-white flex items-center justify-center hover:bg-amber-800 transition"
@@ -68,7 +97,7 @@ export function SiteFooter() {
                   <Instagram className="w-4 h-4" />
                 </a>
                 <a
-                  href="https://wa.me/923001234567"
+                  href={`https://wa.me/${socialLinks.whatsapp.replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-full bg-amber-700 text-white flex items-center justify-center hover:bg-amber-800 transition"
@@ -79,7 +108,7 @@ export function SiteFooter() {
                   </svg>
                 </a>
                 <a
-                  href="https://pinterest.com/khybershawls"
+                  href={socialLinks.pinterest}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 rounded-full bg-amber-700 text-white flex items-center justify-center hover:bg-amber-800 transition"

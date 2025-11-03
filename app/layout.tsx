@@ -76,6 +76,14 @@ export default async function RootLayout({
 }>) {
   const user = await getCurrentUser()
   const categories = await fetchAllCategories()
+  
+  // Fetch settings for footer
+  let settings = null
+  try {
+    settings = await prisma.settings.findFirst()
+  } catch (error) {
+    console.log("Could not fetch settings for footer:", error)
+  }
 
   return (
     <html lang="en">
@@ -103,7 +111,7 @@ export default async function RootLayout({
           <main className="flex-1">
             <div className="mx-auto px-6 pt-8 pb-12">{children}</div>
           </main>
-          <SiteFooter />
+          <SiteFooter settings={settings} />
         </CartProvider>
       </body>
     </html>
