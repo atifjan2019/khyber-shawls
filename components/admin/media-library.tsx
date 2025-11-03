@@ -24,6 +24,7 @@ function MediaCard({ item }: { item: MediaLibraryItem }) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (prev, formData) => {
       const result = await updateMediaAction(prev, formData)
@@ -90,28 +91,48 @@ function MediaCard({ item }: { item: MediaLibraryItem }) {
 
   const editButtonLabel = isEditing ? "Cancel" : "Edit details"
   const isExternal = item.url.startsWith("http://") || item.url.startsWith("https://")
+  
+  // Check if it's a valid image extension
+  const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|avif|bmp|ico)$/i
+  const isImage = imageExtensions.test(item.url)
 
   return (
     <li className="overflow-hidden rounded-2xl border border-white/10 bg-background/80 shadow-sm">
-      <div className="relative aspect-[4/3] overflow-hidden border-b border-white/5">
-        {isExternal ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+      <div className="relative aspect-[4/3] overflow-hidden border-b border-white/5 bg-gray-100">
+        {isImage ? (
+          imageError || isExternal ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.url}
+                alt={item.alt ?? "Uploaded media"}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                  const parent = target.parentElement
+                  if (parent) {
+                    parent.innerHTML = `<div class="flex h-full items-center justify-center text-xs text-gray-500 p-4 text-center">Failed to load image<br/><span class="text-[10px] mt-1">${item.url}</span></div>`
+                  }
+                }}
+              />
+            </>
+          ) : (
+            <Image
               src={item.url}
               alt={item.alt ?? "Uploaded media"}
-              className="h-full w-full object-cover"
-              loading="lazy"
+              fill
+              sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+              className="object-cover"
+              unoptimized={item.url.endsWith('.svg') || item.url.endsWith('.png')}
+              onError={() => setImageError(true)}
             />
-          </>
+          )
         ) : (
-          <Image
-            src={item.url}
-            alt={item.alt ?? "Uploaded media"}
-            fill
-            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-            className="object-cover"
-          />
+          <div className="flex h-full items-center justify-center text-xs text-gray-500">
+            Non-image file
+          </div>
         )}
       </div>
       <div className="space-y-3 p-4 text-sm">
