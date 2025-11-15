@@ -1,9 +1,8 @@
-# Use Node.js 20 Alpine for smaller image size
-FROM node:20-alpine AS base
+# Use Node.js 20 Slim for compatibility
+FROM node:20-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Install dependencies
@@ -45,7 +44,7 @@ FROM base AS runner
 WORKDIR /app
 
 # Install curl for healthchecks
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 
