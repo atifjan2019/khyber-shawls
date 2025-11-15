@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { fetchAllCategories } from "@/lib/products"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { WhatsAppFloat } from "@/components/whatsapp-float"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -113,6 +114,7 @@ export default async function RootLayout({
           </main>
           <SiteFooter settings={settings} />
         </CartProvider>
+        <WhatsAppFloat />
       </body>
     </html>
   )

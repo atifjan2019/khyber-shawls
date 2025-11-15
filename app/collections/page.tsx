@@ -18,7 +18,7 @@ export default async function CollectionsPage() {
       <section className="relative isolate left-1/2 right-1/2 w-screen -translate-x-1/2 overflow-hidden bg-white">
         <div className="mx-auto max-w-[1600px] px-6 py-28 text-center text-amber-900 sm:py-36">
           <p className="text-xs uppercase tracking-[0.3em] text-amber-700 animate-fade-in-down">
-            Curated by the atelier
+            Curated by our studio
           </p>
           <h1 className="mt-4 text-5xl font-bold tracking-tight drop-shadow-lg animate-fade-in-up sm:text-6xl">
             Signature Collections
@@ -63,10 +63,10 @@ export default async function CollectionsPage() {
         </div>
       </section>
 
-      {/* Atelier Favourites - Premium Product Cards */}
+      {/* Studio Favourites - Premium Product Cards */}
       <section className="mx-auto max-w-[1600px] px-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-2">
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Atelier favourites</h2>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Studio favourites</h2>
           <Link href="/about" className="text-sm font-semibold text-amber-700 hover:text-amber-800 underline underline-offset-4">
             Learn about our craftsmanship
           </Link>

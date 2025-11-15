@@ -40,7 +40,7 @@ export default async function AdminJournalPage() {
           <div>
             <h1 className="text-3xl font-semibold text-foreground">Journal</h1>
             <p className="text-sm text-muted-foreground">
-              Share atelier stories, reveal artisan journeys, and publish styling notes.
+              Share studio stories, reveal artisan journeys, and publish styling notes.
             </p>
           </div>
         </div>

@@ -207,7 +207,7 @@ export default async function ProductPage({ params }: PageProps) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg sm:text-xl font-semibold text-foreground">You may also like</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">Curated directly from the same atelier.</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Curated directly from the same studio.</p>
             </div>
             <Link href="/products" className="text-xs sm:text-sm font-medium text-amber-700 hover:underline">
               View all
