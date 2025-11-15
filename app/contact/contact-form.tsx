@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const payload = {
@@ -17,20 +18,29 @@ export function ContactForm() {
     }
 
     setIsSubmitting(true)
-    fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to submit")
-        setSubmitted(true)
-        event.currentTarget.reset()
+    setError(null)
+    setSubmitted(false)
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       })
-      .catch(() => {
-        alert("We could not send your message. Please try again shortly.")
-      })
-      .finally(() => setIsSubmitting(false))
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || "Failed to submit")
+      }
+
+      setSubmitted(true)
+      event.currentTarget.reset()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred"
+      setError(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -78,9 +88,15 @@ export function ContactForm() {
         />
       </label>
 
-      {submitted && (
+      {submitted && !error && (
         <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
           Thank you! We received your message and will respond soon.
+        </p>
+      )}
+
+      {error && (
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
         </p>
       )}
 

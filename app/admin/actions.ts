@@ -9,6 +9,7 @@ import { mkdir, writeFile, unlink } from "fs/promises";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireAdmin, getCurrentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
+import { sendEmail } from "@/lib/email";
 
 export type ActionState = { error?: string; success?: string };
 export type CategoryActionState =
@@ -646,10 +647,27 @@ export async function updateOrderStatusAction(
       return { error: "Missing order ID or status" };
     }
 
-    await prisma.order.update({
+    const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: { status: status as any },
     });
+
+    // Send email to customer
+    try {
+      await sendEmail({
+        to: updatedOrder.customerEmail,
+        subject: `Your order status has been updated to ${status}`,
+        html: `
+          <h1>Order Status Updated</h1>
+          <p>Hi ${updatedOrder.customerName},</p>
+          <p>The status of your order #${orderId} has been updated to: <strong>${status}</strong>.</p>
+          <p>Thank you for shopping with us!</p>
+        `,
+      });
+    } catch (error) {
+      console.error("Failed to send order status update email:", error);
+      // Do not block the response for email errors
+    }
 
     revalidatePath("/admin/orders");
     return { success: "Order updated" };

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
+import { sendEmail } from "@/lib/email"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -130,6 +131,39 @@ export async function POST(request: Request) {
 
       return order;
     });
+
+    // Send email notifications
+    try {
+      // Email to admin
+      await sendEmail({
+        to: "atifjan2019@gmail.com",
+        subject: "New Order Received",
+        html: `
+          <h1>New Order Received</h1>
+          <p><strong>Order ID:</strong> ${order.id}</p>
+          <p><strong>Customer Name:</strong> ${customerName}</p>
+          <p><strong>Customer Email:</strong> ${customerEmail}</p>
+          <p><strong>Total:</strong> ${order.total}</p>
+        `,
+      });
+
+      // Email to customer
+      await sendEmail({
+        to: customerEmail,
+        subject: "Your Khybershawls Order Confirmation",
+        html: `
+          <h1>Thank you for your order!</h1>
+          <p>Hi ${customerName},</p>
+          <p>We've received your order and will process it shortly.</p>
+          <p><strong>Order ID:</strong> ${order.id}</p>
+          <p><strong>Total:</strong> ${order.total}</p>
+          <p>We will notify you again once your order has shipped.</p>
+        `,
+      });
+    } catch (error) {
+      console.error("Failed to send order confirmation email:", error);
+      // Do not block the response for email errors
+    }
 
     return NextResponse.json({ orderId: order.id });
   } catch (error) {

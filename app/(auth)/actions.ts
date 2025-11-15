@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { SignJWT, jwtVerify } from 'jose';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, hashPassword } from '@/lib/passwords';
+import { sendEmail } from '@/lib/email';
 
 export type LoginState = { error?: string };
 
@@ -184,6 +185,22 @@ export async function registerAction(
 
     // Create session
     await createSession(user.id, user.email, user.name, role);
+
+    // Send welcome email
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Welcome to Khybershawls!',
+        html: `
+          <h1>Welcome, ${user.name}!</h1>
+          <p>Thank you for creating an account at Khybershawls.</p>
+          <p>You can now log in and start shopping.</p>
+        `,
+      });
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+      // Do not block the response for email errors
+    }
 
     // Redirect based on role
     if (role === 'ADMIN') {

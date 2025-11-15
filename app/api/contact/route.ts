@@ -2,10 +2,12 @@ import { revalidatePath } from "next/cache"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
+import { sendEmail } from "@/lib/email"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export const runtime = "nodejs"
+
 
 const contactSchema = z.object({
   name: z.string().min(1),
@@ -48,6 +50,26 @@ export async function POST(request: Request) {
   }
 
   revalidatePath("/admin/messages")
+
+  try {
+    await sendEmail({
+      to: "atifjan2019@gmail.com",
+      subject: "New Contact Form Submission",
+      html: `
+        <h1>New Contact Form Submission</h1>
+        <p><strong>Name:</strong> ${parsed.data.name}</p>
+        <p><strong>Email:</strong> ${parsed.data.email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${parsed.data.message}</p>
+      `,
+    })
+  } catch (error) {
+    console.error("Failed to send email:", error)
+    return NextResponse.json(
+      { error: "Could not send email." },
+      { status: 500 }
+    )
+  }
 
   return NextResponse.json({ ok: true })
 }
