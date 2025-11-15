@@ -5,6 +5,8 @@ FROM node:20-slim AS base
 FROM base AS deps
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y openssl --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
@@ -21,6 +23,10 @@ ARG NEXTAUTH_SECRET
 ARG NEXTAUTH_URL
 ARG NEXT_PUBLIC_SITE_URL
 ARG PORT
+ARG ELASTIC_EMAIL_USER
+ARG ELASTIC_EMAIL_PASSWORD
+ARG SMTP_USER
+ARG SMTP_PASSWORD
 
 # Set environment variables for build
 ENV DATABASE_URL=$DATABASE_URL
@@ -29,6 +35,10 @@ ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV PORT=$PORT
+ENV ELASTIC_EMAIL_USER=$ELASTIC_EMAIL_USER
+ENV ELASTIC_EMAIL_PASSWORD=$ELASTIC_EMAIL_PASSWORD
+ENV SMTP_USER=$SMTP_USER
+ENV SMTP_PASSWORD=$SMTP_PASSWORD
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
