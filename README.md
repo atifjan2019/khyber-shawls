@@ -14,6 +14,7 @@ A full-featured e-commerce platform built with Next.js 16, featuring dynamic pro
 - 📱 **Responsive Design** - Mobile-first design with Tailwind CSS
 - 🖼️ **Image Management** - File upload system for products and categories
 - 🔍 **SEO Optimized** - Dynamic meta tags and sitemap generation
+- 🤖 **Auto Indexing** - Builds ping IndexNow + search engines with every live page
 
 ## 🚀 Quick Deploy to VPS
 
@@ -185,9 +186,26 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm start            # Start production server
 npm run lint         # Run ESLint
+npm run seo:index    # Manually re-submit every URL to search engines
 npx prisma studio    # Open Prisma Studio (database GUI)
 npx prisma migrate   # Run database migrations
 ```
+
+## 🔍 Automatic Indexing
+
+Every production build now triggers `scripts/auto-index.js` right after `next-sitemap`. The script:
+- Collects all static routes plus published products, categories, and blog posts.
+- Ensures your IndexNow verification file exists in `public/<INDEXNOW_KEY>.txt`.
+- Submits URLs to `https://api.indexnow.org/indexnow` in batches of 100 so Bing/Yandex and other IndexNow partners pick them up immediately.
+
+Configuration:
+
+```env
+NEXT_PUBLIC_BASE_URL="https://khybershawls.store"
+INDEXNOW_KEY="your-indexnow-key"
+```
+
+The `INDEXNOW_KEY` can be any random string; it just needs to match the filename served at `https://<your-domain>/<key>.txt`. If the key is missing, the script gracefully skips the IndexNow call and simply logs a reminder. You can manually retrigger the indexing workflow anytime with `npm run seo:index`.
 
 ## 🤝 Contributing
 

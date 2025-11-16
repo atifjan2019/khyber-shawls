@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma migrate deploy && next build",
-    "postbuild": "next-sitemap",
+    "postbuild": "next-sitemap && node scripts/auto-index.js",
     "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",
     "postinstall": "npx prisma generate",
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "seo:index": "node scripts/auto-index.js"
   },
   "dependencies": {
     "@elasticemail/elasticemail-client": "^4.0.23",
