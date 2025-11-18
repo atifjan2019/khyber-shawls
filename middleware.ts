@@ -44,11 +44,11 @@ export function middleware(request: NextRequest) {
   // Content Security Policy
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live;
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://web-sdk.smartlook.com;
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https:;
     font-src 'self' data:;
-    connect-src 'self' https://vercel.live https://vitals.vercel-insights.com;
+    connect-src 'self' https://vercel.live https://vitals.vercel-insights.com https://web-sdk.smartlook.com https://*.smartlook.com https://*.smartlook.cloud wss://*.smartlook.com wss://*.smartlook.cloud;
     frame-ancestors 'self';
   `.replace(/\s{2,}/g, ' ').trim();
 

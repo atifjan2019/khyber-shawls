@@ -11,21 +11,27 @@ const smtpPass =
   process.env.SMTP_PASSWORD ||
   process.env.SMTP_PASS;
 
-if (!smtpUser || !smtpPass) {
-  throw new Error(
-    'SMTP credentials are missing. Ensure ELASTIC_EMAIL_USER and ELASTIC_EMAIL_PASSWORD (or SMTP_USERNAME/SMTP_PASSWORD) are set.',
+let transporter: nodemailer.Transporter | null = null;
+
+if (smtpUser && smtpPass) {
+  transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpPort === 465,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+  });
+} else {
+  console.warn(
+    'SMTP credentials are missing. Email delivery is disabled until ELASTIC_EMAIL_USER and ELASTIC_EMAIL_PASSWORD (or SMTP_USERNAME/SMTP_PASSWORD) are provided.'
   );
 }
 
-const transporter = nodemailer.createTransport({
-  host: smtpHost,
-  port: smtpPort,
-  secure: smtpPort === 465,
-  auth: {
-    user: smtpUser,
-    pass: smtpPass,
-  },
-});
+export function isEmailConfigured() {
+  return transporter !== null;
+}
 
 export async function sendEmail({
   to,
@@ -36,6 +42,10 @@ export async function sendEmail({
   subject: string;
   html: string;
 }) {
+  if (!transporter) {
+    throw new Error('Email service is not configured.');
+  }
+
   const mailOptions = {
     from: process.env.MAIL_FROM || smtpUser,
     to,
