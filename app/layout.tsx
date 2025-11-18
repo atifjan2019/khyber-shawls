@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma"
 import { fetchAllCategories } from "@/lib/products"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { WhatsAppFloat } from "@/components/whatsapp-float"
+import Script from "next/script"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -89,19 +90,17 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Smartlook Analytics */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.smartlook||(function(d) {
-                var o=smartlook=function(){ o.api.push(arguments)},h=d.getElementsByTagName('head')[0];
-                var c=d.createElement('script');o.api=new Array();c.async=true;c.type='text/javascript';
-                c.charset='utf-8';c.src='https://web-sdk.smartlook.com/recorder.js';h.appendChild(c);
-              })(document);
-              smartlook('init', '593412ebdbe8f7d5f6289953ac3292fffe9670f9', { region: 'eu' });
-            `,
-          }}
-        />
+        {/* Smartlook Analytics using next/script */}
+        <Script id="smartlook-loader" strategy="afterInteractive">
+          {`
+            window.smartlook||(function(d) {
+              var o=smartlook=function(){ o.api.push(arguments)},h=d.getElementsByTagName('head')[0];
+              var c=d.createElement('script');o.api=new Array();c.async=true;c.type='text/javascript';
+              c.charset='utf-8';c.src='https://web-sdk.smartlook.com/recorder.js';h.appendChild(c);
+            })(document);
+            smartlook('init', '593412ebdbe8f7d5f6289953ac3292fffe9670f9', { region: 'eu' });
+          `}
+        </Script>
       </head>
       <body
         suppressHydrationWarning
