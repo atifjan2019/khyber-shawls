@@ -1,5 +1,6 @@
 
 import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import Link from "next/link"
 import { fetchCategoriesWithProducts, fetchPublishedProducts } from "@/lib/products"
 import { formatCurrency } from "@/lib/currency"
@@ -13,7 +14,7 @@ export default async function CollectionsPage() {
   const spotlight = products.slice(0, 6)
 
   return (
-  <div className="space-y-24 bg-white pb-24">
+    <div className="space-y-24 bg-white pb-24">
       {/* Hero Section with SVG and animation */}
       <section className="relative isolate left-1/2 right-1/2 w-screen -translate-x-1/2 overflow-hidden bg-white">
         <div className="mx-auto max-w-[1600px] px-6 py-28 text-center text-amber-900 sm:py-36">
@@ -40,7 +41,7 @@ export default async function CollectionsPage() {
               className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/60 shadow-xl backdrop-blur-lg transition-all hover:-translate-y-2 hover:shadow-2xl"
             >
               <div className="absolute inset-0">
-                <Image
+                <SafeImage
                   src={category.featuredImageUrl ?? "/placeholder.svg"}
                   alt={category.featuredImageAlt ?? category.name}
                   fill
@@ -79,7 +80,7 @@ export default async function CollectionsPage() {
               className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/70 shadow-xl backdrop-blur-lg transition-all hover:-translate-y-2 hover:shadow-2xl"
             >
               <div className="relative h-64 w-full overflow-hidden">
-                <Image
+                <SafeImage
                   src={product.featuredImageUrl ?? "/placeholder.svg"}
                   alt={product.featuredImageAlt ?? product.title}
                   fill

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import { formatCurrency } from "@/lib/currency";
 import { AddToCartButton } from "./product/add-to-cart-button";
 import type { SerializedProduct } from "@/lib/products";
@@ -28,7 +28,7 @@ export function ProductCard({ product: p }: Props) {
         href={`/products/${p.slug}`}
         className="block relative h-52 sm:h-56 md:h-64 lg:h-80 bg-gradient-to-br from-amber-600 to-amber-900"
       >
-        <Image
+        <SafeImage
           src={p.featuredImageUrl ?? p.gallery?.[0]?.url ?? "/placeholder.svg"}
           alt={p.featuredImageAlt ?? p.gallery?.[0]?.alt ?? p.title}
           fill

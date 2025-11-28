@@ -1,6 +1,7 @@
 // app/products/[slug]/page.tsx
 import type { Metadata } from "next"
 import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { CheckCircle2, ShieldCheck, Truck } from "lucide-react"
@@ -137,7 +138,7 @@ export default async function ProductPage({ params }: PageProps) {
         },
       },
     })
-    
+
     related.push(...(category?.products || []).map(p => ({
       id: p.id,
       title: p.name,
@@ -222,7 +223,7 @@ export default async function ProductPage({ params }: PageProps) {
                 className="group space-y-2 sm:space-y-3 rounded-2xl sm:rounded-3xl border border-white/10 bg-background/70 p-3 sm:p-4 transition hover:border-amber-700/40 hover:bg-amber-700/5"
               >
                 <div className="relative aspect-square w-full overflow-hidden rounded-xl sm:rounded-2xl">
-                  <Image
+                  <SafeImage
                     src={item.featuredImage?.url ?? "/placeholder.svg"}
                     alt={item.featuredImage?.alt ?? item.title}
                     fill

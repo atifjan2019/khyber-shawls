@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export type GalleryItem = {
   id: string;
@@ -51,7 +51,7 @@ export default function ProductGallery({ main, items, title }: Props) {
                     : "border-white/10 hover:border-amber-700/40")
                 }
               >
-                <Image
+                <SafeImage
                   src={img.url}
                   alt={img.alt}
                   fill
@@ -68,7 +68,7 @@ export default function ProductGallery({ main, items, title }: Props) {
       {/* Main image (right) */}
       <div>
         <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-white/10 bg-background">
-          <Image
+          <SafeImage
             key={active.url}
             src={active.url}
             alt={active.alt}

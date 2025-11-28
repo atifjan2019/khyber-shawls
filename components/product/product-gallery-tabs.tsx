@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, ShieldCheck, Truck } from "lucide-react"
 import { useCart } from "@/components/providers/cart-provider"
@@ -63,7 +63,7 @@ export function ProductGalleryTabs({
   const [activeTab, setActiveTab] = useState<"description" | "details" | "care">("description")
   const [isAdding, setIsAdding] = useState(false)
   const [quantity, setQuantity] = useState(1)
-  
+
   const { addItem } = useCart()
   const router = useRouter()
 
@@ -99,11 +99,11 @@ export function ProductGalleryTabs({
 
   const handleImageChange = (url: string, alt: string) => {
     if (url === activeImage) return
-    
+
     setIsImageLoading(true)
     setActiveImage(url)
     setActiveImageAlt(alt)
-    
+
     // Reset loading state after transition
     setTimeout(() => setIsImageLoading(false), 300)
   }
@@ -137,21 +137,22 @@ export function ProductGalleryTabs({
           <div className="lg:hidden">
             {/* Main Image */}
             <div className="relative w-full overflow-hidden rounded-lg bg-gray-50 mb-3">
-              <Image
-                src={activeImage}
-                alt={activeImageAlt}
-                width={800}
-                height={800}
-                sizes="100vw"
-                priority
-                className={`object-contain w-full h-auto transition-opacity duration-300 ease-in-out ${
-                  isImageLoading ? 'opacity-0' : 'opacity-100'
-                }`}
-                style={{ aspectRatio: "1/1" }}
-                onLoad={() => setIsImageLoading(false)}
-              />
+              <div className="relative w-full overflow-hidden rounded-lg bg-gray-50 mb-3">
+                <SafeImage
+                  src={activeImage}
+                  alt={activeImageAlt}
+                  width={800}
+                  height={800}
+                  sizes="100vw"
+                  priority
+                  className={`object-contain w-full h-auto transition-opacity duration-300 ease-in-out ${isImageLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
+                  style={{ aspectRatio: "1/1" }}
+                  onLoad={() => setIsImageLoading(false)}
+                />
+              </div>
             </div>
-            
+
             {/* Thumbnails - Horizontal scroll */}
             {allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -159,13 +160,12 @@ export function ProductGalleryTabs({
                   <button
                     key={item.id}
                     onClick={() => handleImageChange(item.url, item.alt ?? productTitle)}
-                    className={`relative flex-shrink-0 w-16 h-16 overflow-hidden rounded-md bg-muted border transition-all duration-300 ease-in-out cursor-pointer ${
-                      activeImage === item.url
-                        ? "border-orange-700 ring-2 ring-orange-700/40 scale-105"
-                        : "border-gray-200 hover:border-orange-700/40 hover:scale-105"
-                    }`}
+                    className={`relative flex-shrink-0 w-16 h-16 overflow-hidden rounded-md bg-muted border transition-all duration-300 ease-in-out cursor-pointer ${activeImage === item.url
+                      ? "border-orange-700 ring-2 ring-orange-700/40 scale-105"
+                      : "border-gray-200 hover:border-orange-700/40 hover:scale-105"
+                      }`}
                   >
-                    <Image
+                    <SafeImage
                       src={item.url}
                       alt={item.alt ?? productTitle}
                       fill
@@ -187,13 +187,12 @@ export function ProductGalleryTabs({
                   <button
                     key={item.id}
                     onClick={() => handleImageChange(item.url, item.alt ?? productTitle)}
-                    className={`relative aspect-square w-full overflow-hidden rounded-md bg-muted border transition-all duration-300 ease-in-out cursor-pointer ${
-                      activeImage === item.url
-                        ? "border-orange-700 ring-2 ring-orange-700/40 scale-105"
-                        : "border-gray-200 hover:border-orange-700/40 hover:scale-105"
-                    }`}
+                    className={`relative aspect-square w-full overflow-hidden rounded-md bg-muted border transition-all duration-300 ease-in-out cursor-pointer ${activeImage === item.url
+                      ? "border-orange-700 ring-2 ring-orange-700/40 scale-105"
+                      : "border-gray-200 hover:border-orange-700/40 hover:scale-105"
+                      }`}
                   >
-                    <Image
+                    <SafeImage
                       src={item.url}
                       alt={item.alt ?? productTitle}
                       fill
@@ -208,16 +207,15 @@ export function ProductGalleryTabs({
             {/* Main Image */}
             <div className="flex-1">
               <div className="relative w-full overflow-hidden rounded-md bg-gray-50">
-                <Image
+                <SafeImage
                   src={activeImage}
                   alt={activeImageAlt}
                   width={800}
                   height={800}
                   sizes="60vw"
                   priority
-                  className={`object-contain w-full h-auto transition-opacity duration-300 ease-in-out ${
-                    isImageLoading ? 'opacity-0' : 'opacity-100'
-                  }`}
+                  className={`object-contain w-full h-auto transition-opacity duration-300 ease-in-out ${isImageLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
                   style={{ aspectRatio: "1/1" }}
                   onLoad={() => setIsImageLoading(false)}
                 />
@@ -227,7 +225,7 @@ export function ProductGalleryTabs({
         </div>
 
         {/* Right side - Product Info (40%) */}
-        
+
         <div className="w-full lg:w-[40%] bg-white p-4 sm:p-6 lg:p-8 rounded-md shadow-sm border border-gray-100">
           {/* Stock Badge */}
           <div className="mb-3">
@@ -253,12 +251,12 @@ export function ProductGalleryTabs({
             </div>
             <span className="text-xs sm:text-sm text-gray-600">({reviewCount} reviews)</span>
           </div>
-          
+
           <p className="text-[10px] sm:text-xs uppercase tracking-widest text-orange-700 mb-2">
             {categoryName ?? "Signature Collection"}
           </p>
-          
-        
+
+
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight">
             {productTitle}
           </h1>
@@ -288,14 +286,14 @@ export function ProductGalleryTabs({
 
           {/* Buttons - stacked on mobile, row on desktop */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mb-4 sm:mb-6">
-            <button 
+            <button
               onClick={handleAddToCart}
               disabled={isAdding}
               className="w-full sm:flex-1 bg-orange-700 text-white py-3 sm:py-2.5 px-4 rounded-md font-semibold text-base sm:text-sm hover:bg-orange-800 transition disabled:opacity-50"
             >
               {isAdding ? "✓ Added!" : "Add to Cart"}
             </button>
-            <button 
+            <button
               onClick={handleBuyNow}
               className="w-full sm:flex-1 border-2 border-orange-700 text-orange-700 py-3 sm:py-2.5 px-4 rounded-md font-semibold text-base sm:text-sm hover:bg-orange-50 transition"
             >
@@ -326,31 +324,28 @@ export function ProductGalleryTabs({
         <div className="flex gap-4 sm:gap-8 border-b border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab("description")}
-            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${
-              activeTab === "description"
-                ? "border-orange-700 text-orange-700"
-                : "border-transparent hover:text-gray-900"
-            }`}
+            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${activeTab === "description"
+              ? "border-orange-700 text-orange-700"
+              : "border-transparent hover:text-gray-900"
+              }`}
           >
             Description
           </button>
           <button
             onClick={() => setActiveTab("details")}
-            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${
-              activeTab === "details"
-                ? "border-orange-700 text-orange-700"
-                : "border-transparent hover:text-gray-900"
-            }`}
+            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${activeTab === "details"
+              ? "border-orange-700 text-orange-700"
+              : "border-transparent hover:text-gray-900"
+              }`}
           >
             Details
           </button>
           <button
             onClick={() => setActiveTab("care")}
-            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${
-              activeTab === "care"
-                ? "border-orange-700 text-orange-700"
-                : "border-transparent hover:text-gray-900"
-            }`}
+            className={`pb-2 sm:pb-3 border-b-2 transition whitespace-nowrap ${activeTab === "care"
+              ? "border-orange-700 text-orange-700"
+              : "border-transparent hover:text-gray-900"
+              }`}
           >
             Care
           </button>
@@ -361,7 +356,7 @@ export function ProductGalleryTabs({
           {activeTab === "description" && (
             <div className="space-y-2 sm:space-y-3 max-w-4xl">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Product Description</h3>
-              <div 
+              <div
                 className="text-sm sm:text-base leading-relaxed prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{
                   __html: productDescription || "This premium handmade shawl is crafted with care and attention to detail. Each piece represents the finest tradition of Kashmiri craftsmanship, combining heritage techniques with contemporary design sensibilities."
@@ -374,7 +369,7 @@ export function ProductGalleryTabs({
             <div className="space-y-2 sm:space-y-3 max-w-4xl">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Product Details</h3>
               {productDetails ? (
-                <div 
+                <div
                   className="text-sm sm:text-base leading-relaxed prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{ __html: productDetails }}
                 />
@@ -395,7 +390,7 @@ export function ProductGalleryTabs({
             <div className="space-y-2 sm:space-y-3 max-w-4xl">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Care Instructions</h3>
               {careInstructions ? (
-                <div 
+                <div
                   className="text-sm sm:text-base leading-relaxed prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{ __html: careInstructions }}
                 />

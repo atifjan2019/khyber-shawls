@@ -1,5 +1,6 @@
 // app/page.tsx
 import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import Link from "next/link"
 
 import { HeroCarousel } from "@/components/hero-carousel"
@@ -58,10 +59,10 @@ export default async function HomePage() {
 
       {/* ======================= SHOP BY CATEGORY (3 Main Blocks) ======================= */}
       <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-8">
-        {[{cat: menCategory, label: "Men Shawls", desc: "Classic, bold textures."}, {cat: womenCategory, label: "Women Shawls", desc: "Graceful, premium designs."}, {cat: kidsCategory, label: "Kids Shawls", desc: "Soft, lightweight comfort."}].map(({cat, label, desc}, idx) => cat && (
+        {[{ cat: menCategory, label: "Men Shawls", desc: "Classic, bold textures." }, { cat: womenCategory, label: "Women Shawls", desc: "Graceful, premium designs." }, { cat: kidsCategory, label: "Kids Shawls", desc: "Soft, lightweight comfort." }].map(({ cat, label, desc }, idx) => cat && (
           <Link key={cat.id} href={`/category/${cat.slug}`} className="relative group rounded-2xl md:rounded-3xl overflow-hidden min-h-[180px] sm:min-h-[200px] md:min-h-[220px] flex flex-col justify-end shadow-lg">
             <div className="absolute inset-0 w-full h-full">
-              <Image src={cat.featuredImageUrl ?? "/placeholder.svg"} alt={cat.name} fill className="object-cover" />
+              <SafeImage src={cat.featuredImageUrl ?? "/placeholder.svg"} alt={cat.name} fill className="object-cover" />
               <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition" />
             </div>
             <div className="relative z-10 p-4 sm:p-5 md:p-6 flex flex-col items-start">
@@ -156,11 +157,11 @@ export default async function HomePage() {
             Where Tradition Meets <span className="text-amber-700">Timeless Elegance</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
-            For generations, master artisans in Peshawar have crafted each Khyber Shawl with unmatched precision and care. 
+            For generations, master artisans in Peshawar have crafted each Khyber Shawl with unmatched precision and care.
             Every thread tells a story of heritage, warmth, and authentic Pakistani craftsmanship that families trust.
           </p>
         </div>
-        
+
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10 md:mb-12">
             {/* Feature 1 */}
@@ -198,8 +199,8 @@ export default async function HomePage() {
           </div>
 
           <div className="flex justify-center">
-            <Link 
-              href="/shop" 
+            <Link
+              href="/shop"
               className="group px-8 sm:px-10 py-3 sm:py-4 rounded-full bg-gradient-to-r from-amber-700 to-amber-600 text-white font-bold text-base sm:text-lg md:text-xl shadow-lg hover:shadow-xl hover:from-amber-800 hover:to-amber-700 transition-all transform hover:scale-105 inline-flex items-center gap-2"
             >
               Discover Our Collection
@@ -219,7 +220,7 @@ export default async function HomePage() {
           {/* Review 1 */}
           <div className="bg-gradient-to-br from-amber-50 to-white rounded-lg sm:rounded-xl border-l-4 border-amber-700 p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex gap-1 mb-3 text-amber-600">
-              {Array(5).fill(0).map((_,i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
+              {Array(5).fill(0).map((_, i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
             </div>
             <p className="text-sm sm:text-base text-gray-800 leading-relaxed mb-4 italic">
               "The softest shawl I've ever owned — worth every rupee. The craftsmanship is exceptional!"
@@ -238,7 +239,7 @@ export default async function HomePage() {
           {/* Review 2 */}
           <div className="bg-gradient-to-br from-amber-50 to-white rounded-lg sm:rounded-xl border-l-4 border-amber-700 p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex gap-1 mb-3 text-amber-600">
-              {Array(5).fill(0).map((_,i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
+              {Array(5).fill(0).map((_, i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
             </div>
             <p className="text-sm sm:text-base text-gray-800 leading-relaxed mb-4 italic">
               "Incredible quality and fast delivery. My family loves them! Highly recommend to everyone."
@@ -257,7 +258,7 @@ export default async function HomePage() {
           {/* Review 3 */}
           <div className="bg-gradient-to-br from-amber-50 to-white rounded-lg sm:rounded-xl border-l-4 border-amber-700 p-5 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex gap-1 mb-3 text-amber-600">
-              {Array(5).fill(0).map((_,i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
+              {Array(5).fill(0).map((_, i) => <span key={i} className="text-lg sm:text-xl">★</span>)}
             </div>
             <p className="text-sm sm:text-base text-gray-800 leading-relaxed mb-4 italic">
               "Beautifully made, soft, and so warm. The attention to detail is remarkable. Love it!"

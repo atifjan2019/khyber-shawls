@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import Link from "next/link"
 
 import type { HeroRecord } from "@/lib/hero"
@@ -81,7 +82,7 @@ export function HeroCarousel({ slides, fallbackImage = "/hero/khyber-hero.jpg" }
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={backgroundUrl} alt={altText} className="h-full w-full object-cover" />
               ) : (
-                <Image
+                <SafeImage
                   src={backgroundUrl}
                   alt={altText}
                   fill
