@@ -27,7 +27,7 @@ export function ProductCard({ product: p }: Props) {
   const rating = getRandomRating(p.id);
 
   return (
-    <Link href={`/products/${p.slug}`} className="group block bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
+    <Link href={`/products/${p.slug}`} className="group block cursor-pointer bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden">
         <SafeImage
@@ -35,7 +35,7 @@ export function ProductCard({ product: p }: Props) {
           alt={p.featuredImageAlt ?? p.gallery?.[0]?.alt ?? p.title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover scale-110 transition-transform duration-500 group-hover:scale-115"
+          className="object-cover scale-110 transition-transform duration-500 group-hover:scale-[1.15]"
           style={{ objectPosition: 'center center' }}
         />
         {/* Stock Badge */}
@@ -52,31 +52,58 @@ export function ProductCard({ product: p }: Props) {
 
       {/* Content */}
       <div className="p-2 sm:p-4 md:p-5">
-        {/* Title and Price Row */}
-        <div className="flex items-start justify-between gap-1 sm:gap-2 mb-1 sm:mb-2">
-          <h2 className="text-[11px] sm:text-base md:text-lg font-bold text-gray-900 group-hover:text-amber-700 transition-colors line-clamp-1 leading-tight flex-1">
+        {/* Mobile Layout: Title, Reviews, Price stacked */}
+        <div className="sm:hidden">
+          <h2 className="text-sm font-bold text-gray-900 group-hover:text-amber-700 transition-colors line-clamp-2 leading-tight mb-2">
             {p.title}
           </h2>
-          <span className="text-[11px] sm:text-base md:text-lg font-bold text-gray-900 whitespace-nowrap">
+          
+          {/* Rating Row */}
+          <div className="flex items-center gap-1 mb-2">
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <span key={i} className="text-amber-400 text-sm">★</span>
+              ))}
+            </div>
+            <span className="text-xs text-gray-600">
+              {reviewCount} reviews
+            </span>
+          </div>
+          
+          {/* Price */}
+          <span className="text-base font-bold text-gray-900">
             {formatCurrency(p.price)}
           </span>
         </div>
 
-        {/* Subtitle/Description */}
-        <p className="text-[9px] sm:text-sm text-gray-500 mb-1.5 sm:mb-3 line-clamp-1">
-          Handwoven · Premium Quality
-        </p>
-
-        {/* Rating Row */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className="text-emerald-500 text-[10px] sm:text-sm md:text-base">★</span>
-            ))}
+        {/* Desktop Layout: Title+Price row, Subtitle, Reviews */}
+        <div className="hidden sm:block">
+          {/* Title and Price Row */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h2 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-amber-700 transition-colors line-clamp-1 leading-tight flex-1">
+              {p.title}
+            </h2>
+            <span className="text-base md:text-lg font-bold text-gray-900 whitespace-nowrap">
+              {formatCurrency(p.price)}
+            </span>
           </div>
-          <span className="text-[9px] sm:text-xs md:text-sm text-gray-600">
-            {rating.toFixed(1)} ({reviewCount} reviews)
-          </span>
+
+          {/* Subtitle/Description */}
+          <p className="text-sm text-gray-500 mb-3 line-clamp-1">
+            Handwoven · Premium Quality
+          </p>
+
+          {/* Rating Row */}
+          <div className="flex items-center gap-2">
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <span key={i} className="text-emerald-500 text-sm md:text-base">★</span>
+              ))}
+            </div>
+            <span className="text-xs md:text-sm text-gray-600">
+              {rating.toFixed(1)} ({reviewCount} reviews)
+            </span>
+          </div>
         </div>
       </div>
     </Link>
