@@ -67,8 +67,8 @@ export function CategoryView({ category, products }: CategoryViewProps) {
       )}
 
       {/* Products Grid Section */}
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="mb-8 flex items-center justify-between">
+      <section className="mx-auto max-w-7xl px-0 py-12">
+        <div className="mb-8 flex items-center justify-between px-2 sm:px-0">
           <h2 className="text-2xl font-semibold text-gray-900">
             {category.name}
           </h2>
@@ -83,7 +83,7 @@ export function CategoryView({ category, products }: CategoryViewProps) {
           </div>
         ) : (
           <div 
-            className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+            className="grid gap-1 sm:gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
           >
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
