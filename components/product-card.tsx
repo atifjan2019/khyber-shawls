@@ -29,12 +29,14 @@ export function ProductCard({ product: p }: Props) {
   return (
     <Link href={`/products/${p.slug}`} className="group block bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
       {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+      <div className="relative aspect-square overflow-hidden">
         <SafeImage
           src={p.featuredImageUrl ?? p.gallery?.[0]?.url ?? "/placeholder.svg"}
           alt={p.featuredImageAlt ?? p.gallery?.[0]?.alt ?? p.title}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover scale-110 transition-transform duration-500 group-hover:scale-115"
+          style={{ objectPosition: 'center center' }}
         />
         {/* Stock Badge */}
         {p.inStock ? (
