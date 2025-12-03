@@ -41,7 +41,7 @@ export default async function HomePage() {
 
       {/* ======================= FEATURED PRODUCTS ======================= */}
       {featuredProducts.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+        <section className="mx-auto max-w-[1600px] px-1 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800">Featured Shawls</h2>
             <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-700 font-medium px-4">"Hand-selected creations woven from pure heritage and luxury."</p>
@@ -58,16 +58,16 @@ export default async function HomePage() {
       )}
 
       {/* ======================= SHOP BY CATEGORY (3 Main Blocks) ======================= */}
-      <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-8">
-        {[{ cat: menCategory, label: "Men Shawls", desc: "Classic, bold textures." }, { cat: womenCategory, label: "Women Shawls", desc: "Graceful, premium designs." }, { cat: kidsCategory, label: "Kids Shawls", desc: "Soft, lightweight comfort." }].map(({ cat, label, desc }, idx) => cat && (
+      <section className="mx-auto max-w-[1600px] px-1 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16 grid grid-cols-2 gap-3 md:gap-6 lg:gap-8">
+        {categories.map((cat) => (
           <Link key={cat.id} href={`/category/${cat.slug}`} className="relative group rounded-2xl md:rounded-3xl overflow-hidden min-h-[180px] sm:min-h-[200px] md:min-h-[220px] flex flex-col justify-end shadow-lg">
             <div className="absolute inset-0 w-full h-full">
               <SafeImage src={cat.featuredImageUrl ?? "/placeholder.svg"} alt={cat.name} fill className="object-cover" />
               <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition" />
             </div>
             <div className="relative z-10 p-4 sm:p-5 md:p-6 flex flex-col items-start">
-              <h3 className="text-xl sm:text-xl md:text-2xl font-bold text-white mb-1 md:mb-2 drop-shadow-lg">{label}</h3>
-              <p className="text-xs sm:text-sm md:text-base text-white/90 mb-3 md:mb-4 drop-shadow">{desc}</p>
+              <h3 className="text-xl sm:text-xl md:text-2xl font-bold text-white mb-1 md:mb-2 drop-shadow-lg">{cat.name}</h3>
+              <p className="text-xs sm:text-sm md:text-base text-white/90 mb-3 md:mb-4 drop-shadow">Explore our collection</p>
               <span className="px-4 sm:px-5 md:px-6 py-1.5 sm:py-2 md:py-2 rounded-full bg-amber-700 text-white font-semibold text-sm md:text-base lg:text-lg shadow mt-1 md:mt-2">Shop Now</span>
             </div>
           </Link>
@@ -76,7 +76,7 @@ export default async function HomePage() {
 
       {/* ======================= FEATURED TAG SHAWLS ======================= */}
       {tagFeaturedProducts.length > 0 && (
-        <section className="mx-auto max-w-[1600px] px-2.5 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+        <section className="mx-auto max-w-[1600px] px-1 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800">Featured Products</h2>
             <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-700 font-medium">"Best"</p>

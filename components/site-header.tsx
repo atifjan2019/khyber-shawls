@@ -53,7 +53,7 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
   }))
 
   // Combine category navigation with static navigation for mobile
-  const primaryNav = [...categoryNav, ...staticNav]
+  const primaryNav = staticNav
 
   // Close mobile menu when clicking a link
   const closeMobileMenu = () => setMobileMenuOpen(false)
