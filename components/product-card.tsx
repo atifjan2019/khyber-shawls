@@ -37,9 +37,9 @@ export function ProductCard({ product: p }: Props) {
       </Link>
 
       {/* Product Details */}
-      <div className="p-3 sm:p-3 md:p-4 lg:p-6">
+      <div className="p-1 sm:p-3 md:p-4 lg:p-6">
         {/* Stock Badge */}
-        <div className="mb-2 sm:mb-2 md:mb-3">
+        <div className="mb-1 sm:mb-2 md:mb-3">
           {p.inStock ? (
             <span className="inline-flex items-center px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-semibold bg-green-100 text-green-800">
               ✓ In Stock
@@ -53,13 +53,13 @@ export function ProductCard({ product: p }: Props) {
 
         {/* Product Name */}
         <Link href={`/products/${p.slug}`}>
-          <h2 className="text-base sm:text-base md:text-xl lg:text-2xl font-bold mb-2 md:mb-2 text-gray-800 hover:text-amber-700 transition-colors line-clamp-2 leading-snug">
+          <h2 className="text-base sm:text-base md:text-xl lg:text-2xl font-bold mb-1 md:mb-2 text-gray-800 hover:text-amber-700 transition-colors line-clamp-2 leading-snug">
             {p.title}
           </h2>
         </Link>
 
         {/* Rating */}
-        <div className="flex items-center mb-2 sm:mb-2 md:mb-3">
+        <div className="flex items-center mb-1 sm:mb-2 md:mb-3">
           <div className="flex space-x-0.5 md:space-x-1">
             <span className="text-amber-600 text-sm md:text-base lg:text-xl">★</span>
             <span className="text-amber-600 text-sm md:text-base lg:text-xl">★</span>
@@ -71,7 +71,7 @@ export function ProductCard({ product: p }: Props) {
         </div>
 
         {/* Price and Button */}
-        <div className="flex items-center justify-between gap-2 mt-3">
+        <div className="flex items-center justify-between gap-2 mt-1">
           <span className="text-lg sm:text-lg md:text-xl lg:text-2xl font-bold text-amber-800">
             {formatCurrency(p.price)}
           </span>
