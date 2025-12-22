@@ -45,7 +45,7 @@ export function ImageUpload({
             onChange(data.publicUrl)
         } catch (error) {
             console.error("Upload failed:", error)
-            alert("Upload failed. Make sure your bucket is public and allows uploads (RLS policy).")
+            alert(`Upload failed: ${(error as any).message || "Make sure your bucket is public and allows uploads (RLS policy)."}`)
         } finally {
             setIsUploading(false)
         }
