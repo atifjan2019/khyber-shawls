@@ -1,11 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import postgres from 'postgres'
 
-declare global {
-  var prisma: PrismaClient | undefined;
-}
+const connectionString = process.env.DATABASE_URL
+const sql = postgres(connectionString)
 
-export const db = globalThis.prisma ?? new PrismaClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalThis.prisma = db;
-}
+export default sql
