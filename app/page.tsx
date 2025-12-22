@@ -117,10 +117,10 @@ export default async function HomePage() {
       )}
 
       {/* ======================= PROMO BANNER ======================= */}
-      <section className="w-full my-8 md:my-12">
+      <section className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] my-8 md:my-12">
         <div className="relative w-full aspect-[21/9] sm:aspect-[21/7] md:aspect-[21/5] overflow-hidden">
           <Image
-            src="https://mjywwfaflipsnirccemw.supabase.co/storage/v1/object/public/products/uploads/1766434457029-rwf3l-Web-Banner-3.jpg"
+            src="https://mjywwfaflipsnirccemw.supabase.co/storage/v1/object/public/products/uploads/1766434454520-7g5ie9-Web-Banner-2.jpg"
             alt="Promotional Banner"
             fill
             className="object-cover"
