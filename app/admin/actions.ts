@@ -3,10 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import path from "path";
-import { mkdir, writeFile, unlink } from "fs/promises";
-
 import { prisma } from "@/lib/prisma";
+import { uploadFileToSupabase } from "@/lib/supabase";
 import { requireUser, requireAdmin, getCurrentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
 import { sendEmail } from "@/lib/email";
@@ -49,7 +47,7 @@ export async function createProductAction(
       inventory: formData.get("inventory"),
       categoryId: formData.get("categoryId"),
       published: formData.get("published"),
-  // removed featured
+      // removed featured
     });
 
     if (!parsed.success) {
@@ -90,15 +88,7 @@ export async function createProductAction(
       const file = galleryFiles[i];
       if (!file || file.size === 0) continue;
 
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await mkdir(uploadDir, { recursive: true });
-
-      const safeName = file.name.replace(/\s+/g, "-");
-      const filename = `${Date.now()}-${i}-${safeName}`;
-      const publicUrl = `/uploads/${filename}`;
-
-      await writeFile(path.join(uploadDir, filename), buffer);
+      const publicUrl = await uploadFileToSupabase(file);
 
       galleryImages.push({
         id: `img_${Date.now()}_${i}_${Math.random().toString(36).substring(7)}`,
@@ -146,7 +136,7 @@ export async function createProductAction(
         product_images: {
           create: galleryImages,
         },
-  tags: tagConnect.length > 0 ? { connect: tagConnect } : undefined,
+        tags: tagConnect.length > 0 ? { connect: tagConnect } : undefined,
       },
     });
 
@@ -188,7 +178,7 @@ export async function updateProductAction(
       inventory: formData.get("inventory"),
       categoryId: formData.get("categoryId"),
       published: formData.get("published"),
-  // removed featured
+      // removed featured
     });
 
     // --- TAGS LOGIC ---
@@ -244,24 +234,21 @@ export async function updateProductAction(
     const galleryFiles = formData.getAll("galleryFiles") as File[];
     if (galleryFiles.length > 0 && galleryFiles[0].size > 0) {
       const galleryImages = [];
-        for (let i = 0; i < galleryFiles.length; i++) {
-          const file = galleryFiles[i];
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const uploadDir = path.join(process.cwd(), "public", "uploads");
-        await mkdir(uploadDir, { recursive: true });
-        const safeName = file.name.replace(/\s+/g, "-");
-        const filename = `${Date.now()}-${safeName}`;
-        const publicUrl = `/uploads/${filename}`;
-        await writeFile(path.join(uploadDir, filename), buffer);
-        galleryImages.push({ 
+      for (let i = 0; i < galleryFiles.length; i++) {
+        const file = galleryFiles[i];
+        if (!file || file.size === 0) continue;
+
+        const publicUrl = await uploadFileToSupabase(file);
+
+        galleryImages.push({
           id: `img_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-          url: publicUrl, 
+          url: publicUrl,
           alt: parsed.data.title,
-            position: i,
+          position: i,
           updatedAt: new Date()
         });
       }
-      
+
       await prisma.product.update({
         where: { id: parsed.data.productId },
         data: {
@@ -280,7 +267,7 @@ export async function updateProductAction(
     }
 
     const isPublished = parsed.data.published === "on" || parsed.data.published === "true" || parsed.data.published === true;
-    
+
     await prisma.product.update({
       where: { id: parsed.data.productId },
       data: {
@@ -292,7 +279,7 @@ export async function updateProductAction(
         categoryId: parsed.data.categoryId,
         published: isPublished,
         inStock: isPublished,
-  // removed featured
+        // removed featured
         ...(imageUrl !== undefined && { image: imageUrl }),
         // Replace tags completely instead of connecting on top of existing ones
         tags: { set: tagConnect },
@@ -445,16 +432,7 @@ export async function createCategoryAction(
     let featuredImageId: string | null = null;
     const imageFile = formData.get("featuredImageFile") as File | null;
     if (imageFile && imageFile.size > 0) {
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await mkdir(uploadDir, { recursive: true });
-
-      const safeName = imageFile.name.replace(/\s+/g, "-");
-      const filename = `${Date.now()}-${safeName}`;
-      const publicUrl = `/uploads/${filename}`;
-
-      await writeFile(path.join(uploadDir, filename), buffer);
-
+      const publicUrl = await uploadFileToSupabase(imageFile);
       const media = await prisma.media.create({
         data: { url: publicUrl, alt: formData.get("featuredImageAlt") as string || "" },
       });
@@ -704,7 +682,7 @@ export async function uploadMediaAction(
 
     // Filter out empty files
     const validFiles = files.filter(file => file && file.size > 0);
-    
+
     if (validFiles.length === 0) {
       return { error: "No valid files to upload" };
     }
@@ -714,9 +692,8 @@ export async function uploadMediaAction(
       return { error: "Maximum 100 files allowed per upload" };
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-    
+
+
     let uploadedCount = 0;
     const errors: string[] = [];
 
@@ -725,18 +702,12 @@ export async function uploadMediaAction(
     for (const file of validFiles) {
       try {
         console.log(`uploadMediaAction: uploading ${file.name}`);
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const safeName = file.name.replace(/\s+/g, "-");
-        // Add timestamp and random number to avoid collisions when uploading multiple files at once
-        const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${safeName}`;
-        const publicUrl = `/uploads/${filename}`;
-
-        await writeFile(path.join(uploadDir, filename), buffer);
+        const publicUrl = await uploadFileToSupabase(file);
 
         await prisma.media.create({
           data: { url: publicUrl, alt: alt || file.name },
         });
-        
+
         uploadedCount++;
         console.log(`uploadMediaAction: successfully uploaded ${file.name}`);
       } catch (error) {
@@ -747,13 +718,13 @@ export async function uploadMediaAction(
 
     console.log("uploadMediaAction: finished uploading files");
     revalidatePath("/admin/media");
-    
+
     if (errors.length > 0) {
-      return { 
-        error: `Uploaded ${uploadedCount} files, but failed to upload: ${errors.join(", ")}` 
+      return {
+        error: `Uploaded ${uploadedCount} files, but failed to upload: ${errors.join(", ")}`
       };
     }
-    
+
     return { success: `${uploadedCount} file${uploadedCount === 1 ? '' : 's'} uploaded successfully` };
   } catch (error) {
     console.error("Error in uploadMediaAction:", error);
@@ -809,14 +780,12 @@ export async function deleteMediaAction(
 
     await prisma.media.delete({ where: { id } });
 
-    // Delete file from disk
+    // Delete file from disk - Skipping for Supabase (bucket deletion not implemented via actions)
+    /*
     if (media.url.startsWith("/uploads/")) {
-      try {
-        await unlink(path.join(process.cwd(), "public", media.url));
-      } catch {
-        // File might not exist, ignore
-      }
+       // ...
     }
+    */
 
     revalidatePath("/admin/media");
     return { success: "Media deleted" };
