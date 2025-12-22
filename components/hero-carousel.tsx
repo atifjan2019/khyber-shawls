@@ -111,16 +111,16 @@ export function HeroCarousel({ slides, fallbackImage = "/hero/khyber-hero.jpg" }
           </p>
         )}
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-row items-center justify-center gap-2 sm:gap-3">
           <Link
             href={activeSlide.ctaHref || "/collections"}
-            className="rounded-full bg-amber-700 px-6 py-3 text-sm font-medium text-white transition hover:bg-amber-800"
+            className="rounded-full bg-amber-700 px-4 py-3 sm:px-6 text-xs sm:text-sm font-medium text-white transition hover:bg-amber-800 whitespace-nowrap"
           >
             {activeSlide.ctaLabel || "Explore Collections"}
           </Link>
           <Link
             href="/#categories"
-            className="rounded-full bg-white/80 px-6 py-3 text-sm font-medium text-gray-900 transition hover:bg-white"
+            className="rounded-full bg-white/80 px-4 py-3 sm:px-6 text-xs sm:text-sm font-medium text-gray-900 transition hover:bg-white whitespace-nowrap"
           >
             Browse Categories
           </Link>
