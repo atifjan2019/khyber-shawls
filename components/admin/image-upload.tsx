@@ -18,36 +18,41 @@ export function ImageUpload({
     onChange,
     disabled,
     bucket = "products",
-    label = "Click to upload"
-}: ImageUploadProps) {
+    label = "Click to upload",
+    multiple = false
+}: ImageUploadProps & { multiple?: boolean }) {
     const [isUploading, setIsUploading] = useState(false)
 
     const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
+        if (!e.target.files || e.target.files.length === 0) return
 
         setIsUploading(true)
+        const files = Array.from(e.target.files)
+
         try {
-            const fileExt = file.name.split(".").pop()
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-            const filePath = `uploads/${fileName}`
+            await Promise.all(files.map(async (file) => {
+                const fileExt = file.name.split(".").pop()
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+                const filePath = `uploads/${fileName}`
 
-            const { error: uploadError } = await supabaseClient.storage
-                .from(bucket)
-                .upload(filePath, file)
+                const { error: uploadError } = await supabaseClient.storage
+                    .from(bucket)
+                    .upload(filePath, file)
 
-            if (uploadError) {
-                console.error("Supabase Storage Error:", uploadError);
-                throw uploadError
-            }
+                if (uploadError) {
+                    throw uploadError
+                }
 
-            const { data } = supabaseClient.storage.from(bucket).getPublicUrl(filePath)
-            onChange(data.publicUrl)
+                const { data } = supabaseClient.storage.from(bucket).getPublicUrl(filePath)
+                onChange(data.publicUrl)
+            }))
         } catch (error) {
             console.error("Upload failed:", error)
             alert(`Upload failed: ${(error as any).message || "Make sure your bucket is public and allows uploads (RLS policy)."}`)
         } finally {
             setIsUploading(false)
+            // Reset input so functionality works if same files are selected again
+            e.target.value = ''
         }
     }
 
@@ -96,6 +101,7 @@ export function ImageUpload({
                     onChange={onUpload}
                     disabled={disabled || isUploading}
                     accept="image/*"
+                    multiple={multiple}
                 />
             </label>
         </div>

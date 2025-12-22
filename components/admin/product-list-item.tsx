@@ -388,7 +388,8 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
                 onChange={(url) => {
                   if (url) setNewGalleryImages(prev => [...prev, url])
                 }}
-                label="Add gallery image"
+                label="Add gallery image (multiple allowed)"
+                multiple={true}
               />
             </div>
 
