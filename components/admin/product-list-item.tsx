@@ -133,7 +133,7 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
 
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 rounded-3xl border border-white/10 bg-white/90 p-6 shadow-lg transition-all hover:border-primary/40 hover:shadow-2xl relative">
+    <div className="flex flex-col md:flex-row gap-6 rounded-3xl border border-white/10 bg-white/90 p-[10px] md:p-6 shadow-lg transition-all hover:border-primary/40 hover:shadow-2xl relative">
       <div className="relative w-full max-w-[140px] aspect-square overflow-hidden rounded-2xl bg-gray-100 flex-shrink-0 flex items-center justify-center border border-gray-200">
         {product.featuredImageUrl ? (
           <Image

@@ -24,7 +24,7 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div className="space-y-10 pb-16">
-      <section className="rounded-4xl border border-white/10 bg-background/90 p-8 shadow-lg backdrop-blur">
+      <section className="rounded-4xl border border-white/10 bg-background/90 p-4 md:p-8 shadow-lg backdrop-blur">
         <h1 className="text-3xl font-semibold text-foreground">Collections</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Build curated edits to guide clients through your handcrafted pieces.
@@ -34,7 +34,7 @@ export default async function AdminCategoriesPage() {
         </div>
       </section>
 
-      <section className="rounded-4xl border border-white/10 bg-background/90 p-8 shadow-lg backdrop-blur">
+      <section className="rounded-4xl border border-white/10 bg-background/90 p-4 md:p-8 shadow-lg backdrop-blur">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground">Collections at a glance</h2>
           <span className="text-xs text-muted-foreground">{categories.length} total</span>

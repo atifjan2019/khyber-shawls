@@ -45,7 +45,7 @@ export default async function EditCategoryPage({ params }: PageProps) {
       </div>
 
       {/* Edit Form */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-8 shadow-sm">
         <CategoryEditForm
           id={category.id}
           name={category.name}
@@ -60,7 +60,7 @@ export default async function EditCategoryPage({ params }: PageProps) {
       </div>
 
       {/* Delete Section */}
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-8">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 md:p-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Danger Zone</h2>
         <p className="text-sm text-gray-600 mb-4">
           Deleting this category will also remove all associated products. This action cannot be undone.

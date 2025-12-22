@@ -64,7 +64,7 @@ export default async function AdminMediaPage() {
 
   return (
     <div className="space-y-10 pb-16">
-      <section className="rounded-4xl border border-white/10 bg-background/90 p-8 shadow-lg backdrop-blur">
+      <section className="rounded-4xl border border-white/10 bg-background/90 p-4 md:p-8 shadow-lg backdrop-blur">
         <h1 className="text-3xl font-semibold text-foreground">Media Library</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Update hero banners and supporting copy. Use the three panels below to prepare up to three homepage hero rotations. All changes publish instantly—no backup approvals required.
@@ -88,7 +88,7 @@ export default async function AdminMediaPage() {
         </div>
       </section>
 
-      <div className="grid gap-8">
+      <div className="grid gap-4 md:p-8">
         {HERO_CONFIGS.map((config) => {
           const h: any = heroMap.get(config.key) // may not contain all fields
 
