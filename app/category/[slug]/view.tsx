@@ -11,7 +11,7 @@ type CategoryViewProps = {
 
 export function CategoryView({ category, products }: CategoryViewProps) {
   const gridCols = category.uiConfig?.gridColumns || { mobile: 2, tablet: 3, desktop: 4 }
-  
+
   // Extract first section to show before products
   const firstSection = category.sections && category.sections.length > 0 ? category.sections[0] : null
   const remainingSections = category.sections && category.sections.length > 1 ? category.sections.slice(1) : []
@@ -82,8 +82,8 @@ export function CategoryView({ category, products }: CategoryViewProps) {
             <p className="text-gray-600">No products available in this category yet.</p>
           </div>
         ) : (
-          <div 
-            className="grid gap-1 sm:gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+          <div
+            className="grid gap-2 sm:gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
           >
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -104,7 +104,7 @@ export function CategoryView({ category, products }: CategoryViewProps) {
             const imageOnRight = index % 2 === 1;
 
             return (
-              <section 
+              <section
                 key={index + 1}
                 className={`mx-auto max-w-7xl px-6 ${index > 0 ? 'mt-20' : ''}`}
               >

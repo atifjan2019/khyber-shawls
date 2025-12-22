@@ -67,7 +67,7 @@ export function ImageUpload({
 
     if (value) {
         return (
-            <div className="relative w-full h-40 rounded-md overflow-hidden border border-gray-200 bg-gray-50">
+            <div className="relative w-full max-w-[200px] h-32 rounded-md overflow-hidden border border-gray-200 bg-gray-50">
                 <Image
                     src={value}
                     alt="Upload"

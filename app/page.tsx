@@ -25,9 +25,13 @@ export default async function HomePage() {
   const featuredProducts = products.filter((p) => (p as any).featured === true);
   // Shawls with the 'Featured' tag
   const tagFeaturedProducts = products.filter((p) => Array.isArray((p as any).tags) && (p as any).tags.includes('Featured'));
+
+  const khaddarCategory = categories.find((c) => c.slug.toLowerCase().includes("khaddar"));
   const menCategory = categories.find((c) => c.slug.toLowerCase().includes("men"));
   const womenCategory = categories.find((c) => c.slug.toLowerCase().includes("women"));
   const kidsCategory = categories.find((c) => c.slug.toLowerCase().includes("kid"));
+
+  const khaddarProducts = khaddarCategory ? products.filter((p) => p.categorySlug === khaddarCategory.slug) : [];
   const menProducts = menCategory ? products.filter((p) => p.categorySlug === menCategory.slug) : [];
   const womenProducts = womenCategory ? products.filter((p) => p.categorySlug === womenCategory.slug) : [];
   const kidsProducts = kidsCategory ? products.filter((p) => p.categorySlug === kidsCategory.slug) : [];
@@ -46,7 +50,7 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800">Featured Shawls</h2>
             <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-700 font-medium px-4">"Hand-selected creations woven from pure heritage and luxury."</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
             {featuredProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -109,6 +113,19 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ======================= PROMO BANNER ======================= */}
+      <section className="mx-auto max-w-[1600px] px-0 sm:px-4 md:px-6 my-8 md:my-12">
+        <div className="relative w-full aspect-[21/9] sm:aspect-[21/7] md:aspect-[21/6] overflow-hidden rounded-xl md:rounded-3xl shadow-lg">
+          <Image
+            src="https://mjywwfaflipsnirccemw.supabase.co/storage/v1/object/public/products/uploads/1766434457029-rwf3l-Web-Banner-3.jpg"
+            alt="Promotional Banner"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+      </section>
+
       {/* ======================= WOMEN SHAWLS ======================= */}
       {womenCategory && womenProducts.length > 0 && (
         <section className="mx-auto max-w-[1600px] px-0 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
@@ -121,10 +138,33 @@ export default async function HomePage() {
               Explore →
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
             {womenProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================= CHARSADDA KHADDAR ======================= */}
+      {khaddarCategory && khaddarProducts.length > 0 && (
+        <section className="mx-auto max-w-[1600px] px-0 sm:px-4 md:px-6 py-8 md:py-12 lg:py-16">
+          <div className="flex items-end justify-between gap-2 sm:gap-4 mb-6 md:mb-8 px-1">
+            <div>
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-amber-700">Premium Handloom</p>
+              <h2 className="mt-1 sm:mt-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-gray-900">Charsadda Khaddar</h2>
+            </div>
+            <Link href={`/category/${khaddarCategory.slug}`} className="text-xs sm:text-sm font-medium text-amber-700 hover:text-amber-800 whitespace-nowrap">
+              Explore →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8">
+            {khaddarProducts.slice(0, 4).map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+          <div className="mt-6 md:mt-10 flex justify-center">
+            <Link href={`/category/${khaddarCategory.slug}`} className="px-6 md:px-8 py-2 md:py-3 rounded-full bg-amber-700 text-white font-bold text-sm md:text-base hover:bg-amber-100 hover:text-amber-900 transition">View All Khaddar</Link>
           </div>
         </section>
       )}
