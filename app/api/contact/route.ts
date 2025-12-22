@@ -53,7 +53,7 @@ export async function POST(request: Request) {
 
   try {
     await sendEmail({
-      to: "atifjan2019@gmail.com",
+      to: process.env.ADMIN_EMAILS || "atifjan2019@gmail.com",
       subject: "New Contact Form Submission",
       html: `
         <h1>New Contact Form Submission</h1>

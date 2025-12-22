@@ -1,14 +1,14 @@
 const nodemailer = require('nodemailer');
 
 async function checkSmtp() {
-    console.log('Testing SMTP connection...');
+    console.log('Testing SMTP connection with Cloudways Elastic Email credentials...');
     const transporter = nodemailer.createTransport({
         host: 'smtp.elasticemail.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
+        port: 2525,
+        secure: false,
         auth: {
-            user: '285DC040B9E83DCDED5FCEC7A6B079919FE3664B3462758AFA099B14BF509DF916CFC8CEE50EBB46B806539A63434E0B',
-            pass: '285DC040B9E83DCDED5FCEC7A6B079919FE3664B3462758AFA099B14BF509DF916CFC8CEE50EBB46B806539A63434E0B'
+            user: 'e6xd41718014549@managedcloudhostingemail.com',
+            pass: '8DD945F52DFFCA0CCA3F0840E4A7174AA7E2'
         }
     });
 
@@ -18,9 +18,9 @@ async function checkSmtp() {
 
         const info = await transporter.sendMail({
             from: 'mail@webspires.co.uk',
-            to: 'mail@webspires.co.uk',
-            subject: 'SMTP Verification Check',
-            text: 'This is a test email to verify SMTP configuration after your changes.',
+            to: 'atifjan2019@gmail.com',
+            subject: 'Khyber Shawls SMTP Test',
+            text: 'This is a test email to verify the new Cloudways SMTP credentials.',
         });
 
         console.log('✅ Message sent successfully! MessageId:', info.messageId);
