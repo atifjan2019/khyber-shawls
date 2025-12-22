@@ -21,10 +21,10 @@ function checkRateLimit(ip: string): boolean {
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
-  
+
   // Get client IP from headers
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  
+
   // Check rate limit for API routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
     if (!checkRateLimit(ip)) {
@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https:;
     font-src 'self' data:;
-    connect-src 'self' https://vercel.live https://vitals.vercel-insights.com https://web-sdk.smartlook.com https://*.smartlook.com https://*.smartlook.cloud wss://*.smartlook.com wss://*.smartlook.cloud;
+    connect-src 'self' https://vercel.live https://vitals.vercel-insights.com https://web-sdk.smartlook.com https://*.smartlook.com https://*.smartlook.cloud wss://*.smartlook.com wss://*.smartlook.cloud https://mjywwfaflipsnirccemw.supabase.co;
     frame-ancestors 'self';
   `.replace(/\s{2,}/g, ' ').trim();
 
