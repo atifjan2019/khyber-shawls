@@ -52,7 +52,7 @@ export default function CartPage() {
         setProductMap(nextMap)
       } catch (error) {
         if (!active) return
-        
+
         console.error("Unable to fetch cart products", error)
         setProductMap({})
       } finally {
@@ -131,12 +131,12 @@ export default function CartPage() {
               className="flex flex-col gap-5 rounded-2xl border bg-card p-5 shadow-sm sm:flex-row"
             >
               <div className="relative h-40 w-full overflow-hidden rounded-xl sm:w-48">
-                  <Image
-                    src={
-                      product.featuredImageUrl ??
-                      product.gallery[0]?.url ??
-                      "/hero-shawl.svg"
-                    }
+                <Image
+                  src={
+                    product.featuredImageUrl ??
+                    product.gallery[0]?.url ??
+                    "/hero-shawl.svg"
+                  }
                   alt={
                     product.featuredImageAlt ??
                     product.gallery[0]?.alt ??
@@ -151,9 +151,7 @@ export default function CartPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h2 className="text-lg font-semibold">{product.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {product.description}
-                    </p>
+
                   </div>
                   <Button
                     variant="ghost"
