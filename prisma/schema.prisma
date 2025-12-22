@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -25,12 +26,12 @@ model ContactEntry {
   id        String   @id @default(cuid())
   name      String
   email     String
-  message   String   @db.Text
+  message   String
   userId    String?
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
 
-  @@index([userId], map: "contact_entries_userId_fkey")
+  @@index([userId], map: "contact_entries_userId_idx")
   @@map("contact_entries")
 }
 
@@ -42,10 +43,10 @@ model Category {
   featuredImageUrl String?
   featuredImageAlt String?
   seoTitle         String?
-  seoDescription   String?   @db.Text
-  intro            String?   @db.LongText // JSON: { title, description, image: { url, alt } }
-  sections         String?   @db.LongText // JSON: [{ title, description, image: { url, alt } }]
-  uiConfig         String?   @db.Text // JSON: { showFilters, gridColumns: { mobile, tablet, desktop } }
+  seoDescription   String?
+  intro            String?   // JSON: { title, description, image: { url, alt } }
+  sections         String?   // JSON: [{ title, description, image: { url, alt } }]
+  uiConfig         String?   // JSON: { showFilters, gridColumns: { mobile, tablet, desktop } }
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   products         Product[]
@@ -56,9 +57,9 @@ model Category {
 model Product {
   id               String             @id @default(cuid())
   name             String
-  description      String             @db.Text
-  details          String?            @db.Text
-  careInstructions String?            @db.Text
+  description      String
+  details          String?
+  careInstructions String?
   price            Float
   image            String
   categoryId       String
@@ -75,7 +76,7 @@ model Product {
   products_B       Product[]          @relation("RelatedProducts")
   tags             Tag[]              @relation("ProductTags")
 
-  @@index([categoryId], map: "products_categoryId_fkey")
+  @@index([categoryId], map: "products_categoryId_idx")
   @@map("products")
 }
 
@@ -84,7 +85,7 @@ model Customer {
   name      String
   email     String   @unique
   phone     String?
-  address   String?  @db.Text
+  address   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -97,8 +98,8 @@ model Order {
   customerName    String
   customerEmail   String
   customerPhone   String?
-  shippingAddress String      @db.Text
-  notes           String?     @db.Text
+  shippingAddress String
+  notes           String?
   total           Float
   status          OrderStatus @default(PENDING)
   createdAt       DateTime    @default(now())
@@ -134,7 +135,7 @@ model BlogPost {
   title     String
   slug      String   @unique
   excerpt   String?
-  content   String   @db.Text
+  content   String
   published Boolean  @default(false)
   authorId  String?
   createdAt DateTime @default(now())
@@ -142,7 +143,7 @@ model BlogPost {
   image     String?
   author    User?    @relation("UserBlogPosts", fields: [authorId], references: [id])
 
-  @@index([authorId], map: "blog_post_authorId_fkey")
+  @@index([authorId], map: "blog_post_authorId_idx")
   @@map("blog_post")
 }
 
@@ -170,7 +171,7 @@ model HeroMedia {
   updatedAt         DateTime @updatedAt
   backgroundImage   Media?   @relation(fields: [backgroundImageId], references: [id])
 
-  @@index([backgroundImageId], map: "hero_media_backgroundImageId_fkey")
+  @@index([backgroundImageId], map: "hero_media_backgroundImageId_idx")
   @@map("hero_media")
 }
 
@@ -188,7 +189,7 @@ model Settings {
   smtpPass          String?
   stripePublicKey   String?
   stripeSecretKey   String?
-  socialLinks       String? @db.LongText
+  socialLinks       String?
 
   @@map("settings")
 }
@@ -203,7 +204,7 @@ model product_images {
   updatedAt DateTime
   products  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@index([productId], map: "product_images_productId_fkey")
+  @@index([productId], map: "product_images_productId_idx")
 }
 
 model product_variants {
@@ -217,7 +218,7 @@ model product_variants {
   updatedAt DateTime
   products  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@index([productId], map: "product_variants_productId_fkey")
+  @@index([productId], map: "product_variants_productId_idx")
 }
 
 enum OrderStatus {
