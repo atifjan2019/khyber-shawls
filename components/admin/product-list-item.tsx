@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 
 
 import { RichTextEditor } from "@/components/admin/rich-text-editor"
+import { ImageUpload } from "@/components/admin/image-upload"
 
 type ActionState = { error?: string; success?: string }
 
@@ -50,12 +51,16 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [removingImageUrl, setRemovingImageUrl] = useState<string | null>(null)
-  
+
   // Rich text editor state
   const [description, setDescription] = useState(product.description)
   const [details, setDetails] = useState(product.details || "")
   const [careInstructions, setCareInstructions] = useState(product.careInstructions || "")
-  
+
+  // Image upload state
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(product.featuredImageUrl)
+  const [newGalleryImages, setNewGalleryImages] = useState<string[]>([])
+
   // Reset edit mode
   const handleEditToggle = () => {
     setIsEditing((prev) => !prev);
@@ -64,6 +69,8 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
       setDescription(product.description)
       setDetails(product.details || "")
       setCareInstructions(product.careInstructions || "")
+      setFeaturedImageUrl(product.featuredImageUrl)
+      setNewGalleryImages([])
     }
   };
 
@@ -92,15 +99,15 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
 
   const handleRemoveGalleryImage = async (imageUrl: string) => {
     if (!window.confirm("Remove this image from the gallery?")) return
-    
+
     setRemovingImageUrl(imageUrl)
     const formData = new FormData()
     formData.append("productId", product.id)
     formData.append("imageUrl", imageUrl)
-    
+
     const result = await deleteProductImageAction(null, formData)
     setRemovingImageUrl(null)
-    
+
     if (result.success) {
       router.refresh()
     } else {
@@ -110,12 +117,12 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
 
   const handleRemoveFeaturedImage = async () => {
     if (!window.confirm("Remove the featured image?")) return
-    
+
     const formData = new FormData()
     formData.append("productId", product.id)
-    
+
     const result = await removeFeaturedImageAction(null, formData)
-    
+
     if (result.success) {
       router.refresh()
     } else {
@@ -123,14 +130,7 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
     }
   }
 
-  const mediaOptions: MediaOption[] = useMemo(
-    () =>
-      mediaLibrary.map((media) => ({
-        id: media.id,
-        label: media.alt?.length ? media.alt : media.url,
-      })),
-    [mediaLibrary]
-  )
+
 
   return (
     <div className="flex flex-col md:flex-row gap-6 rounded-3xl border border-white/10 bg-white/90 p-6 shadow-lg transition-all hover:border-primary/40 hover:shadow-2xl relative">
@@ -169,40 +169,40 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
         <p className="text-sm text-gray-700 line-clamp-2 mt-1">{product.description}</p>
 
 
-  <div className="flex flex-wrap items-center gap-2 mt-2">
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      className="flex items-center gap-1"
-  onClick={handleEditToggle}
-    >
-      {isEditing ? <X className="size-3.5" /> : <Pencil className="size-3.5" />}
-      {isEditing ? "Cancel" : "Edit"}
-    </Button>
-    <form action={deleteAction}>
-      <input type="hidden" name="productId" value={product.id} />
-      <Button
-        type="submit"
-        variant="destructive"
-        size="sm"
-        className="flex items-center gap-1"
-        disabled={isDeleting}
-        onClick={(event) => {
-          const confirmed = window.confirm(
-            `Delete "${product.title}"? This action cannot be undone.`
-          )
-          if (!confirmed) {
-            event.preventDefault()
-            event.stopPropagation()
-          }
-        }}
-      >
-        <Trash className="size-3.5" />
-        {isDeleting ? "Deleting…" : "Delete"}
-      </Button>
-    </form>
-  </div>
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={handleEditToggle}
+          >
+            {isEditing ? <X className="size-3.5" /> : <Pencil className="size-3.5" />}
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
+          <form action={deleteAction}>
+            <input type="hidden" name="productId" value={product.id} />
+            <Button
+              type="submit"
+              variant="destructive"
+              size="sm"
+              className="flex items-center gap-1"
+              disabled={isDeleting}
+              onClick={(event) => {
+                const confirmed = window.confirm(
+                  `Delete "${product.title}"? This action cannot be undone.`
+                )
+                if (!confirmed) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }
+              }}
+            >
+              <Trash className="size-3.5" />
+              {isDeleting ? "Deleting…" : "Delete"}
+            </Button>
+          </form>
+        </div>
 
         {(deleteState.error || deleteState.success) && (
           <p className={`text-xs ${deleteState.error ? "text-destructive" : "text-primary"}`}>
@@ -325,55 +325,17 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
               </select>
             </div>
             <div className="grid gap-3">
-              <label className="text-sm font-medium" htmlFor={`${product.id}-featured`}>
-                Featured image
-              </label>
-              
-              {/* Show current featured image preview */}
-              {product.featuredImageUrl && (
-                <div className="relative w-32 h-32 rounded-md overflow-hidden border border-white/10 group">
-                  <Image
-                    src={product.featuredImageUrl}
-                    alt={product.featuredImageAlt ?? "Current featured image"}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
-                    <p className="text-xs text-white truncate">Current</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemoveFeaturedImage}
-                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
-                    title="Remove featured image"
-                  >
-                    <X className="size-3" />
-                  </button>
-                </div>
-              )}
-              
-              <select
-                id={`${product.id}-featured`}
-                name="featuredImageId"
-                defaultValue={product.featuredImageId ?? ""}
-                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
-              >
-                {mediaOptions.map((media) => (
-                  <option key={media.id} value={media.id}>
-                    {media.label}
-                  </option>
-                ))}
-                </select>
-              <input
-                id={`${product.id}-featured-file`}
-                name="featuredImageFile"
-                type="file"
-                accept="image/*"
-                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
+              <label className="text-sm font-medium">Featured image</label>
+              <input type="hidden" name="featuredImageUrl" value={featuredImageUrl || ""} />
+              <ImageUpload
+                value={featuredImageUrl}
+                onChange={setFeaturedImageUrl}
+                label="Click to upload featured image"
               />
               <p className="text-xs text-muted-foreground">
-                Uploading a new file replaces the featured image and saves it to the media library.
+                This image will act as the main product image.
               </p>
+
               <label className="text-sm font-medium" htmlFor={`${product.id}-featured-alt`}>
                 Featured image alt text
               </label>
@@ -387,56 +349,50 @@ export function ProductListItem({ product, categories, mediaLibrary }: ProductLi
               />
             </div>
             <div className="grid gap-3">
-              <label className="text-sm font-medium" htmlFor={`${product.id}-gallery-files`}>
-                Upload gallery images
-              </label>
-              
+              <label className="text-sm font-medium">Gallery images</label>
+
               {/* Show current gallery images */}
-              {product.galleryImages && product.galleryImages.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {product.galleryImages.map((img, idx) => (
-                    <div 
-                      key={idx} 
-                      className="relative w-20 h-20 rounded-md overflow-hidden border border-white/10 group"
+              <div className="flex flex-wrap gap-2">
+                {product.galleryImages?.map((img, idx) => (
+                  <div key={`old-${idx}`} className="relative w-20 h-20 rounded-md overflow-hidden border border-white/10 group">
+                    <Image src={img.url} alt={img.alt ?? ""} fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveGalleryImage(img.url)}
+                      disabled={removingImageUrl === img.url}
+                      className="absolute top-1 right-1 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <Image
-                        src={img.url}
-                        alt={img.alt ?? `Gallery image ${idx + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveGalleryImage(img.url)}
-                        disabled={removingImageUrl === img.url}
-                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90 disabled:opacity-50"
-                        title="Remove image"
-                      >
-                        {removingImageUrl === img.url ? (
-                          <span className="text-xs">...</span>
-                        ) : (
-                          <X className="size-3" />
-                        )}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <input
-                id={`${product.id}-gallery-files`}
-                name="galleryFiles"
-                type="file"
-                multiple
-                accept="image/*"
-                className="rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
+                      <X className="size-3" />
+                    </button>
+                  </div>
+                ))}
+                {/* Show newly uploaded gallery images */}
+                {newGalleryImages.map((url, idx) => (
+                  <div key={`new-${idx}`} className="relative w-20 h-20 rounded-md overflow-hidden border border-blue-500 border-2">
+                    <Image src={url} alt="New" fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setNewGalleryImages(prev => prev.filter(u => u !== url))}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                    >
+                      <X className="size-3" />
+                    </button>
+                    <input type="hidden" name="galleryImageUrls" value={url} />
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-sm font-medium mt-2">Add more images</p>
+              <ImageUpload
+                value={null}
+                onChange={(url) => {
+                  if (url) setNewGalleryImages(prev => [...prev, url])
+                }}
+                label="Add gallery image"
               />
-              <p className="text-xs text-muted-foreground">
-                Additional uploads are appended to the gallery and saved in the media library.
-              </p>
             </div>
 
-            
+
             <label className="flex items-center gap-2 text-sm font-medium">
               <input type="checkbox" name="published" defaultChecked={product.published} />
               Publish product

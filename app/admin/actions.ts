@@ -54,13 +54,20 @@ export async function createProductAction(
       return { error: "Please check all required fields" };
     }
 
-    // Handle featured image file upload
+    // Handle featured image (URL or File)
     let featuredImageId: string | null = null;
+    const featuredImageUrlParam = formData.get("featuredImageUrl") as string | null;
     const featuredImageFile = formData.get("featuredImageFile") as File | null;
-    if (featuredImageFile && featuredImageFile.size > 0) {
+
+    if (featuredImageUrlParam) {
+      const media = await prisma.media.create({
+        data: { url: featuredImageUrlParam, alt: parsed.data.title },
+      });
+      featuredImageId = media.id;
+    } else if (featuredImageFile && featuredImageFile.size > 0) {
       const publicUrl = await uploadFileToSupabase(featuredImageFile);
       const media = await prisma.media.create({
-        data: { url: publicUrl, alt: "" },
+        data: { url: publicUrl, alt: parsed.data.title },
       });
       featuredImageId = media.id;
     }
@@ -73,7 +80,24 @@ export async function createProductAction(
     }
 
     // Handle gallery files - upload and prepare for product_images
+    // Handle gallery files and URLs
     const galleryImages = [];
+
+    // Process client-uploaded URLs
+    const galleryImageUrls = formData.getAll("galleryImageUrls") as string[];
+    for (let i = 0; i < galleryImageUrls.length; i++) {
+      const url = galleryImageUrls[i];
+      if (!url) continue;
+      galleryImages.push({
+        id: `img_${Date.now()}_url_${i}_${Math.random().toString(36).substring(7)}`,
+        url: url,
+        alt: parsed.data.title,
+        position: galleryImages.length,
+        updatedAt: new Date(),
+      });
+    }
+
+    // Process server-uploaded Files
     const galleryFiles = formData.getAll("galleryFiles") as File[];
     for (let i = 0; i < galleryFiles.length; i++) {
       const file = galleryFiles[i];
@@ -85,7 +109,7 @@ export async function createProductAction(
         id: `img_${Date.now()}_${i}_${Math.random().toString(36).substring(7)}`,
         url: publicUrl,
         alt: parsed.data.title,
-        position: i,
+        position: galleryImages.length,
         updatedAt: new Date(),
       });
     }
@@ -202,41 +226,64 @@ export async function updateProductAction(
     }
 
     // Handle featured image file upload
+    // Handle featured image (URL or File)
     let featuredImageId: string | null = null;
+    const featuredImageUrlParam = formData.get("featuredImageUrl") as string | null;
     const featuredImageFile = formData.get("featuredImageFile") as File | null;
-    if (featuredImageFile && featuredImageFile.size > 0) {
+
+    if (featuredImageUrlParam) {
+      const media = await prisma.media.create({
+        data: { url: featuredImageUrlParam, alt: parsed.data.title },
+      });
+      featuredImageId = media.id;
+    } else if (featuredImageFile && featuredImageFile.size > 0) {
       const publicUrl = await uploadFileToSupabase(featuredImageFile);
 
       const media = await prisma.media.create({
-        data: { url: publicUrl, alt: "" },
+        data: { url: publicUrl, alt: parsed.data.title },
       });
       featuredImageId = media.id;
     }
 
     // Handle gallery files
+    // Handle new gallery images (Files + URLs)
+    const newGalleryImages = [];
+
+    // 1. Process URLs
+    const galleryImageUrls = formData.getAll("galleryImageUrls") as string[];
+    for (let i = 0; i < galleryImageUrls.length; i++) {
+      const url = galleryImageUrls[i];
+      if (!url) continue;
+      newGalleryImages.push({
+        id: `img_${Date.now()}_url_${i}_${Math.random().toString(36).substring(7)}`,
+        url: url,
+        alt: parsed.data.title,
+        position: 999 + i, // Append at end (simplified)
+        updatedAt: new Date()
+      });
+    }
+
+    // 2. Process Files
     const galleryFiles = formData.getAll("galleryFiles") as File[];
-    if (galleryFiles.length > 0 && galleryFiles[0].size > 0) {
-      const galleryImages = [];
-      for (let i = 0; i < galleryFiles.length; i++) {
-        const file = galleryFiles[i];
-        if (!file || file.size === 0) continue;
+    for (let i = 0; i < galleryFiles.length; i++) {
+      const file = galleryFiles[i];
+      if (!file || file.size === 0) continue;
+      const publicUrl = await uploadFileToSupabase(file);
+      newGalleryImages.push({
+        id: `img_${Date.now()}_${i}_${Math.random().toString(36).substring(7)}`,
+        url: publicUrl,
+        alt: parsed.data.title,
+        position: 999 + galleryImageUrls.length + i,
+        updatedAt: new Date()
+      });
+    }
 
-        const publicUrl = await uploadFileToSupabase(file);
-
-        galleryImages.push({
-          id: `img_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-          url: publicUrl,
-          alt: parsed.data.title,
-          position: i,
-          updatedAt: new Date()
-        });
-      }
-
+    if (newGalleryImages.length > 0) {
       await prisma.product.update({
         where: { id: parsed.data.productId },
         data: {
           product_images: {
-            create: galleryImages,
+            create: newGalleryImages,
           },
         },
       });
