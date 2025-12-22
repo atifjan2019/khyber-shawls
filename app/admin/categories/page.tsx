@@ -17,13 +17,6 @@ export default async function AdminCategoriesPage() {
       </div>
     );
   }
-  console.log('DB URL at runtime:', process.env.DATABASE_URL);
-
-// Raw checks (temporary)
-await prisma.$queryRawUnsafe('SELECT 1');
-await prisma.$queryRawUnsafe('SELECT COUNT(*) AS c FROM `categories`');
-
-
   const categories = await prisma.category.findMany({
     include: { products: true },
     orderBy: { name: "asc" },
