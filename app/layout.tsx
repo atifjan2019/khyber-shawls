@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
+import NextTopLoader from 'nextjs-toploader'
 import { CartProvider } from "@/components/providers/cart-provider"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
@@ -78,7 +79,7 @@ export default async function RootLayout({
 }>) {
   const user = await getCurrentUser()
   const categories = await fetchAllCategories()
-  
+
   // Fetch settings for footer
   let settings = null
   try {
@@ -107,6 +108,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-background antialiased`}
       >
         <CartProvider>
+          <NextTopLoader color="#b45309" showSpinner={false} />
           <SiteHeader user={user} categories={categories} />
           <main className="flex-1 overflow-clip">
             <div className="mx-auto px-3 pt-8 pb-12">{children}</div>
