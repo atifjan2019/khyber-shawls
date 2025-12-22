@@ -136,7 +136,8 @@ export async function POST(request: Request) {
     try {
       // Email to admin
       await sendEmail({
-        to: "atifjan2019@gmail.com",
+        // to: "atifjan2019@gmail.com",
+        to: "akifullah0317@gmail.com",
         subject: "New Order Received",
         html: `
           <h1>New Order Received</h1>

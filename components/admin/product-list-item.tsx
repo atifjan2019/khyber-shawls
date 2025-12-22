@@ -7,6 +7,8 @@ import { Pencil, Trash, X } from "lucide-react"
 
 import { deleteProductAction, updateProductAction, deleteProductImageAction, removeFeaturedImageAction } from "@/app/admin/actions"
 import { Button } from "@/components/ui/button"
+
+
 import { RichTextEditor } from "@/components/admin/rich-text-editor"
 
 type ActionState = { error?: string; success?: string }

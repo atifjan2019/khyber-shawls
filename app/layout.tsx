@@ -108,7 +108,7 @@ export default async function RootLayout({
       >
         <CartProvider>
           <SiteHeader user={user} categories={categories} />
-          <main className="flex-1">
+          <main className="flex-1 overflow-clip">
             <div className="mx-auto px-3 pt-8 pb-12">{children}</div>
           </main>
           <SiteFooter settings={settings} />

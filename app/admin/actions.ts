@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, requireAdmin, getCurrentUser } from "@/lib/auth";
 import { slugify } from "@/lib/slugify";
 import { sendEmail } from "@/lib/email";
+import { OrderStatus } from "@prisma/client";
 
 export type ActionState = { error?: string; success?: string };
 export type CategoryActionState =
@@ -641,15 +642,15 @@ export async function updateOrderStatusAction(
     await requireAdmin();
 
     const orderId = formData.get("orderId") as string;
-    const status = formData.get("status") as string;
-
+    const status = formData.get("status") as OrderStatus;
+    console.log(`updateOrderStatusAction called with orderId=${orderId}, status=${status}`);
     if (!orderId || !status) {
       return { error: "Missing order ID or status" };
     }
 
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
-      data: { status: status as any },
+      data: { status: status },
     });
 
     // Send email to customer

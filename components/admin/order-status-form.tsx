@@ -15,6 +15,11 @@ export function OrderStatusForm({
 }) {
   const [state, formAction, isPending] = useActionState(updateOrderStatusAction, initialState)
 
+  if (typeof window !== "undefined" && state.success) {
+    // refresh to show the latest status after a successful update
+    window.location.reload()
+  }
+
   return (
     <form action={formAction} className="flex items-center gap-2 text-sm">
       <input type="hidden" name="orderId" value={orderId} />
@@ -26,7 +31,7 @@ export function OrderStatusForm({
       >
         <option value="PENDING">Pending</option>
         <option value="PROCESSING">Processing</option>
-        <option value="COMPLETED">Completed</option>
+        <option value="DELIVERED">Delivered</option>
         <option value="CANCELLED">Cancelled</option>
       </select>
       <button

@@ -1,31 +1,21 @@
+import 'dotenv/config';
 import nodemailer from 'nodemailer';
-
-const smtpHost = process.env.SMTP_HOST || 'smtp.elasticemail.com';
-const smtpPort = Number(process.env.SMTP_PORT || 587);
-const smtpUser =
-  process.env.ELASTIC_EMAIL_USER ||
-  process.env.SMTP_USERNAME ||
-  process.env.SMTP_USER;
-const smtpPass =
-  process.env.ELASTIC_EMAIL_PASSWORD ||
-  process.env.SMTP_PASSWORD ||
-  process.env.SMTP_PASS;
 
 let transporter: nodemailer.Transporter | null = null;
 
-if (smtpUser && smtpPass) {
+if (process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
   transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: false,
     auth: {
-      user: smtpUser,
-      pass: smtpPass,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 } else {
   console.warn(
-    'SMTP credentials are missing. Email delivery is disabled until ELASTIC_EMAIL_USER and ELASTIC_EMAIL_PASSWORD (or SMTP_USERNAME/SMTP_PASSWORD) are provided.'
+    'SMTP credentials are missing. Email delivery is disabled until SMTP_USER and SMTP_PASSWORD are provided.'
   );
 }
 
@@ -47,7 +37,7 @@ export async function sendEmail({
   }
 
   const mailOptions = {
-    from: process.env.MAIL_FROM || smtpUser,
+    from: process.env.MAIL_FROM || process.env.SMTP_USER,
     to,
     subject,
     html,

@@ -59,126 +59,126 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 py-3 sm:py-4">
+    <>
+      <header className="sticky top-0  z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="mx-auto grid max-w-[1600px] grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 py-3 sm:py-4">
 
-        {/* Left: Mobile menu button + Desktop nav (Categories only) */}
-        <div className="flex items-center gap-4 sm:gap-6">
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Toggle mobile menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="size-5 sm:size-6" />
-            ) : (
-              <Menu className="size-5 sm:size-6" />
-            )}
-          </button>
-
-          {/* Desktop nav - Categories only on left */}
-          <nav className="hidden md:flex items-center gap-6">
-            {categoryNav.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === link.href
-                  : pathname?.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors ${
-                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-
-        {/* Center: logo */}
-        <Link href="/" className="flex items-center justify-center justify-self-center" onClick={closeMobileMenu}>
-          <Image
-            src="/logo.png"
-            alt="Khyber Shawls logo"
-            width={180}
-            height={60}
-            className="h-10 sm:h-12 w-auto"
-            priority
-          />
-        </Link>
-
-        {/* Right: About/Contact + Cart + Account + Logout */}
-        <div className="flex items-center justify-end gap-2 sm:gap-3">
-          {/* About & Contact - Desktop only */}
-          <nav className="hidden md:flex items-center gap-4 mr-2">
-            {staticNav.map((link) => {
-              const isActive = pathname?.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors ${
-                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-
-          {/* Cart */}
-          <Button size="sm" variant="outline" asChild>
-            <Link href="/cart" className="inline-flex items-center gap-2" onClick={closeMobileMenu}>
-              <ShoppingBag className="size-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Cart</span>
-              {isHydrated && itemCount > 0 && (
-                <span
-                  aria-label={`${itemCount} items in cart`}
-                  className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground"
-                >
-                  {itemCount}
-                </span>
+          {/* Left: Mobile menu button + Desktop nav (Categories only) */}
+          <div className="flex items-center gap-4 sm:gap-6">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="size-5 sm:size-6" />
+              ) : (
+                <Menu className="size-5 sm:size-6" />
               )}
-            </Link>
-          </Button>
+            </button>
 
-          {/* Account + Logout */}
-          <div className="hidden md:flex items-center gap-2">
-            {user?.role === "ADMIN" ? (
-              <AdminDropdown />
-            ) : null}
+            {/* Desktop nav - Categories only on left */}
+            <nav className="hidden md:flex items-center gap-6">
+              {categoryNav.map((link) => {
+                const isActive =
+                  link.href === "/"
+                    ? pathname === link.href
+                    : pathname?.startsWith(link.href)
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-sm font-medium transition-colors ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
 
-            {user ? (
-              // ✅ Proper server-action logout (works for USER and ADMIN)
-              <form action={logout}>
-                <Button size="sm" type="submit" variant="destructive" className="inline-flex items-center gap-1.5">
-                  <LogOut className="size-4" aria-hidden="true" />
-                  <span>Logout</span>
-                </Button>
-              </form>
-            ) : null}
+          {/* Center: logo */}
+          <Link href="/" className="flex items-center justify-center justify-self-center" onClick={closeMobileMenu}>
+            <Image
+              src="/logo.png"
+              alt="Khyber Shawls logo"
+              width={180}
+              height={60}
+              className="h-10 sm:h-12 w-auto"
+              priority
+            />
+          </Link>
+
+          {/* Right: About/Contact + Cart + Account + Logout */}
+          <div className="flex items-center justify-end gap-2 sm:gap-3">
+            {/* About & Contact - Desktop only */}
+            <nav className="hidden md:flex items-center gap-4 mr-2">
+              {staticNav.map((link) => {
+                const isActive = pathname?.startsWith(link.href)
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-sm font-medium transition-colors ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </nav>
+
+            {/* Cart */}
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/cart" className="inline-flex items-center gap-2" onClick={closeMobileMenu}>
+                <ShoppingBag className="size-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Cart</span>
+                {isHydrated && itemCount > 0 && (
+                  <span
+                    aria-label={`${itemCount} items in cart`}
+                    className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground"
+                  >
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            </Button>
+
+            {/* Account + Logout */}
+            <div className="hidden md:flex items-center gap-2">
+              {user?.role === "ADMIN" ? (
+                <AdminDropdown />
+              ) : null}
+
+              {user ? (
+                // ✅ Proper server-action logout (works for USER and ADMIN)
+                <form action={logout}>
+                  <Button size="sm" type="submit" variant="destructive" className="inline-flex items-center gap-1.5">
+                    <LogOut className="size-4" aria-hidden="true" />
+                    <span>Logout</span>
+                  </Button>
+                </form>
+              ) : null}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-[60] md:hidden backdrop-blur-sm"
-          onClick={closeMobileMenu}
-        />
-      )}
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 z-[60] md:hidden backdrop-blur-sm"
+            onClick={closeMobileMenu}
+          />
+        )}
 
+
+      </header>
       {/* Mobile Menu Drawer - Opens from RIGHT, covers 50% width, full height */}
       <div
-        className={`fixed top-0 right-0 h-screen w-[50vw] bg-white z-[70] shadow-2xl transition-transform duration-300 ease-in-out md:hidden ${
-          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0  h-screen w-[50vw] bg-white z-[100] shadow-2xl transition-transform duration-300 ease-in-out md:hidden ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Menu Header */}
@@ -210,11 +210,10 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
                     key={link.href}
                     href={link.href}
                     onClick={closeMobileMenu}
-                    className={`block px-4 py-3.5 rounded-lg text-base font-medium transition-colors ${
-                      isActive
-                        ? "bg-amber-700 text-white"
-                        : "text-gray-700 hover:bg-amber-50 active:bg-amber-100"
-                    }`}
+                    className={`block px-4 py-3.5 rounded-lg text-base font-medium transition-colors ${isActive
+                      ? "bg-amber-700 text-white"
+                      : "text-gray-700 hover:bg-amber-50 active:bg-amber-100"
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -234,11 +233,10 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
                     key={link.href}
                     href={link.href}
                     onClick={closeMobileMenu}
-                    className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-600 hover:bg-gray-50 active:bg-gray-100"
-                    }`}
+                    className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
+                      ? "bg-amber-100 text-amber-900"
+                      : "text-gray-600 hover:bg-gray-50 active:bg-gray-100"
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -286,6 +284,6 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
           </div>
         </div>
       </div>
-    </header>
+    </>
   )
 }

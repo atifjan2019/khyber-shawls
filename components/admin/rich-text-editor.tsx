@@ -37,6 +37,8 @@ export function RichTextEditor({ content, onChange, placeholder, id }: RichTextE
       }),
     ],
     content: content,
+    immediatelyRender: false,
+
     editorProps: {
       attributes: {
         class: 'prose prose-sm max-w-none min-h-[200px] p-4 focus:outline-none',

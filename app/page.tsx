@@ -46,7 +46,7 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800">Featured Shawls</h2>
             <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-700 font-medium px-4">"Hand-selected creations woven from pure heritage and luxury."</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {featuredProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -81,7 +81,7 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-800">Featured Products</h2>
             <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-700 font-medium">"Best"</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {tagFeaturedProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -101,7 +101,7 @@ export default async function HomePage() {
               Explore →
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {menProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -121,7 +121,7 @@ export default async function HomePage() {
               Explore →
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {womenProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -141,7 +141,7 @@ export default async function HomePage() {
               Explore →
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
             {kidsProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
