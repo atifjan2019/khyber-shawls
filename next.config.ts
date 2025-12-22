@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/': ['./public/**/*'],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/storage/:path*',
+        destination: 'https://mjywwfaflipsnirccemw.supabase.co/storage/v1/object/public/:path*',
+      },
+    ]
+  },
   async headers() {
     return [
       {

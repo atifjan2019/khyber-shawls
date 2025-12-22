@@ -44,7 +44,16 @@ export function ImageUpload({
                 }
 
                 const { data } = supabaseClient.storage.from(bucket).getPublicUrl(filePath)
-                onChange(data.publicUrl)
+
+                // Convert Supabase URL to branded URL
+                // e.g. https://[ref].supabase.co/storage/v1/object/public/products/uploads/file.jpg
+                // -> /storage/products/uploads/file.jpg
+                const supabaseBaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+                const brandedUrl = supabaseBaseUrl
+                    ? data.publicUrl.replace(`${supabaseBaseUrl}/storage/v1/object/public/`, '/storage/')
+                    : data.publicUrl
+
+                onChange(brandedUrl)
             }))
         } catch (error) {
             console.error("Upload failed:", error)
