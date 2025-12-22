@@ -211,6 +211,8 @@ export async function updateProductAction(
       tagConnect = await Promise.all(
         tagNames.map(async (name) => {
           const tag = await prisma.tag.upsert({
+
+
             where: { name },
             update: {},
             create: { name },
@@ -228,14 +230,21 @@ export async function updateProductAction(
     // Handle featured image file upload
     // Handle featured image (URL or File)
     let featuredImageId: string | null = null;
+    let imageUrl: string | undefined = undefined;
+
     const featuredImageUrlParam = formData.get("featuredImageUrl") as string | null;
     const featuredImageFile = formData.get("featuredImageFile") as File | null;
 
-    if (featuredImageUrlParam) {
-      const media = await prisma.media.create({
-        data: { url: featuredImageUrlParam, alt: parsed.data.title },
-      });
-      featuredImageId = media.id;
+    if (featuredImageUrlParam !== null) {
+      if (featuredImageUrlParam === "") {
+        imageUrl = "";
+      } else {
+        const media = await prisma.media.create({
+          data: { url: featuredImageUrlParam, alt: parsed.data.title },
+        });
+        featuredImageId = media.id;
+        imageUrl = media.url;
+      }
     } else if (featuredImageFile && featuredImageFile.size > 0) {
       const publicUrl = await uploadFileToSupabase(featuredImageFile);
 
@@ -243,6 +252,7 @@ export async function updateProductAction(
         data: { url: publicUrl, alt: parsed.data.title },
       });
       featuredImageId = media.id;
+      imageUrl = media.url;
     }
 
     // Handle gallery files
@@ -289,12 +299,7 @@ export async function updateProductAction(
       });
     }
 
-    // Get image URL if featuredImageId exists
-    let imageUrl = undefined;
-    if (featuredImageId) {
-      const media = await prisma.media.findUnique({ where: { id: featuredImageId } });
-      imageUrl = media?.url || "";
-    }
+    // Image URL derived above
 
     const isPublished = parsed.data.published === "on" || parsed.data.published === "true" || parsed.data.published === true;
 
