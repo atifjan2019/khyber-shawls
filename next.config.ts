@@ -9,6 +9,7 @@ const ALLOWED_HOSTNAMES = [
   "uncomfortable-dress.info",
   "khybershawls.store",
   "pure-e-mail.com",
+  "*.supabase.co",
 ]
 
 const nextConfig: NextConfig = {
