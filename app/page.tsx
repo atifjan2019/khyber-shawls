@@ -106,16 +106,19 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
-            {menProducts.slice(0, 8).map((p) => (
+            {menProducts.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
+          </div>
+          <div className="mt-6 md:mt-10 flex justify-center">
+            <Link href={`/category/${menCategory.slug}`} className="px-6 md:px-8 py-2 md:py-3 rounded-full bg-amber-700 text-white font-bold text-sm md:text-base hover:bg-amber-100 hover:text-amber-900 transition">View All Men's Shawls</Link>
           </div>
         </section>
       )}
 
       {/* ======================= PROMO BANNER ======================= */}
-      <section className="mx-auto max-w-[1600px] px-0 sm:px-4 md:px-6 my-8 md:my-12">
-        <div className="relative w-full aspect-[21/9] sm:aspect-[21/7] md:aspect-[21/6] overflow-hidden rounded-xl md:rounded-3xl shadow-lg">
+      <section className="w-full my-8 md:my-12">
+        <div className="relative w-full aspect-[21/9] sm:aspect-[21/7] md:aspect-[21/5] overflow-hidden">
           <Image
             src="https://mjywwfaflipsnirccemw.supabase.co/storage/v1/object/public/products/uploads/1766434457029-rwf3l-Web-Banner-3.jpg"
             alt="Promotional Banner"
@@ -142,6 +145,9 @@ export default async function HomePage() {
             {womenProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
+          </div>
+          <div className="mt-6 md:mt-10 flex justify-center">
+            <Link href={`/category/${womenCategory.slug}`} className="px-6 md:px-8 py-2 md:py-3 rounded-full bg-amber-700 text-white font-bold text-sm md:text-base hover:bg-amber-100 hover:text-amber-900 transition">View All Women's Shawls</Link>
           </div>
         </section>
       )}
@@ -185,6 +191,9 @@ export default async function HomePage() {
             {kidsProducts.slice(0, 8).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
+          </div>
+          <div className="mt-6 md:mt-10 flex justify-center">
+            <Link href={`/category/${kidsCategory.slug}`} className="px-6 md:px-8 py-2 md:py-3 rounded-full bg-amber-700 text-white font-bold text-sm md:text-base hover:bg-amber-100 hover:text-amber-900 transition">View All Kids' Shawls</Link>
           </div>
         </section>
       )}
