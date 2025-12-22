@@ -58,16 +58,7 @@ export async function createProductAction(
     let featuredImageId: string | null = null;
     const featuredImageFile = formData.get("featuredImageFile") as File | null;
     if (featuredImageFile && featuredImageFile.size > 0) {
-      const buffer = Buffer.from(await featuredImageFile.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await mkdir(uploadDir, { recursive: true });
-
-      const safeName = featuredImageFile.name.replace(/\s+/g, "-");
-      const filename = `${Date.now()}-${safeName}`;
-      const publicUrl = `/uploads/${filename}`;
-
-      await writeFile(path.join(uploadDir, filename), buffer);
-
+      const publicUrl = await uploadFileToSupabase(featuredImageFile);
       const media = await prisma.media.create({
         data: { url: publicUrl, alt: "" },
       });
@@ -214,15 +205,7 @@ export async function updateProductAction(
     let featuredImageId: string | null = null;
     const featuredImageFile = formData.get("featuredImageFile") as File | null;
     if (featuredImageFile && featuredImageFile.size > 0) {
-      const buffer = Buffer.from(await featuredImageFile.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await mkdir(uploadDir, { recursive: true });
-
-      const safeName = featuredImageFile.name.replace(/\s+/g, "-");
-      const filename = `${Date.now()}-${safeName}`;
-      const publicUrl = `/uploads/${filename}`;
-
-      await writeFile(path.join(uploadDir, filename), buffer);
+      const publicUrl = await uploadFileToSupabase(featuredImageFile);
 
       const media = await prisma.media.create({
         data: { url: publicUrl, alt: "" },

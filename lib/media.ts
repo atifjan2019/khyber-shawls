@@ -1,7 +1,6 @@
 "use server";
 
-import path from "path";
-import { mkdir, writeFile, unlink } from "fs/promises";
+import { uploadFileToSupabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
@@ -338,15 +337,7 @@ export async function uploadMediaAction(
   const db = ensurePrismaClient();
 
   try {
-    const buffer = Buffer.from(await parsed.data.file.arrayBuffer());
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-
-    const safeName = parsed.data.file.name.replace(/\s+/g, "-");
-    const filename = `${Date.now()}-${safeName}`;
-    const publicUrl = `/uploads/${filename}`;
-
-    await writeFile(path.join(uploadDir, filename), buffer);
+    const publicUrl = await uploadFileToSupabase(parsed.data.file);
 
     const data: Prisma.MediaCreateInput = {
       url: publicUrl,
@@ -418,13 +409,7 @@ export async function deleteMediaAction(
 
     await db.media.delete({ where: { id: parsed.data.id } });
 
-    if (media.url && media.url.startsWith("/uploads/")) {
-      try {
-        await unlink(path.join(process.cwd(), "public", media.url));
-      } catch {
-        // ignore missing file
-      }
-    }
+    // file deletion skipped (Supabase buckets)
 
     revalidatePath("/admin/media");
     return { success: "Media deleted" };
