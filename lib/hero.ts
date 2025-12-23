@@ -6,6 +6,7 @@ export const HERO_CONFIGS = [
   { key: "home", label: "Hero 1" },
   { key: "editorial", label: "Hero 2" },
   { key: "seasonal", label: "Hero 3" },
+  { key: "promo", label: "Promo Banner" },
 ] as const
 
 export type HeroKey = (typeof HERO_CONFIGS)[number]["key"]
