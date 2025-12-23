@@ -12,7 +12,7 @@
 
 # testing
 /coverage
-smtp-check.js
+
 
 # next.js
 /.next/
