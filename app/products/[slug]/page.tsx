@@ -8,7 +8,7 @@ import { CheckCircle2, ShieldCheck, Truck } from "lucide-react"
 
 import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/currency"
-import { fetchProductBySlug } from "@/lib/products"
+import { fetchProductBySlug, fetchRelatedProducts } from "@/lib/products"
 import { ProductGalleryTabs } from "@/components/product/product-gallery-tabs"
 
 export const runtime = "nodejs"
@@ -122,31 +122,10 @@ export default async function ProductPage({ params }: PageProps) {
   const mainImageUrl = product.featuredImageUrl ?? "/placeholder.svg"
   const mainImageAlt = product.featuredImageAlt ?? product.title
 
-  // Fetch related products - find by category slug
-  const related: any[] = []
-  if (product.categorySlug) {
-    const category = await prisma.category.findUnique({
-      where: { slug: product.categorySlug },
-      include: {
-        products: {
-          where: {
-            published: true,
-            id: { not: product.id },
-          },
-          take: 4,
-          include: { product_images: true, category: true },
-        },
-      },
-    })
-
-    related.push(...(category?.products || []).map(p => ({
-      id: p.id,
-      title: p.name,
-      slug: p.slug,
-      price: p.price,
-      featuredImage: { url: p.image, alt: p.name },
-    })))
-  }
+  // Fetch related products using cached helper
+  const related = product.categorySlug
+    ? await fetchRelatedProducts(product.categorySlug, product.id)
+    : []
 
   const productLD = {
     "@context": "https://schema.org",

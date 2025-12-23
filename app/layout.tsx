@@ -6,8 +6,8 @@ import { CartProvider } from "@/components/providers/cart-provider"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 import { getCurrentUser } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import { fetchAllCategories } from "@/lib/products"
+import { getSettings } from "@/lib/settings"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { WhatsAppFloat } from "@/components/whatsapp-float"
 import Script from "next/script"
@@ -23,13 +23,10 @@ const geistMono = Geist_Mono({
 })
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Try to fetch settings, but don't fail the build if database is unavailable
-  let settings = null;
-  try {
-    settings = await prisma.settings.findFirst()
-    console.log("Settings from generateMetadata:", settings);
-  } catch (error) {
-    console.log("Could not fetch settings during build:", error);
+  // Try to fetch settings using cached helper
+  const settings = await getSettings();
+  if (settings) {
+    console.log("Settings from generateMetadata (cached):", settings);
   }
 
   const defaultDescription = "Discover authentic, handcrafted shawls from the historic Khyber region. Each piece tells a story of tradition and artistry.";
@@ -79,14 +76,7 @@ export default async function RootLayout({
 }>) {
   const user = await getCurrentUser()
   const categories = await fetchAllCategories()
-
-  // Fetch settings for footer
-  let settings = null
-  try {
-    settings = await prisma.settings.findFirst()
-  } catch (error) {
-    console.log("Could not fetch settings for footer:", error)
-  }
+  const settings = await getSettings()
 
   return (
     <html lang="en">
