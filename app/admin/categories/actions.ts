@@ -2,10 +2,9 @@
 
 // Server actions for category CRUD operations
 import prisma from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
-import path from 'path'
-import fs from 'fs/promises'
+import { uploadFileToSupabase } from '@/lib/supabase'
 
 // ---- Shared Type ----
 export type CategoryActionState = {
@@ -14,15 +13,7 @@ export type CategoryActionState = {
 }
 
 // ---- Helper for Saving Upload ----
-export async function saveUpload(file: File): Promise<string> {
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-  await fs.mkdir(uploadDir, { recursive: true })
-  const filePath = path.join(uploadDir, file.name)
-  await fs.writeFile(filePath, buffer)
-  return `/uploads/${file.name}`
-}
+// Removed saveUpload local FS helper in favor of direct Supabase uploads in actions
 
 // ---- CREATE ----
 export async function createCategoryAction(
@@ -39,7 +30,7 @@ export async function createCategoryAction(
 
     let featuredImageUrl: string | null = null
     if (featuredImageFile && featuredImageFile.size > 0) {
-      featuredImageUrl = await saveUpload(featuredImageFile)
+      featuredImageUrl = await uploadFileToSupabase(featuredImageFile, 'products', 'categories')
     }
 
     const slug = name
@@ -52,6 +43,7 @@ export async function createCategoryAction(
     })
 
     revalidatePath('/admin/categories')
+    revalidateTag('categories', 'max')
     return { success: 'Category created' }
   } catch (e: any) {
     return { error: e?.message || 'Failed to create category' }
@@ -75,11 +67,11 @@ export async function updateCategoryAction(
     const seoDescription = formData.get('seoDescription')?.toString().trim() || null
 
     // Get existing category data to preserve images
-    const existing = await prisma.category.findUnique({ 
+    const existing = await prisma.category.findUnique({
       where: { id },
       select: { slug: true, sections: true }
     })
-    
+
     // Parse existing data
     let existingSections: any[] = []
     try {
@@ -97,13 +89,13 @@ export async function updateCategoryAction(
       const description = formData.get(`section${i}Description`)?.toString().trim()
       const imageFile = formData.get(`section${i}ImageFile`) as File | null
       const imageAlt = formData.get(`section${i}ImageAlt`)?.toString().trim()
-      
+
       // Upload section image if provided, otherwise keep existing
       let imageUrl = existingSections[i]?.image?.url || ''
       if (imageFile && imageFile.size > 0) {
-        imageUrl = await saveUpload(imageFile)
+        imageUrl = await uploadFileToSupabase(imageFile, 'products', 'categories')
       }
-      
+
       // Only include section if it has at least a title and description
       if (title && description) {
         sections.push({
@@ -120,7 +112,7 @@ export async function updateCategoryAction(
 
     let featuredImageUrl: string | null | undefined = undefined
     if (featuredImageFile && featuredImageFile.size > 0) {
-      featuredImageUrl = await saveUpload(featuredImageFile)
+      featuredImageUrl = await uploadFileToSupabase(featuredImageFile, 'products', 'categories')
     }
 
     // Build sections JSON (already processed with file uploads above)
@@ -142,6 +134,7 @@ export async function updateCategoryAction(
     revalidatePath('/admin/categories')
     revalidatePath(`/admin/categories/${id}`)
     revalidatePath(`/category/${existing.slug}`)
+    revalidateTag('categories', 'max')
     return { success: 'Category updated successfully!' }
   } catch (e: any) {
     return { error: e?.message || 'Failed to update category' }
@@ -154,6 +147,7 @@ export async function deleteCategoryAction(formData: FormData): Promise<void> {
   if (!id) return
   await prisma.category.delete({ where: { id } })
   revalidatePath('/admin/categories')
+  revalidateTag('categories', 'max')
   redirect('/admin/categories')
 }
 
